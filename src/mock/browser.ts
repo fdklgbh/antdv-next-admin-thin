@@ -1,6 +1,5 @@
 import type { Permission, Role, User } from "@/types/auth";
 import type { SysConfig } from "@/types/config";
-import type { Department } from "@/types/dept";
 import type { DictData } from "@/types/dict";
 import type { SysFile } from "@/types/file";
 import type { LoginLog, OperationLog } from "@/types/log";
@@ -18,7 +17,6 @@ import {
   mockUserDistribution,
 } from "../../mock/data/dashboard.data";
 import { sysConfigs } from "../../mock/data/config.data";
-import { departments, buildDeptTree } from "../../mock/data/dept.data";
 import { dictTypes, dictData } from "../../mock/data/dict.data";
 import { sysFiles } from "../../mock/data/file.data";
 import { operationLogs, loginLogs } from "../../mock/data/log.data";
@@ -270,18 +268,6 @@ function getDictDataList(url: string | undefined) {
     current: page,
     pageSize,
   };
-}
-
-function getDeptList(url: string | undefined) {
-  const name = getQueryParam(url, "name");
-  const status = getQueryParam(url, "status");
-
-  let filtered = cloneData<Department[]>(departments);
-
-  if (name) filtered = filtered.filter((item) => item.name.includes(name));
-  if (status) filtered = filtered.filter((item) => item.status === status);
-
-  return filtered.sort((a, b) => a.sort - b.sort);
 }
 
 function getFileList(url: string | undefined) {
@@ -577,23 +563,6 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     return [200, successResponse({ id, ...body })];
   });
   mock.onDelete(/\/api\/dict\/data\/[^/]+$|\/dict\/data\/[^/]+$/).reply(200, successResponse(null));
-
-  mock
-    .onGet(/\/api\/dept\/tree(?:\?.*)?$|\/dept\/tree(?:\?.*)?$/)
-    .reply((config) => [200, successResponse(buildDeptTree(getDeptList(config.url)))]);
-  mock
-    .onGet(/\/api\/dept\/list(?:\?.*)?$|\/dept\/list(?:\?.*)?$/)
-    .reply((config) => [200, successResponse(getDeptList(config.url))]);
-  mock.onPost(/\/api\/dept$|\/dept$/).reply((config) => {
-    const body = parseJsonBody(config.data, {});
-    return [200, successResponse({ id: String(Date.now()), ...body })];
-  });
-  mock.onPut(/\/api\/dept\/[^/]+$|\/dept\/[^/]+$/).reply((config) => {
-    const body = parseJsonBody(config.data, {});
-    const id = config.url?.split("/dept/")[1]?.split("?")[0] || "";
-    return [200, successResponse({ id, ...body })];
-  });
-  mock.onDelete(/\/api\/dept\/[^/]+$|\/dept\/[^/]+$/).reply(200, successResponse(null));
 
   mock
     .onGet(/\/api\/dashboard\/stats$|\/dashboard\/stats$/)

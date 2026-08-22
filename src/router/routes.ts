@@ -127,7 +127,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
   {
     path: "/organization",
     name: "Organization",
-    redirect: "/organization/dept",
+    redirect: "/organization/user",
     component: () => import("@/components/Layout/AdminLayout.vue"),
     meta: {
       title: "menu.organization",
@@ -136,17 +136,6 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
       order: 3,
     },
     children: [
-      {
-        path: "dept",
-        name: "OrganizationDept",
-        component: () => import("@/views/system/dept/index.vue"),
-        meta: {
-          title: "menu.dept",
-          icon: "ApartmentOutlined",
-          requiresAuth: true,
-          requiredPermissions: [PERMISSIONS.SYSTEM_DEPT_VIEW],
-        },
-      },
       {
         path: "user",
         name: "OrganizationUser",

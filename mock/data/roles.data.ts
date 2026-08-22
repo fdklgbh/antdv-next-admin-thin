@@ -17,7 +17,6 @@ const managerPermissions = clonePermissions(
   ({ code }) =>
     code === 'dashboard.view' ||
     code === 'organization.menu' ||
-    code.startsWith('system.dept.') ||
     code.startsWith('system.user.') ||
     code === 'system.role.view',
 );
@@ -40,7 +39,7 @@ export const mockRoles: Role[] = [
     id: '2',
     name: 'Manager',
     code: 'manager',
-    description: 'Department manager with management permissions',
+    description: 'Manager with management permissions',
     permissions: managerPermissions,
     createdAt: '2023-01-01T00:00:00.000Z',
     updatedAt: '2023-01-01T00:00:00.000Z',

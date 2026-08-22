@@ -22,9 +22,15 @@ describe('mock role permissions', () => {
     const userCodes = rolesByCode.get('user')?.permissions.map((item) => item.code) ?? [];
     const guestCodes = rolesByCode.get('guest')?.permissions.map((item) => item.code) ?? [];
 
-    expect(managerCodes).toContain('system.dept.edit');
-    expect(managerCodes).toContain('system.role.view');
-    expect(managerCodes).not.toContain('system.permission.edit');
+    expect(managerCodes).toEqual([
+      'dashboard.view',
+      'organization.menu',
+      'system.user.view',
+      'system.user.create',
+      'system.user.edit',
+      'system.user.delete',
+      'system.role.view',
+    ]);
     expect(userCodes).toEqual(['dashboard.view', 'organization.menu', 'system.user.view']);
     expect(guestCodes).toEqual(['dashboard.view']);
   });

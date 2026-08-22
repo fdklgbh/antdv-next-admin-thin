@@ -2,7 +2,6 @@ export const ALL_PERMISSION = "*";
 
 export const PERMISSIONS = {
   DASHBOARD_VIEW: "dashboard.view",
-  SYSTEM_DEPT_VIEW: "system.dept.view",
   SYSTEM_USER_VIEW: "system.user.view",
   SYSTEM_ROLE_VIEW: "system.role.view",
   SYSTEM_PERMISSION_VIEW: "system.permission.view",
