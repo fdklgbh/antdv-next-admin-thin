@@ -314,7 +314,7 @@ export interface ProStatCardProps {
 export interface ProStepFormStep {
   title: string;
   description?: string;
-  icon?: unknown;
+  icon?: Component;
 }
 
 // ProSplitLayout Types

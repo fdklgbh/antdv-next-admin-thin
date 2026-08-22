@@ -100,7 +100,7 @@
         <article class="guide-card">
           <h4>{{ $t('exampleIcon.svgGuideTitle') }}</h4>
           <ol>
-            <li>{{ $t('exampleIcon.guideStepSvg1') }}</li>
+            <li>{{ $t('exampleIcon.guideStepSvg1', { symbol: svgSymbolSnippet }) }}</li>
             <li>{{ $t('exampleIcon.guideStepSvg2') }}</li>
             <li>{{ $t('exampleIcon.guideStepSvg3') }}</li>
           </ol>
@@ -196,6 +196,7 @@ const svgOrbitId = 'icon-demo-orbit';
 const svgPulseId = 'icon-demo-pulse';
 const svgSparkId = 'icon-demo-spark';
 const svgSymbolNames = [svgOrbitId, svgPulseId, svgSparkId];
+const svgSymbolSnippet = '<symbol id="...">';
 
 const defaultIcon = 'ri:map-pin-time-line';
 const pickedIcon = ref(defaultIcon);

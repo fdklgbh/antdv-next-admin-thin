@@ -133,7 +133,7 @@
           <a-input v-model:value="newTag.label" />
         </a-form-item>
         <a-form-item :label="$t('exampleColorPicker.tagColor')">
-          <a-color-picker v-model:value="newTag.color" show-alpha />
+          <a-color-picker v-model:value="newTag.color" value-format="rgb" show-alpha />
         </a-form-item>
       </a-form>
     </a-modal>

@@ -1919,6 +1919,12 @@ defineExpose({
         box-shadow: none !important;
       }
     }
+
+    // Pagination keeps these nodes aria-hidden and delegates interaction to the outer item.
+    :deep(.ant-pagination li[role='button'] > a),
+    :deep(.ant-pagination li[role='button'] > button) {
+      pointer-events: none;
+    }
   }
 
   :deep(.ant-table-title) {

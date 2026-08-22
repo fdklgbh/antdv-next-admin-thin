@@ -51,10 +51,11 @@
           </div>
           <div class="config-item">
             <span>{{ $t('exampleTour.indicatorType') }}</span>
-            <a-select v-model:value="tourConfig.type" style="width: 120px">
-              <a-select-option value="default">default</a-select-option>
-              <a-select-option value="primary">primary</a-select-option>
-            </a-select>
+            <a-select
+              v-model:value="tourConfig.type"
+              :options="indicatorTypeOptions"
+              style="width: 120px"
+            />
           </div>
         </div>
       </div>
@@ -77,14 +78,9 @@
       :mask="tourConfig.mask"
       :arrow="tourConfig.arrow"
       :type="tourConfig.type"
+      :indicators-render="renderIndicators"
       @close="customOpen = false"
-    >
-      <template #indicatorsRender="{ current, total }">
-        <span class="custom-indicator">
-          {{ current + 1 }} / {{ total }}
-        </span>
-      </template>
-    </a-tour>
+    />
   </div>
 </template>
 
@@ -95,7 +91,7 @@ import {
   SearchOutlined,
   SettingOutlined,
 } from '@antdv-next/icons'
-import { reactive, ref } from 'vue'
+import { h, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
@@ -117,6 +113,15 @@ const tourConfig = reactive({
   scrollIntoView: true,
   type: 'default' as 'default' | 'primary',
 })
+
+const indicatorTypeOptions = [
+  { label: 'default', value: 'default' },
+  { label: 'primary', value: 'primary' },
+]
+
+function renderIndicators(current: number, total: number) {
+  return h('span', { class: 'custom-indicator' }, `${current + 1} / ${total}`)
+}
 
 const basicSteps = [
   {

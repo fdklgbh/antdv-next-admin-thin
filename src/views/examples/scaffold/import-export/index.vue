@@ -1,6 +1,6 @@
 <template>
-  <div class="page-container">
-    <div class="card">
+  <div class="page-container import-export-page">
+    <div class="import-export-content">
       <h2>{{ $t('examples.scaffold.importExport.title') }}</h2>
       <p class="text-secondary mb-lg">{{ $t('examples.scaffold.importExport.description') }}</p>
 
@@ -74,7 +74,7 @@
         :show-index-column="false"
       />
 
-      <a-divider />
+      <div class="table-gap" aria-hidden="true"></div>
 
       <ProTable
         layout="content"
@@ -365,6 +365,18 @@ function downloadCsv(rowsForExport: string[][], fileName: string) {
 </script>
 
 <style scoped lang="scss">
+.import-export-content {
+  padding: var(--spacing-lg);
+
+  :deep(.pro-table) {
+    height: auto !important;
+  }
+}
+
+.table-gap {
+  height: var(--spacing-md);
+}
+
 .mb-lg {
   margin-bottom: var(--spacing-lg);
 }

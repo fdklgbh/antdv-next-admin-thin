@@ -134,7 +134,7 @@ const init = () => {
   moveCanvas.height = height;
 
   const mainCtx = mainCanvas.getContext('2d');
-  const moveCtx = moveCanvas.getContext('2d');
+  const moveCtx = moveCanvas.getContext('2d', { willReadFrequently: true });
   if (!mainCtx || !moveCtx) {
     loading.value = false;
     return;

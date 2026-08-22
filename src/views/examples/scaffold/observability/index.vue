@@ -56,14 +56,12 @@
         </template>
 
         <template v-else-if="state === 'success'">
-          <a-list size="small" bordered :data-source="records">
-            <template #renderItem="{ item }">
-              <a-list-item>
-                <strong>{{ item.name }}</strong>
-                <span class="text-secondary">{{ item.value }}</span>
-              </a-list-item>
-            </template>
-          </a-list>
+          <ul class="record-list">
+            <li v-for="item in records" :key="item.name" class="record-item">
+              <strong>{{ item.name }}</strong>
+              <span class="text-secondary">{{ item.value }}</span>
+            </li>
+          </ul>
         </template>
 
         <template v-else>
@@ -263,6 +261,27 @@ const retryLast = async () => {
 .section-title {
   font-weight: var(--font-weight-semibold);
   margin-bottom: 12px;
+}
+
+.record-list {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: 8px;
+  list-style: none;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+
+  & + & {
+    border-top: 1px solid var(--color-border-secondary);
+  }
 }
 
 .error-stats {

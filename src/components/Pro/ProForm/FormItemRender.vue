@@ -6,7 +6,6 @@
       v-model:value="modelValue"
       :placeholder="resolveInputPlaceholder()"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Password -->
@@ -15,7 +14,6 @@
       v-model:value="modelValue"
       :placeholder="resolveInputPlaceholder()"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Textarea -->
@@ -25,7 +23,6 @@
       :placeholder="resolveInputPlaceholder()"
       :rows="4"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Number -->
@@ -35,7 +32,6 @@
       :placeholder="resolveInputPlaceholder()"
       style="width: 100%"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Select -->
@@ -49,7 +45,6 @@
       :loading="remoteLoading"
       v-bind="item.props"
       @search="handleSearch"
-      @update:value="handleChange"
     />
 
     <!-- Radio -->
@@ -58,7 +53,6 @@
       v-model:value="modelValue"
       :options="resolvedOptions"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Checkbox -->
@@ -67,7 +61,6 @@
       v-model:value="modelValue"
       :options="resolvedOptions"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Switch -->
@@ -75,7 +68,6 @@
       v-else-if="item.type === 'switch'"
       v-model:checked="modelValue"
       v-bind="item.props"
-      @update:checked="handleChange"
     />
 
     <!-- Date Picker -->
@@ -85,7 +77,6 @@
       :placeholder="resolveSelectPlaceholder()"
       style="width: 100%"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Time Picker -->
@@ -95,7 +86,6 @@
       :placeholder="resolveSelectPlaceholder()"
       style="width: 100%"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Date Range -->
@@ -104,7 +94,6 @@
       v-model:value="modelValue"
       style="width: 100%"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Upload -->
@@ -141,7 +130,6 @@
       v-else-if="item.type === 'slider'"
       v-model:value="modelValue"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Rate -->
@@ -149,7 +137,6 @@
       v-else-if="item.type === 'rate'"
       v-model:value="modelValue"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Cascader -->
@@ -160,7 +147,6 @@
       :options="resolvedOptions"
       style="width: 100%"
       v-bind="item.props"
-      @update:value="handleChange"
     />
 
     <!-- Tree Select -->
@@ -176,7 +162,6 @@
       style="width: 100%"
       v-bind="item.props"
       @search="handleSearch"
-      @update:value="handleChange"
     />
 
     <!-- Custom -->
@@ -185,7 +170,6 @@
       :is="item.render"
       v-bind="item.props"
       v-model:value="modelValue"
-      @update:value="handleChange"
     />
 
     <!-- Default -->
@@ -194,7 +178,6 @@
       v-model:value="modelValue"
       :placeholder="resolveInputPlaceholder()"
       v-bind="item.props"
-      @update:value="handleChange"
     />
   </div>
 </template>

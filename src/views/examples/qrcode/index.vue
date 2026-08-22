@@ -31,12 +31,11 @@
                 <input type="color" v-model="styleFgColor" />
               </a-form-item>
               <a-form-item :label="$t('exampleQRCode.errorLevel')">
-                <a-select v-model:value="styleErrorLevel" style="width: 150px">
-                  <a-select-option value="L">L (7%)</a-select-option>
-                  <a-select-option value="M">M (15%)</a-select-option>
-                  <a-select-option value="Q">Q (25%)</a-select-option>
-                  <a-select-option value="H">H (30%)</a-select-option>
-                </a-select>
+                <a-select
+                  v-model:value="styleErrorLevel"
+                  :options="errorLevelOptions"
+                  style="width: 150px"
+                />
               </a-form-item>
             </a-form>
             <div class="qrcode-preview">
@@ -126,6 +125,12 @@ const basicSize = ref(200)
 const styleBgColor = ref('#ffffff')
 const styleFgColor = ref('#000000')
 const styleErrorLevel = ref<QRCodeProps['errorLevel']>('M')
+const errorLevelOptions = [
+  { label: 'L (7%)', value: 'L' },
+  { label: 'M (15%)', value: 'M' },
+  { label: 'Q (25%)', value: 'Q' },
+  { label: 'H (30%)', value: 'H' },
+]
 
 const downloadContent = ref('https://www.antdv-next.com')
 const downloadFileName = ref('antdv-next-qrcode')

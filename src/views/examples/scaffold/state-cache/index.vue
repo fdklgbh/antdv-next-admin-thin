@@ -70,12 +70,15 @@
 
 <script setup lang="ts">
 import { message } from 'antdv-next';
-import { computed, defineComponent, ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { $t } from '@/locales';
 import { useDemoStateCacheStore } from '@/stores/demoStateCache';
 import { useTabsStore } from '@/stores/tabs';
+
+import DemoCachePanelA from './DemoCachePanelA.vue';
+import DemoCachePanelB from './DemoCachePanelB.vue';
 
 const cacheStore = useDemoStateCacheStore();
 const tabsStore = useTabsStore();
@@ -83,52 +86,8 @@ const route = useRoute();
 
 const activePanel = ref<'panelA' | 'panelB'>('panelA');
 
-const PanelA = defineComponent({
-  name: 'DemoCachePanelA',
-  setup() {
-    const localValue = ref('');
-    const localCount = ref(0);
-
-    return {
-      localValue,
-      localCount,
-    };
-  },
-  template: `
-    <div class="cache-panel">
-      <div class="panel-title">${$t('examples.scaffold.stateCache.panelADesc')}</div>
-      <a-input v-model:value="localValue" :placeholder="$t('examples.scaffold.stateCache.panelAInputPlaceholder')" />
-      <a-space>
-        <a-button size="small" @click="localCount--">-</a-button>
-        <span>${$t('examples.scaffold.stateCache.localCountLabel')}{{ localCount }}</span>
-        <a-button size="small" @click="localCount++">+</a-button>
-      </a-space>
-    </div>
-  `,
-});
-
-const PanelB = defineComponent({
-  name: 'DemoCachePanelB',
-  setup() {
-    const checked = ref(false);
-    const text = ref('');
-
-    return {
-      checked,
-      text,
-    };
-  },
-  template: `
-    <div class="cache-panel">
-      <div class="panel-title">${$t('examples.scaffold.stateCache.panelBDesc')}</div>
-      <a-switch v-model:checked="checked" checked-children="ON" un-checked-children="OFF" />
-      <a-textarea v-model:value="text" :rows="3" :placeholder="$t('examples.scaffold.stateCache.panelBTextPlaceholder')" />
-    </div>
-  `,
-});
-
 const activeComponent = computed(() => {
-  return activePanel.value === 'panelA' ? PanelA : PanelB;
+  return activePanel.value === 'panelA' ? DemoCachePanelA : DemoCachePanelB;
 });
 
 const pinCurrentTab = () => {

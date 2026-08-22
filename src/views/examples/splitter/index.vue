@@ -22,7 +22,10 @@
             </a-splitter>
 
             <h4 style="margin-top: 24px">{{ $t('exampleSplitter.verticalSplit') }}</h4>
-            <a-splitter :style="{ height: '200px', border: '1px solid var(--color-border)' }" layout="vertical">
+            <a-splitter
+              :style="{ height: '200px', border: '1px solid var(--color-border)' }"
+              orientation="vertical"
+            >
               <a-splitter-panel>
                 <div class="panel-content panel-top">
                   {{ $t('exampleSplitter.topPanel') }}
@@ -47,7 +50,7 @@
                 </div>
               </a-splitter-panel>
               <a-splitter-panel>
-                <a-splitter layout="vertical">
+                <a-splitter orientation="vertical">
                   <a-splitter-panel>
                     <div class="panel-content panel-main">
                       {{ $t('exampleSplitter.mainContent') }}
@@ -89,7 +92,10 @@
                 <a-switch v-model:checked="configResizable" />
               </div>
             </div>
-            <a-splitter :style="{ height: '200px', border: '1px solid var(--color-border)' }">
+            <a-splitter
+              :style="{ height: '200px', border: '1px solid var(--color-border)' }"
+              @resize="handleConfigResize"
+            >
               <a-splitter-panel
                 :size="configDefaultSize"
                 :min="configMinSize"
@@ -100,6 +106,9 @@
                   {{ $t('exampleSplitter.configurablePanel') }}
                   <div class="config-info">
                     min: {{ configMinSize }}px | max: {{ configMaxSize }}px
+                  </div>
+                  <div class="config-info">
+                    {{ $t('exampleSplitter.currentWidth', { size: configCurrentSize }) }}
                   </div>
                 </div>
               </a-splitter-panel>
@@ -141,7 +150,7 @@
                 </div>
               </a-splitter-panel>
               <a-splitter-panel>
-                <a-splitter layout="vertical">
+                <a-splitter orientation="vertical">
                   <a-splitter-panel>
                     <div class="panel-content panel-code">
                       <pre class="code-preview"><code>import {{ '{' }} createApp {{ '}' }} from 'vue'
@@ -170,13 +179,18 @@ app.mount('#app')</code></pre>
 
 <script setup lang="ts">
 import { FileOutlined, FolderOutlined } from '@antdv-next/icons'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 const activeTab = ref('basic')
 const configMinSize = ref(100)
 const configMaxSize = ref(400)
 const configDefaultSize = ref(200)
 const configResizable = ref(true)
+const configCurrentSize = computed(() => Math.round(configDefaultSize.value))
+
+function handleConfigResize(sizes: number[]) {
+  configDefaultSize.value = Math.round(sizes[0] ?? configDefaultSize.value)
+}
 </script>
 
 <style scoped lang="scss">

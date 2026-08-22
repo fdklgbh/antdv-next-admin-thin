@@ -1,9 +1,9 @@
 <template>
   <div class="milkdown-demo">
-    <a-page-header
-      title="Milkdown Markdown 编辑器"
-      sub-title="基于 @milkdown/vue 的 Markdown 编辑器组件"
-    />
+    <div class="markdown-page-header">
+      <h2>Milkdown Markdown 编辑器</h2>
+      <p>基于 @milkdown/vue 的 Markdown 编辑器组件</p>
+    </div>
 
     <a-row :gutter="[16, 16]">
       <!-- 基础用法 -->
@@ -42,40 +42,40 @@
       <!-- 特性说明 -->
       <a-col :span="24" :lg="12">
         <a-card title="支持的特性" variant="borderless">
-          <a-list size="small">
-            <a-list-item>
+          <ul class="feature-list">
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               标准 Markdown 语法（CommonMark）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               GitHub Flavored Markdown（GFM）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               代码块高亮（Prism）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               快捷键支持（Slash 命令）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               工具栏提示（Tooltip）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               拖拽编辑（Block）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               历史记录（Undo/Redo）
-            </a-list-item>
-            <a-list-item>
+            </li>
+            <li>
               <CheckCircleOutlined class="feature-icon" />
               剪贴板支持（粘贴图片）
-            </a-list-item>
-          </a-list>
+            </li>
+          </ul>
         </a-card>
       </a-col>
     </a-row>
@@ -170,6 +170,22 @@ const content3 = ref(`# 只读模式示例
 .milkdown-demo {
   padding: 24px;
 
+  .markdown-page-header {
+    margin-bottom: 24px;
+
+    h2 {
+      margin: 0;
+      color: var(--color-text-primary);
+      font-size: 24px;
+      line-height: 1.35;
+    }
+
+    p {
+      margin: 8px 0 0;
+      color: var(--color-text-secondary);
+    }
+  }
+
   .desc {
     color: var(--color-text-secondary);
     margin-bottom: 16px;
@@ -198,8 +214,24 @@ const content3 = ref(`# 只读模式示例
   }
 
   .feature-icon {
+    flex-shrink: 0;
     color: var(--color-success);
     margin-right: 8px;
+  }
+
+  .feature-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      line-height: 1.6;
+    }
   }
 }
 </style>

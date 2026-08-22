@@ -671,7 +671,7 @@ export default {
     guidesSubtitle: 'Two common integration paths: SVG Symbol and Iconify (online + offline)',
     svgGuideTitle: 'How to add and use SVG',
     iconifyGuideTitle: 'How to use Iconify',
-    guideStepSvg1: 'Inject <symbol id="..."> definitions at app root (or layout root).',
+    guideStepSvg1: 'Inject {symbol} definitions at app root (or layout root).',
     guideStepSvg2: 'Use Icon component with svg:icon-id, e.g. svg:icon-demo-orbit.',
     guideStepSvg3:
       'For IconPicker local SVG detection, place files under src/assets/icons and pass svgIcons.',
@@ -723,6 +723,7 @@ export default {
     minSize: 'Min Size',
     maxSize: 'Max Size',
     defaultSize: 'Default Size',
+    currentWidth: 'Current width: {size}px',
     resizable: 'Resizable',
     configurablePanel: 'Configurable Panel',
     autoPanel: 'Auto Panel',

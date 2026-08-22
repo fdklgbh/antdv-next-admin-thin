@@ -162,6 +162,8 @@ watch(
     .editor {
       min-height: inherit;
       outline: none;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
     // 段落

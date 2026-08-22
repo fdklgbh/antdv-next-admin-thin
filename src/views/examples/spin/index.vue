@@ -21,14 +21,25 @@
       <a-col :span="24" :lg="12">
         <a-card :title="$t('exampleSpin.tip')" variant="borderless">
           <a-flex gap="middle">
-            <a-spin :tip="$t('common.loading')" size="small">
-              <div class="p-[50px] bg-black/5 rounded" />
+            <a-spin
+              :description="$t('common.loading')"
+              :styles="{ description: { whiteSpace: 'nowrap' } }"
+              size="small"
+            >
+              <div style="padding: 50px; background: rgba(0, 0, 0, 0.05); border-radius: 4px" />
             </a-spin>
-            <a-spin :tip="$t('common.loading')">
-              <div class="p-[50px] bg-black/5 rounded" />
+            <a-spin
+              :description="$t('common.loading')"
+              :styles="{ description: { whiteSpace: 'nowrap' } }"
+            >
+              <div style="padding: 50px; background: rgba(0, 0, 0, 0.05); border-radius: 4px" />
             </a-spin>
-            <a-spin :tip="$t('common.loading')" size="large">
-              <div class="p-[50px] bg-black/5 rounded" />
+            <a-spin
+              :description="$t('common.loading')"
+              :styles="{ description: { whiteSpace: 'nowrap' } }"
+              size="large"
+            >
+              <div style="padding: 50px; background: rgba(0, 0, 0, 0.05); border-radius: 4px" />
             </a-spin>
           </a-flex>
         </a-card>
