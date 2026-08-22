@@ -73,7 +73,7 @@ service.interceptors.response.use(
       return Promise.reject(new Error(res.message || "Error"));
     }
 
-    return res;
+    return response;
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as RetriableRequestConfig | undefined;
@@ -169,7 +169,7 @@ service.interceptors.response.use(
 
 export const request = {
   get<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
-    return service.get(url, config);
+    return service.get<T>(url, config).then((response) => response.data);
   },
 
   post<T = unknown>(
@@ -177,7 +177,7 @@ export const request = {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    return service.post(url, data, config);
+    return service.post<T>(url, data, config).then((response) => response.data);
   },
 
   put<T = unknown>(
@@ -185,11 +185,11 @@ export const request = {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    return service.put(url, data, config);
+    return service.put<T>(url, data, config).then((response) => response.data);
   },
 
   delete<T = unknown>(url: string, config?: RequestConfig): Promise<T> {
-    return service.delete(url, config);
+    return service.delete<T>(url, config).then((response) => response.data);
   },
 
   patch<T = unknown>(
@@ -197,7 +197,7 @@ export const request = {
     data?: unknown,
     config?: RequestConfig,
   ): Promise<T> {
-    return service.patch(url, data, config);
+    return service.patch<T>(url, data, config).then((response) => response.data);
   },
 };
 

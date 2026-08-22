@@ -7,12 +7,12 @@
 
     <!-- Date -->
     <span v-else-if="type === 'date'">
-      {{ formatDate(value, valueTypeProps.format || "YYYY-MM-DD") }}
+      {{ formatDate(value, resolvedValueTypeProps.format || "YYYY-MM-DD") }}
     </span>
 
     <!-- DateTime -->
     <span v-else-if="type === 'dateTime'">
-      {{ formatDate(value, valueTypeProps.format || "YYYY-MM-DD HH:mm:ss") }}
+      {{ formatDate(value, resolvedValueTypeProps.format || "YYYY-MM-DD HH:mm:ss") }}
     </span>
 
     <!-- Tag -->
@@ -29,27 +29,27 @@
 
     <!-- Money -->
     <span v-else-if="type === 'money'" class="money">
-      {{ valueTypeProps.symbol ?? "¥"
-      }}{{ formatMoney(value, valueTypeProps.precision) }}
+      {{ resolvedValueTypeProps.symbol ?? "¥"
+      }}{{ formatMoney(value, resolvedValueTypeProps.precision) }}
     </span>
 
     <!-- Percent -->
     <span v-else-if="type === 'percent'">
-      {{ formatPercent(value, valueTypeProps.precision) }}%
+      {{ formatPercent(value, resolvedValueTypeProps.precision) }}%
     </span>
 
     <!-- Avatar -->
     <a-avatar
       v-else-if="type === 'avatar'"
       :src="asString(value)"
-      :size="valueTypeProps.size || 32"
+      :size="resolvedValueTypeProps.size || 32"
     />
 
     <!-- Image -->
     <a-image
       v-else-if="type === 'image'"
       :src="asString(value)"
-      :width="valueTypeProps.width || 80"
+      :width="resolvedValueTypeProps.width || 80"
     />
 
     <!-- Link -->
@@ -62,7 +62,7 @@
       v-else-if="type === 'progress'"
       :percent="asNumber(value)"
       :status="(asNumber(value) ?? 0) >= 100 ? 'success' : 'active'"
-      v-bind="valueTypeProps"
+      v-bind="resolvedValueTypeProps"
     />
 
     <!-- Default -->
@@ -72,6 +72,8 @@
 
 <script setup lang="ts">
 import type { ValueType } from "@/types/pro";
+
+import { computed } from "vue";
 
 import { message } from "antdv-next";
 import dayjs from "dayjs";
@@ -103,6 +105,8 @@ const props = withDefaults(defineProps<Props>(), {
   copyable: false,
   valueTypeProps: () => ({}),
 });
+
+const resolvedValueTypeProps = computed<ValueTypeProps>(() => props.valueTypeProps ?? {});
 
 const asString = (val: unknown): string | undefined => {
   return typeof val === "string" ? val : undefined;

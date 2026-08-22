@@ -200,19 +200,19 @@ const heroBadges = [
 ];
 
 const techList = [
-  { name: 'Vue', version: '3.4', color: '#42b883', url: 'https://vuejs.org' },
-  { name: 'TypeScript', version: '5.3', color: '#3178c6', url: 'https://www.typescriptlang.org' },
-  { name: 'Vite', version: '5.0', color: '#646cff', url: 'https://vite.dev' },
-  { name: 'Antdv Next', version: 'Next', color: '#1677ff', url: 'https://antdv-next.com' },
-  { name: 'Pinia', version: '2.1', color: '#ffd859', url: 'https://pinia.vuejs.org' },
-  { name: 'Vue Router', version: '4.2', color: '#42b883', url: 'https://router.vuejs.org' },
-  { name: 'Vue I18n', version: '11.0', color: '#42b883', url: 'https://vue-i18n.intlify.dev' },
-  { name: 'Axios', version: '1.6', color: '#5a29e4', url: 'https://axios-http.com' },
-  { name: 'ECharts', version: '5.4', color: '#e43961', url: 'https://echarts.apache.org' },
-  { name: 'TailwindCSS', version: '4.2', color: '#06b6d4', url: 'https://tailwindcss.com' },
-  { name: 'Iconify', version: '5.0', color: '#1769aa', url: 'https://iconify.design' },
-  { name: 'Tiptap', version: '3.19', color: '#68cef8', url: 'https://tiptap.dev' },
-  { name: 'Day.js', version: '1.11', color: '#ff6f61', url: 'https://day.js.org' },
+  { name: 'Vue', version: '3.5.41', color: '#42b883', url: 'https://vuejs.org' },
+  { name: 'TypeScript', version: '6.0.3', color: '#3178c6', url: 'https://www.typescriptlang.org' },
+  { name: 'Vite', version: '8.2.2', color: '#646cff', url: 'https://vite.dev' },
+  { name: 'Antdv Next', version: '1.5.2', color: '#1677ff', url: 'https://antdv-next.com' },
+  { name: 'Pinia', version: '3.0.4', color: '#ffd859', url: 'https://pinia.vuejs.org' },
+  { name: 'Vue Router', version: '5.2.0', color: '#42b883', url: 'https://router.vuejs.org' },
+  { name: 'Vue I18n', version: '11.4.8', color: '#42b883', url: 'https://vue-i18n.intlify.dev' },
+  { name: 'Axios', version: '1.19.0', color: '#5a29e4', url: 'https://axios-http.com' },
+  { name: 'ECharts', version: '6.1.0', color: '#e43961', url: 'https://echarts.apache.org' },
+  { name: 'TailwindCSS', version: '4.3.3', color: '#06b6d4', url: 'https://tailwindcss.com' },
+  { name: 'Iconify', version: '5.0.1', color: '#1769aa', url: 'https://iconify.design' },
+  { name: 'Tiptap', version: '3.30.2', color: '#68cef8', url: 'https://tiptap.dev' },
+  { name: 'Day.js', version: '1.11.23', color: '#ff6f61', url: 'https://day.js.org' },
 ];
 
 const features = [
