@@ -202,7 +202,6 @@ const columns = computed((): ProTableColumn[] => [
         label: $t('common.delete'),
         icon: DeleteOutlined,
         danger: true,
-        confirm: $t('user.confirmDelete'),
         onClick: (record) => handleDelete(record as unknown as User),
       },
     ],

@@ -27,7 +27,7 @@
     </template>
 
     <template #content>
-      <a-form-item-rest>
+      <a-form-item no-style>
         <div class="ip-wrap">
           <div class="ip-row1">
             <a-input
@@ -102,7 +102,7 @@
             />
           </div>
         </div>
-      </a-form-item-rest>
+      </a-form-item>
     </template>
   </a-popover>
 </template>
