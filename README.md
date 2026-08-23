@@ -9,7 +9,8 @@
 
 ## 预览
 
-在线体验: [https://antdv-next-admin.yelog.org/dashboard](https://antdv-next-admin.yelog.org/dashboard)
+在线体验(原版): [https://antdv-next-admin.yelog.org/dashboard](https://antdv-next-admin.yelog.org/dashboard)
+
 
 ![系统截图](docs/images/screenshot.png)
 
@@ -19,7 +20,11 @@
 管理员: admin / 123456
 普通用户: user / 123456
 ```
+## 和原版区别
+1. 依赖更新,适配了新版本后，几个页面的错误
+2. refresh token 修改为了通过http only 形式，后端直接设置cookie
 
+### 因为 refresh  token 修改，所以无法像原版那样，在线体验
 ## 快速开始
 
 ```bash
