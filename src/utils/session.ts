@@ -10,7 +10,7 @@ export function clearSessionState(router?: Router) {
   const permissionStore = usePermissionStore();
   const tabsStore = useTabsStore();
 
-  authStore.logout();
+  authStore.clearLocalSession();
   permissionStore.resetPermission();
   tabsStore.resetTabs();
   tabsStore.clearTabsState();

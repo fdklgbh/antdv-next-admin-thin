@@ -1,4 +1,8 @@
+import type { MockOptions, SetCookieOption } from 'vite-plugin-mock-dev-server';
+
 import { defineMock } from 'vite-plugin-mock-dev-server';
+
+import { authConfig } from '@/config/auth';
 
 import { adminUser, regularUser } from '../data/users.data';
 
@@ -20,7 +24,34 @@ function createMockRefreshToken(userId: string) {
   return `mock-refresh-token-${userId}-${Date.now()}`;
 }
 
-export default defineMock([
+function resolveMockUser(username?: string, password?: string) {
+  if (username === 'admin' && password === '123456') return adminUser;
+  if (username === 'user' && password === '123456') return regularUser;
+  return null;
+}
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  path: '/api/auth',
+  sameSite: 'lax' as const,
+  secure: false,
+};
+
+const clearRefreshCookieOptions = {
+  ...refreshCookieOptions,
+  maxAge: 0,
+};
+
+type MockResponseCookies = Record<string, string | [string, SetCookieOption]>;
+
+function createRefreshCookieValue(
+  value: string,
+  options: SetCookieOption,
+): [string, SetCookieOption] {
+  return [value, options];
+}
+
+const authMocks: MockOptions = [
   // Login
   {
     url: '/api/auth/login',
@@ -29,12 +60,7 @@ export default defineMock([
       const { username, password } = req.body;
 
       // Validate credentials
-      let user = null;
-      if (username === 'admin' && password === '123456') {
-        user = adminUser;
-      } else if (username === 'user' && password === '123456') {
-        user = regularUser;
-      }
+      const user = resolveMockUser(username, password);
 
       if (user) {
         return {
@@ -42,7 +68,6 @@ export default defineMock([
           message: 'Login successful',
           data: {
             token: createMockToken(user.id),
-            refreshToken: createMockRefreshToken(user.id),
             expiresIn: 7200,
           },
           success: true,
@@ -56,6 +81,17 @@ export default defineMock([
         };
       }
     },
+    cookies: (req): MockResponseCookies => {
+      const user = resolveMockUser(req.body.username, req.body.password);
+      return user
+        ? {
+            [authConfig.refreshCookieName]: createRefreshCookieValue(
+              createMockRefreshToken(user.id),
+              refreshCookieOptions,
+            ),
+          }
+        : {};
+    },
   },
 
   // Logout
@@ -67,6 +103,9 @@ export default defineMock([
       message: 'Logout successful',
       data: null,
       success: true,
+    },
+    cookies: {
+      [authConfig.refreshCookieName]: createRefreshCookieValue('', clearRefreshCookieOptions),
     },
   },
 
@@ -113,8 +152,7 @@ export default defineMock([
     url: '/api/auth/refresh',
     method: 'POST',
     body: (req) => {
-      const { refreshToken } = req.body;
-
+      const refreshToken = req.getCookie(authConfig.refreshCookieName) || undefined;
       const userId = resolveMockUserIdFromToken(refreshToken);
 
       if (userId) {
@@ -123,7 +161,6 @@ export default defineMock([
           message: 'Token refreshed',
           data: {
             token: createMockToken(userId),
-            refreshToken: createMockRefreshToken(userId),
             expiresIn: 7200,
           },
           success: true,
@@ -137,5 +174,19 @@ export default defineMock([
         };
       }
     },
+    cookies: (req): MockResponseCookies => {
+      const refreshToken = req.getCookie(authConfig.refreshCookieName) || undefined;
+      const userId = resolveMockUserIdFromToken(refreshToken);
+      return userId
+        ? {
+            [authConfig.refreshCookieName]: createRefreshCookieValue(
+              createMockRefreshToken(userId),
+              refreshCookieOptions,
+            ),
+          }
+        : {};
+    },
   },
-]);
+];
+
+export default defineMock(authMocks);

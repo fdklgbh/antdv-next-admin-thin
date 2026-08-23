@@ -29,9 +29,15 @@ describe("setupBrowserMock", () => {
 
     expect(login.data.code).toBe(200);
     expect(login.data.data.token).toContain("mock-token-1-");
+    expect(login.data.data.refreshToken).toBeUndefined();
+
+    const refreshed = await client.post("/auth/refresh");
+    expect(refreshed.data.code).toBe(200);
+    expect(refreshed.data.data.token).toContain("mock-token-1-");
+    expect(refreshed.data.data.refreshToken).toBeUndefined();
 
     const info = await client.get("/auth/info", {
-      headers: { Authorization: `Bearer ${login.data.data.token}` },
+      headers: { Authorization: `Bearer ${refreshed.data.data.token}` },
     });
 
     expect(info.data.data.username).toBe("admin");

@@ -443,6 +443,7 @@ function fallbackDemoResponse(config: { data?: unknown; method?: string; url?: s
 
 export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   const mock = new AxiosMockAdapter(service, { delayResponse: 250 });
+  let refreshTokenValue: string | null = null;
 
   mock.onGet(/\/api\/__mock_health$|\/__mock_health$/).reply(200, {
     code: 200,
@@ -475,11 +476,12 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       ];
     }
 
+    refreshTokenValue = createMockRefreshToken(user.id);
+
     return [
       200,
       successResponse({
         token: createMockToken(user.id),
-        refreshToken: createMockRefreshToken(user.id),
         expiresIn: 7200,
       }),
     ];
@@ -498,9 +500,8 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     return [200, successResponse(userId === "1" ? adminUser : regularUser)];
   });
 
-  mock.onPost(/\/api\/auth\/refresh$|\/auth\/refresh$/).reply((config) => {
-    const body = parseJsonBody<{ refreshToken?: string }>(config.data, {});
-    const userId = resolveMockUserIdFromToken(body.refreshToken);
+  mock.onPost(/\/api\/auth\/refresh$|\/auth\/refresh$/).reply(() => {
+    const userId = resolveMockUserIdFromToken(refreshTokenValue || undefined);
     if (!userId) {
       return [
         200,
@@ -513,17 +514,21 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       ];
     }
 
+    refreshTokenValue = createMockRefreshToken(userId);
+
     return [
       200,
       successResponse({
         token: createMockToken(userId),
-        refreshToken: createMockRefreshToken(userId),
         expiresIn: 7200,
       }),
     ];
   });
 
-  mock.onPost(/\/api\/auth\/logout$|\/auth\/logout$/).reply(200, successResponse(null));
+  mock.onPost(/\/api\/auth\/logout$|\/auth\/logout$/).reply(() => {
+    refreshTokenValue = null;
+    return [200, successResponse(null)];
+  });
 
   mock
     .onGet(/\/api\/dict\/types$|\/dict\/types$/)

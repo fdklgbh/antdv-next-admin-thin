@@ -5,9 +5,9 @@ import { ref, computed } from 'vue';
 
 import avatarImg from '@/assets/images/avatar-256.png';
 import { ALL_PERMISSION } from '@/constants/permissions';
+import { authConfig } from '@/config/auth';
 
 const TOKEN_KEY = 'access_token';
-const REFRESH_TOKEN_KEY = 'refresh_token';
 const USER_KEY = 'user_info';
 const TOKEN_EXPIRES_KEY = 'token_expires_at';
 const USER_DATA_VERSION_KEY = 'user_data_version';
@@ -41,6 +41,11 @@ const LEGACY_AVATAR_PATTERNS = [
 ];
 
 const DEFAULT_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
+
+function readSessionHint(): boolean {
+  const value = localStorage.getItem(authConfig.sessionHintKey);
+  return value === '1' || value === 'true';
+}
 
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
@@ -79,7 +84,7 @@ function normalizeUserInfo(userInfo: User): User {
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem(TOKEN_KEY));
-  const refreshTokenValue = ref<string | null>(localStorage.getItem(REFRESH_TOKEN_KEY));
+  const hasSessionHint = ref(readSessionHint());
   const tokenExpiresAt = ref<number | null>(null);
   const user = ref<User | null>(null);
   const roles = ref<Role[]>([]);
@@ -97,14 +102,21 @@ export const useAuthStore = defineStore('auth', () => {
   });
 
   const isLoggedIn = computed(() => !!token.value && !!user.value && !isTokenExpired.value);
+  const canAttemptRefresh = computed(() => Boolean(token.value || hasSessionHint.value));
   const userRoles = computed(() => roles.value.map((role) => role.code));
   const userPermissions = computed(() => permissions.value.map((perm) => perm.code));
 
-  const setToken = (
-    newToken: string | null,
-    newRefreshToken?: string | null,
-    expiresIn?: number,
-  ) => {
+  const setSessionHint = (value: boolean) => {
+    hasSessionHint.value = value;
+
+    if (hasSessionHint.value) {
+      localStorage.setItem(authConfig.sessionHintKey, '1');
+    } else {
+      localStorage.removeItem(authConfig.sessionHintKey);
+    }
+  };
+
+  const setToken = (newToken: string | null, expiresIn?: number) => {
     token.value = newToken;
     if (newToken) {
       localStorage.setItem(TOKEN_KEY, newToken);
@@ -127,15 +139,6 @@ export const useAuthStore = defineStore('auth', () => {
       tokenExpiresAt.value = null;
       localStorage.removeItem(TOKEN_EXPIRES_KEY);
     }
-
-    if (newRefreshToken !== undefined) {
-      refreshTokenValue.value = newRefreshToken;
-      if (newRefreshToken) {
-        localStorage.setItem(REFRESH_TOKEN_KEY, newRefreshToken);
-      } else {
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
-      }
-    }
   };
 
   const setUserInfo = (userInfo: User | null) => {
@@ -154,34 +157,49 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
+  const clearLocalSession = () => {
+    setToken(null);
+    setUserInfo(null);
+    setSessionHint(false);
+  };
+
   const login = async (username: string, password: string): Promise<void> => {
     const { login: loginApi, getUserInfo } = await import('@/api/auth');
 
     if (token.value || user.value) {
-      logout();
+      clearLocalSession();
     }
 
     const loginResult = await loginApi({ username, password });
-    setToken(loginResult.data.token, loginResult.data.refreshToken, loginResult.data.expiresIn);
+    setToken(loginResult.data.token, loginResult.data.expiresIn);
+    setSessionHint(true);
 
     const userInfo = await getUserInfo();
     setUserInfo(userInfo.data);
   };
 
-  const logout = () => {
-    setToken(null, null);
-    setUserInfo(null);
+  const logout = async (): Promise<void> => {
+    clearLocalSession();
+
+    try {
+      const { logout: logoutApi } = await import('@/api/auth');
+      await logoutApi();
+    } catch (error) {
+      // Local logout remains authoritative when the backend is unavailable.
+      console.warn('Failed to revoke the refresh session:', error);
+    }
   };
 
   const refreshToken = async (): Promise<string> => {
     const { refreshToken: refreshTokenApi } = await import('@/api/auth');
 
-    if (!refreshTokenValue.value) {
-      throw new Error('No refresh token available');
+    if (!canAttemptRefresh.value) {
+      throw new Error('No refresh session available');
     }
 
-    const result = await refreshTokenApi(refreshTokenValue.value);
-    setToken(result.data.token, result.data.refreshToken, result.data.expiresIn);
+    const result = await refreshTokenApi();
+    setToken(result.data.token, result.data.expiresIn);
+    setSessionHint(true);
     return result.data.token;
   };
 
@@ -213,7 +231,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const initAuth = () => {
     if (isTokenExpired.value && token.value) {
-      logout();
+      clearLocalSession();
       return;
     }
 
@@ -241,17 +259,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     token,
-    refreshTokenValue,
+    hasSessionHint,
     tokenExpiresAt,
     user,
     roles,
     permissions,
     isTokenExpired,
     isLoggedIn,
+    canAttemptRefresh,
     userRoles,
     userPermissions,
     setToken,
     setUserInfo,
+    clearLocalSession,
     login,
     logout,
     refreshToken,

@@ -27,12 +27,9 @@ export function getUserInfo(): Promise<ApiResponse<User>> {
 /**
  * Refresh token
  */
-export function refreshToken(
-  token: string,
-): Promise<ApiResponse<LoginResult>> {
-  return request.post(
-    '/auth/refresh',
-    { refreshToken: token },
-    { skipAuth: true, skipAuthRefresh: true },
-  );
+export function refreshToken(): Promise<ApiResponse<LoginResult>> {
+  return request.post('/auth/refresh', undefined, {
+    skipAuth: true,
+    skipAuthRefresh: true,
+  });
 }

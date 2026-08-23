@@ -49,9 +49,10 @@ const handleMenuClick = ({ key }: { key: string }) => {
         content: $t('layout.logoutConfirm'),
         okText: $t('common.confirm'),
         cancelText: $t('common.cancel'),
-        onOk: () => {
+        onOk: async () => {
+          await authStore.logout();
           clearSessionState(currentRouter);
-          currentRouter.push('/login');
+          await currentRouter.push('/login');
         },
       });
       break;
