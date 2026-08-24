@@ -82,7 +82,7 @@ const formItems = computed<ProFormItem[]>(() => [
     required: true,
     rules: [commonRules.length(3, 20), commonRules.username()],
     props: {
-      placeholder: $t('login.usernamePlaceholder'),
+      placeholder: $t('user.username'),
     },
   },
   {
@@ -94,7 +94,7 @@ const formItems = computed<ProFormItem[]>(() => [
   },
   {
     name: 'password',
-    label: $t('login.password'),
+    label: $t('profile.newPassword'),
     type: 'password',
     required: true,
     rules: [commonRules.password()],
@@ -137,14 +137,14 @@ const formItems = computed<ProFormItem[]>(() => [
     ],
   },
   {
-    name: 'role',
-    label: $t('user.role'),
+    name: 'department',
+    label: $t('user.department'),
     type: 'select',
     required: true,
     options: [
-      { label: $t('exampleForm.roles.admin'), value: 'admin' },
-      { label: $t('exampleForm.roles.user'), value: 'user' },
-      { label: $t('exampleForm.roles.guest'), value: 'guest' },
+      { label: $t('exampleForm.departments.engineering'), value: 'engineering' },
+      { label: $t('exampleForm.departments.operations'), value: 'operations' },
+      { label: $t('exampleForm.departments.support'), value: 'support' },
     ],
   },
   {

@@ -245,7 +245,6 @@ import IconView from '@/components/Icon/index.vue';
 import { basicRoutes } from '@/router/routes';
 import { routesToMenuTree } from '@/router/utils';
 import { useMenuPreferencesStore } from '@/stores/menuPreferences';
-import { usePermissionStore } from '@/stores/permission';
 import { resolveLocaleText } from '@/utils/i18n';
 import {
   normalizeMenuHistoryItems,
@@ -265,7 +264,6 @@ interface SearchItem {
 
 const router = useRouter();
 const { locale, t } = useI18n();
-const permissionStore = usePermissionStore();
 const menuPreferencesStore = useMenuPreferencesStore();
 const visible = defineModel<boolean>('open', { default: false });
 const searchQuery = ref('');
@@ -283,16 +281,11 @@ let searchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 let previouslyFocusedElement: HTMLElement | null = null;
 let previousBodyOverflow = '';
 
-const fallbackMenus = computed<MenuItem[]>(() => {
-  const basicChildren = basicRoutes.flatMap((route) => route.children || []);
-  return routesToMenuTree(basicChildren);
-});
-
-const menuSource = computed<MenuItem[]>(() => {
-  if (permissionStore.menuTree.length > 0) {
-    return permissionStore.menuTree;
-  }
-  return fallbackMenus.value;
+const menuItems = computed<MenuItem[]>(() => {
+  const menuRoutes = basicRoutes.flatMap((route) =>
+    route.name === 'Root' ? route.children || [] : [route],
+  );
+  return routesToMenuTree(menuRoutes);
 });
 
 const searchSource = computed<SearchItem[]>(() => {
@@ -320,7 +313,7 @@ const searchSource = computed<SearchItem[]>(() => {
     });
   };
 
-  traverse(menuSource.value);
+  traverse(menuItems.value);
 
   const uniqueByPath = new Map<string, SearchItem>();
   items.forEach((item) => {

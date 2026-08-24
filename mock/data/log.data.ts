@@ -1,17 +1,12 @@
-import type { OperationLog, LoginLog } from '@/types/log';
+import type { OperationLog } from '@/types/log';
 
 const modules = [
   'userManagement',
-  'roleManagement',
-  'menuManagement',
   'dictionary',
-  'systemLogin',
   'profile',
   'dashboard',
 ];
 const actions: OperationLog['action'][] = [
-  'login',
-  'logout',
   'create',
   'update',
   'delete',
@@ -31,29 +26,23 @@ const ips = [
 const usernames = ['admin', 'user', 'zhangsan', 'lisi', 'wangwu'];
 
 const actionDescMap: Record<string, string[]> = {
-  login: ['System login'],
-  logout: ['System logout'],
-  create: ['Create user', 'Create role', 'Create menu', 'Create dict type', 'Create dict data'],
+  create: ['Create user', 'Create dict type', 'Create dict data'],
   update: [
     'Update user info',
-    'Update role permissions',
-    'Update menu config',
     'Update dict data',
     'Update profile',
     'Reset user password',
   ],
-  delete: ['Delete user', 'Delete role', 'Delete menu', 'Delete dict data'],
-  export: ['Export user list', 'Export role list', 'Export operation log'],
+  delete: ['Delete user', 'Delete dict data'],
+  export: ['Export user list', 'Export operation log'],
   other: ['View dashboard', 'Refresh cache'],
 };
 
 const actionUrlMap: Record<string, string[]> = {
-  login: ['/api/auth/login'],
-  logout: ['/api/auth/logout'],
-  create: ['/api/user', '/api/role', '/api/permission', '/api/dict/type', '/api/dict/data'],
-  update: ['/api/user/1', '/api/role/1', '/api/permission/1', '/api/dict/data/1', '/api/profile'],
-  delete: ['/api/user/1', '/api/role/1', '/api/permission/1', '/api/dict/data/1'],
-  export: ['/api/user/export', '/api/role/export', '/api/log/export'],
+  create: ['/api/user', '/api/dict/type', '/api/dict/data'],
+  update: ['/api/user/1', '/api/dict/data/1', '/api/profile'],
+  delete: ['/api/user/1', '/api/dict/data/1'],
+  export: ['/api/user/export', '/api/log/export'],
   other: ['/api/dashboard/stats', '/api/cache/refresh'],
 };
 
@@ -95,34 +84,9 @@ for (let i = 1; i <= 80; i++) {
     browser: randomItem(browsers),
     os: randomItem(osList),
     status: isFail ? 'fail' : 'success',
-    errorMsg: isFail ? 'Insufficient permissions' : undefined,
+    errorMsg: isFail ? 'Operation failed' : undefined,
     duration: Math.floor(Math.random() * 500) + 10,
     createTime: generateTime(Math.floor(i / 6)),
   });
 }
 operationLogs.sort((a, b) => b.createTime.localeCompare(a.createTime));
-
-export const loginLogs: LoginLog[] = [];
-const loginMessages = [
-  'Login successful',
-  'Login successful',
-  'Login successful',
-  'Wrong password',
-  'Account locked',
-  'Captcha error',
-];
-for (let i = 1; i <= 50; i++) {
-  const msg = randomItem(loginMessages);
-  const isSuccess = msg === 'Login successful';
-  loginLogs.push({
-    id: String(i),
-    username: randomItem(usernames),
-    ip: randomItem(ips),
-    browser: randomItem(browsers),
-    os: randomItem(osList),
-    status: isSuccess ? 'success' : 'fail',
-    message: msg,
-    createTime: generateTime(Math.floor(i / 4)),
-  });
-}
-loginLogs.sort((a, b) => b.createTime.localeCompare(a.createTime));

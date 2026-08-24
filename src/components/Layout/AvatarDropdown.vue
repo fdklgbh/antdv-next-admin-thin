@@ -18,19 +18,15 @@ import {
   UserOutlined,
   GithubOutlined,
   BookOutlined,
-  LogoutOutlined,
 } from '@antdv-next/icons';
-import { App } from 'antdv-next';
 import { computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
-import { clearSessionState } from '@/utils/session';
 
 const currentRouter = useRouter();
 const authStore = useAuthStore();
-const { modal } = App.useApp();
 
 const handleMenuClick = ({ key }: { key: string }) => {
   switch (key) {
@@ -42,19 +38,6 @@ const handleMenuClick = ({ key }: { key: string }) => {
       break;
     case 'docs':
       window.open('https://antdv-next-admin-doc.yelog.org', '_blank');
-      break;
-    case 'logout':
-      modal.confirm({
-        title: $t('layout.logout'),
-        content: $t('layout.logoutConfirm'),
-        okText: $t('common.confirm'),
-        cancelText: $t('common.cancel'),
-        onOk: async () => {
-          await authStore.logout();
-          clearSessionState(currentRouter);
-          await currentRouter.push('/login');
-        },
-      });
       break;
   }
 };
@@ -75,14 +58,6 @@ const menuProps = computed(() => ({
       key: 'docs',
       label: $t('layout.documentation'),
       icon: h(BookOutlined),
-    },
-    {
-      type: 'divider',
-    },
-    {
-      key: 'logout',
-      label: $t('layout.logout'),
-      icon: h(LogoutOutlined),
     },
   ],
   onClick: handleMenuClick,

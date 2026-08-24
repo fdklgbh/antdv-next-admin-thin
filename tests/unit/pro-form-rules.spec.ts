@@ -56,13 +56,13 @@ describe('ProForm rule helpers', () => {
   });
 
   it('keeps a custom required rule when the shorthand is not enabled', () => {
-    const customRequiredRule = { required: true, message: '请选择角色' };
+    const customRequiredRule = { required: true, message: '请选择分组' };
 
     const rules = buildProFormRules(
       [
         {
-          name: 'roleIds',
-          label: '角色',
+          name: 'groupIds',
+          label: '分组',
           type: 'select',
           rules: [customRequiredRule],
         },
@@ -70,6 +70,6 @@ describe('ProForm rule helpers', () => {
       requiredMessage,
     );
 
-    expect(rules.roleIds).toEqual([customRequiredRule]);
+    expect(rules.groupIds).toEqual([customRequiredRule]);
   });
 });

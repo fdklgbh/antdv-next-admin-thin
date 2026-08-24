@@ -1,8 +1,8 @@
-import type { Permission, Role, User } from "@/types/auth";
+import type { User } from "@/types/auth";
 import type { SysConfig } from "@/types/config";
 import type { DictData } from "@/types/dict";
 import type { SysFile } from "@/types/file";
-import type { LoginLog, OperationLog } from "@/types/log";
+import type { OperationLog } from "@/types/log";
 import type { AxiosInstance } from "axios";
 
 import AxiosMockAdapter from "axios-mock-adapter";
@@ -19,9 +19,7 @@ import {
 import { sysConfigs } from "../../mock/data/config.data";
 import { dictTypes, dictData } from "../../mock/data/dict.data";
 import { sysFiles } from "../../mock/data/file.data";
-import { operationLogs, loginLogs } from "../../mock/data/log.data";
-import { mockPermissions } from "../../mock/data/permissions.data";
-import { mockRoles } from "../../mock/data/roles.data";
+import { operationLogs } from "../../mock/data/log.data";
 
 const SUCCESS_MESSAGE = "success";
 const DEMO_CREATED_AT = "2023-01-01T00:00:00.000Z";
@@ -40,28 +38,6 @@ const adminUser: User = {
   status: "active",
   createdAt: DEMO_CREATED_AT,
   updatedAt: DEMO_UPDATED_AT,
-  roles: [
-    {
-      id: "1",
-      name: "Administrator",
-      code: "admin",
-      description: "System Administrator",
-      permissions: [],
-      createdAt: DEMO_CREATED_AT,
-      updatedAt: DEMO_UPDATED_AT,
-    },
-  ],
-  permissions: [
-    {
-      id: "1",
-      name: "All Permissions",
-      code: "*",
-      description: "Has all permissions",
-      resource: "*",
-      action: "*",
-      type: "api",
-    },
-  ],
 };
 
 const regularUser: User = {
@@ -77,28 +53,6 @@ const regularUser: User = {
   status: "active",
   createdAt: DEMO_CREATED_AT,
   updatedAt: DEMO_UPDATED_AT,
-  roles: [
-    {
-      id: "2",
-      name: "User",
-      code: "user",
-      description: "Regular User",
-      permissions: [],
-      createdAt: DEMO_CREATED_AT,
-      updatedAt: DEMO_UPDATED_AT,
-    },
-  ],
-  permissions: [
-    {
-      id: "2",
-      name: "View Dashboard",
-      code: "dashboard.view",
-      description: "Can view dashboard",
-      resource: "dashboard",
-      action: "view",
-      type: "menu",
-    },
-  ],
 };
 
 const demoUsers: User[] = [
@@ -117,8 +71,6 @@ const demoUsers: User[] = [
     status: "active",
     createdAt: DEMO_CREATED_AT,
     updatedAt: DEMO_UPDATED_AT,
-    roles: [mockRoles[1]],
-    permissions: [],
   },
   {
     id: "4",
@@ -133,8 +85,6 @@ const demoUsers: User[] = [
     status: "inactive",
     createdAt: DEMO_CREATED_AT,
     updatedAt: DEMO_UPDATED_AT,
-    roles: [mockRoles[3]],
-    permissions: [],
   },
 ];
 
@@ -145,32 +95,6 @@ function successResponse<T>(data: T) {
     success: true,
     data,
   };
-}
-
-function createMockToken(userId: string): string {
-  return `mock-token-${userId}-${Date.now()}`;
-}
-
-function createMockRefreshToken(userId: string): string {
-  return `mock-refresh-token-${userId}-${Date.now()}`;
-}
-
-function resolveMockUserIdFromToken(token?: string): string | null {
-  if (!token) return null;
-  const parts = token.split("-");
-  const tokenIndex = parts.indexOf("token");
-  const refreshIndex = parts.indexOf("refresh");
-  const userIdIndex = tokenIndex !== -1 ? tokenIndex + 1 : refreshIndex + 2;
-  const userId = parts[userIdIndex];
-  return userId === "1" || userId === "2" ? userId : null;
-}
-
-function getAuthorizationToken(headers: unknown): string | undefined {
-  if (!headers || typeof headers !== "object") return undefined;
-
-  const record = headers as Record<string, string | undefined>;
-  const value = record.Authorization || record.authorization;
-  return value?.replace("Bearer ", "");
 }
 
 function parseJsonBody<T>(data: unknown, fallback: T): T {
@@ -322,43 +246,6 @@ function getOperationLogList(url: string | undefined) {
   };
 }
 
-function getLoginLogList(url: string | undefined) {
-  const username = getQueryParam(url, "username");
-  const ip = getQueryParam(url, "ip");
-  const status = getQueryParam(url, "status");
-  const startTime = getQueryParam(url, "startTime");
-  const endTime = getQueryParam(url, "endTime");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
-
-  let filtered = cloneData<LoginLog[]>(loginLogs);
-
-  if (username) filtered = filtered.filter((item) => item.username.includes(username));
-  if (ip) filtered = filtered.filter((item) => item.ip.includes(ip));
-  if (status) filtered = filtered.filter((item) => item.status === status);
-  if (startTime) filtered = filtered.filter((item) => item.createTime >= startTime);
-  if (endTime) filtered = filtered.filter((item) => item.createTime <= endTime);
-
-  const start = (page - 1) * pageSize;
-
-  return {
-    list: filtered.slice(start, start + pageSize),
-    total: filtered.length,
-    current: page,
-    pageSize,
-  };
-}
-
-function findPermissionById(list: Permission[], id: string): Permission | null {
-  for (const permission of list) {
-    if (permission.id === id) return permission;
-    const child = permission.children ? findPermissionById(permission.children, id) : null;
-    if (child) return child;
-  }
-
-  return null;
-}
-
 function getPaginatedUsers(url: string | undefined) {
   const username = getQueryParam(url, "username").toLowerCase();
   const email = getQueryParam(url, "email").toLowerCase();
@@ -381,31 +268,6 @@ function getPaginatedUsers(url: string | undefined) {
   if (gender) {
     const genderValues = gender.split(",").map((item) => item.trim()).filter(Boolean);
     filtered = filtered.filter((item) => genderValues.includes(String(item.gender)));
-  }
-
-  const start = (current - 1) * pageSize;
-
-  return {
-    list: filtered.slice(start, start + pageSize),
-    total: filtered.length,
-    current,
-    pageSize,
-  };
-}
-
-function getPaginatedRoles(url: string | undefined) {
-  const name = getQueryParam(url, "name").toLowerCase();
-  const code = getQueryParam(url, "code").toLowerCase();
-  const current = Number(getQueryParam(url, "current") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
-
-  let filtered = cloneData<Role[]>(mockRoles);
-
-  if (name) {
-    filtered = filtered.filter((item) => item.name.toLowerCase().includes(name));
-  }
-  if (code) {
-    filtered = filtered.filter((item) => item.code.toLowerCase().includes(code));
   }
 
   const start = (current - 1) * pageSize;
@@ -443,91 +305,12 @@ function fallbackDemoResponse(config: { data?: unknown; method?: string; url?: s
 
 export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   const mock = new AxiosMockAdapter(service, { delayResponse: 250 });
-  let refreshTokenValue: string | null = null;
 
   mock.onGet(/\/api\/__mock_health$|\/__mock_health$/).reply(200, {
     code: 200,
     message: SUCCESS_MESSAGE,
     success: true,
     data: { enabled: true },
-  });
-
-  mock.onPost(/\/api\/auth\/login$|\/auth\/login$/).reply((config) => {
-    const body = parseJsonBody<{ password?: string; username?: string }>(
-      config.data,
-      {},
-    );
-    const user =
-      body.username === "admin" && body.password === "123456"
-        ? adminUser
-        : body.username === "user" && body.password === "123456"
-          ? regularUser
-          : null;
-
-    if (!user) {
-      return [
-        200,
-        {
-          code: 401,
-          message: "Invalid username or password",
-          success: false,
-          data: null,
-        },
-      ];
-    }
-
-    refreshTokenValue = createMockRefreshToken(user.id);
-
-    return [
-      200,
-      successResponse({
-        token: createMockToken(user.id),
-        expiresIn: 7200,
-      }),
-    ];
-  });
-
-  mock.onGet(/\/api\/auth\/info$|\/auth\/info$/).reply((config) => {
-    const token = getAuthorizationToken(config.headers);
-    const userId = resolveMockUserIdFromToken(token);
-    if (!userId) {
-      return [
-        200,
-        { code: 401, message: "Unauthorized", success: false, data: null },
-      ];
-    }
-
-    return [200, successResponse(userId === "1" ? adminUser : regularUser)];
-  });
-
-  mock.onPost(/\/api\/auth\/refresh$|\/auth\/refresh$/).reply(() => {
-    const userId = resolveMockUserIdFromToken(refreshTokenValue || undefined);
-    if (!userId) {
-      return [
-        200,
-        {
-          code: 401,
-          message: "Invalid refresh token",
-          success: false,
-          data: null,
-        },
-      ];
-    }
-
-    refreshTokenValue = createMockRefreshToken(userId);
-
-    return [
-      200,
-      successResponse({
-        token: createMockToken(userId),
-        expiresIn: 7200,
-      }),
-    ];
-  });
-
-  mock.onPost(/\/api\/auth\/logout$|\/auth\/logout$/).reply(() => {
-    refreshTokenValue = null;
-    return [200, successResponse(null)];
   });
 
   mock
@@ -586,36 +369,6 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .reply(200, successResponse(mockChartData));
 
   mock
-    .onGet(/\/api\/permissions$|\/permissions$/)
-    .reply(200, successResponse(cloneData<Permission[]>(mockPermissions)));
-  mock
-    .onGet(/\/api\/permissions\/tree$|\/permissions\/tree$/)
-    .reply(200, successResponse(cloneData<Permission[]>(mockPermissions)));
-  mock
-    .onGet(/\/api\/permissions\/user$|\/permissions\/user$/)
-    .reply(200, successResponse(cloneData<Permission[]>(adminUser.permissions)));
-  mock.onGet(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
-    const id = config.url?.split("/permissions/")[1]?.split("?")[0] || "";
-    const item = findPermissionById(mockPermissions, id);
-
-    if (!item) {
-      return [200, { code: 404, message: "Permission not found", success: false, data: null }];
-    }
-
-    return [200, successResponse(cloneData(item))];
-  });
-  mock.onPost(/\/api\/permissions$|\/permissions$/).reply((config) => {
-    const body = parseJsonBody(config.data, {});
-    return [200, successResponse({ id: String(Date.now()), ...body })];
-  });
-  mock.onPut(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
-    const body = parseJsonBody(config.data, {});
-    const id = config.url?.split("/permissions/")[1]?.split("?")[0] || "";
-    return [200, successResponse({ id, ...body })];
-  });
-  mock.onDelete(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply(200, successResponse(null));
-
-  mock
     .onGet(/\/api\/file\/list(?:\?.*)?$|\/file\/list(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getFileList(config.url))]);
   mock.onDelete(/\/api\/file\/[^/]+$|\/file\/[^/]+$/).reply(200, successResponse(null));
@@ -623,11 +376,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   mock
     .onGet(/\/api\/log\/operation\/list(?:\?.*)?$|\/log\/operation\/list(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getOperationLogList(config.url))]);
-  mock
-    .onGet(/\/api\/log\/login\/list(?:\?.*)?$|\/log\/login\/list(?:\?.*)?$/)
-    .reply((config) => [200, successResponse(getLoginLogList(config.url))]);
   mock.onDelete(/\/api\/log\/operation\/clear$|\/log\/operation\/clear$/).reply(200, successResponse(null));
-  mock.onDelete(/\/api\/log\/login\/clear$|\/log\/login\/clear$/).reply(200, successResponse(null));
 
   mock
     .onGet(/\/api\/users(?:\?.*)?$|\/users(?:\?.*)?$/)
@@ -671,46 +420,6 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock.onDelete(/\/api\/users\/[^/]+$|\/users\/[^/]+$/).reply(200, successResponse(null));
   mock.onPost(/\/api\/users\/change-password$|\/users\/change-password$/).reply(200, successResponse(null));
-
-  mock
-    .onGet(/\/api\/roles(?:\?.*)?$|\/roles(?:\?.*)?$/)
-    .reply((config) => [200, successResponse(getPaginatedRoles(config.url))]);
-
-  mock.onGet(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
-    const id = config.url?.split("/roles/")[1]?.split("?")[0] || "";
-    const item = mockRoles.find((role) => role.id === id);
-
-    if (!item) {
-      return [200, { code: 404, message: "Role not found", success: false, data: null }];
-    }
-
-    return [200, successResponse(cloneData(item))];
-  });
-
-  mock.onPost(/\/api\/roles$|\/roles$/).reply((config) => {
-    const body = parseJsonBody<Partial<Role>>(config.data, {});
-    return [
-      200,
-      successResponse({
-        id: String(Date.now()),
-        name: body.name || "Custom Role",
-        code: body.code || `role_${Date.now()}`,
-        description: body.description || "",
-        permissions: body.permissions || [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }),
-    ];
-  });
-
-  mock.onPut(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
-    const body = parseJsonBody<Partial<Role>>(config.data, {});
-    const id = config.url?.split("/roles/")[1]?.split("?")[0] || "";
-    const item = mockRoles.find((role) => role.id === id) || mockRoles[0];
-    return [200, successResponse({ ...item, ...body, updatedAt: new Date().toISOString() })];
-  });
-
-  mock.onDelete(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply(200, successResponse(null));
 
   mock
     .onGet(/\/api\/config\/list(?:\?.*)?$|\/config\/list(?:\?.*)?$/)

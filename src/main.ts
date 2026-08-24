@@ -3,9 +3,9 @@ import { createApp } from 'vue';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
-import { setupDirectives } from './directives';
 import i18n from './locales';
 import router from './router';
+import { useAuthStore } from './stores/auth';
 import { useMenuPreferencesStore } from './stores/menuPreferences';
 import { service } from './utils/request';
 // Import global styles
@@ -44,14 +44,12 @@ async function bootstrap() {
 
   // Register plugins
   app.use(pinia);
+  useAuthStore(pinia).initAuth();
   // Capture and migrate legacy tab favorites before router guards can rewrite tab state.
   useMenuPreferencesStore(pinia);
   app.use(router);
   app.use(i18n);
   registerDefaultComponentProps(app);
-
-  // Register custom directives
-  setupDirectives(app);
 
   app.mount('#app');
 }

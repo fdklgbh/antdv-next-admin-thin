@@ -168,7 +168,7 @@ import ProTable from '@/components/Pro/ProTable/index.vue';
 import { $t } from '@/locales';
 
 type Relation = 'AND' | 'OR';
-type FieldKey = 'username' | 'status' | 'role' | 'score' | 'createdAt';
+type FieldKey = 'username' | 'status' | 'department' | 'score' | 'createdAt';
 type FieldType = 'string' | 'select' | 'number' | 'date';
 type Operator =
   | 'contains'
@@ -202,7 +202,7 @@ interface DemoRow {
   id: string;
   username: string;
   status: 'active' | 'inactive' | 'pending';
-  role: 'admin' | 'operator' | 'auditor';
+  department: 'engineering' | 'operations' | 'support';
   score: number;
   createdAt: string;
 }
@@ -222,12 +222,21 @@ const FIELD_CONFIG: Record<FieldKey, FieldConfig> = {
       { label: $t('examples.scaffold.advancedFilter.statusPending'), value: 'pending' },
     ],
   },
-  role: {
+  department: {
     type: 'select',
     options: [
-      { label: $t('examples.scaffold.advancedFilter.adminRole'), value: 'admin' },
-      { label: $t('examples.scaffold.advancedFilter.operatorRole'), value: 'operator' },
-      { label: $t('examples.scaffold.advancedFilter.auditorRole'), value: 'auditor' },
+      {
+        label: $t('examples.scaffold.advancedFilter.departmentEngineering'),
+        value: 'engineering',
+      },
+      {
+        label: $t('examples.scaffold.advancedFilter.departmentOperations'),
+        value: 'operations',
+      },
+      {
+        label: $t('examples.scaffold.advancedFilter.departmentSupport'),
+        value: 'support',
+      },
     ],
   },
   score: { type: 'number' },
@@ -254,7 +263,7 @@ const allRows = ref<DemoRow[]>(createRows());
 const fieldOptions = computed(() => [
   { label: $t('user.username'), value: 'username' },
   { label: $t('common.status'), value: 'status' },
-  { label: $t('menu.role'), value: 'role' },
+  { label: $t('user.department'), value: 'department' },
   { label: $t('examples.scaffold.advancedFilter.score'), value: 'score' },
   { label: $t('common.createTime'), value: 'createdAt' },
 ]);
@@ -263,7 +272,7 @@ const columns = computed<ProTableColumn[]>(() => [
   { title: 'ID', dataIndex: 'id', width: 120 },
   { title: $t('user.username'), dataIndex: 'username', width: 180 },
   { title: $t('common.status'), dataIndex: 'status', width: 120 },
-  { title: $t('menu.role'), dataIndex: 'role', width: 120 },
+  { title: $t('user.department'), dataIndex: 'department', width: 140 },
   { title: $t('examples.scaffold.advancedFilter.score'), dataIndex: 'score', width: 120 },
   { title: $t('common.createTime'), dataIndex: 'createdAt', width: 180 },
 ]);
@@ -286,7 +295,7 @@ const previewRows = computed(() => filteredRows.value.slice(0, 30));
 
 function createRows() {
   const statusList: DemoRow['status'][] = ['active', 'inactive', 'pending'];
-  const roleList: DemoRow['role'][] = ['admin', 'operator', 'auditor'];
+  const departmentList: DemoRow['department'][] = ['engineering', 'operations', 'support'];
 
   return Array.from({ length: 180 }, (_, index) => {
     const i = index + 1;
@@ -297,7 +306,7 @@ function createRows() {
       id: `U${String(i).padStart(4, '0')}`,
       username: `user_${String(i).padStart(4, '0')}`,
       status: statusList[i % statusList.length],
-      role: roleList[i % roleList.length],
+      department: departmentList[i % departmentList.length],
       score: 50 + (i % 50),
       createdAt: `2025-${month}-${day}`,
     };

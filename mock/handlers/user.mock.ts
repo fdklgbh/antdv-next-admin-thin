@@ -128,8 +128,6 @@ export default defineMock([
         status: userData.status || "active",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        roles: userData.roles || [],
-        permissions: userData.permissions || [],
       };
 
       mockUsers.unshift(newUser);

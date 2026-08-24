@@ -1,70 +1,44 @@
 <template>
   <div class="page-container">
     <div class="log-container">
-      <a-tabs v-model:activeKey="activeTab" @change="handleTabChange">
-        <a-tab-pane key="operation" :tab="t('log.operationLog')">
-          <ProTable
-            ref="operationTableRef"
-            :key="'operation-' + operationRefreshKey"
-            :columns="operationColumns"
-            :request="loadOperationLogs"
-            :toolbar="{ title: t('log.operationLog') }"
-            :search="{ formItems: operationSearchFormItems }"
-          >
-            <template #toolbar-actions>
-              <a-button danger @click="handleClearOperationLog">
-                <DeleteOutlined /> {{ t("log.clearLog") }}
-              </a-button>
-            </template>
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'action'">
-                <a-tag :color="actionColorMap[record.action] || 'default'">
-                  {{ t(`log.actionTypes.${record.action}`) || record.action }}
-                </a-tag>
-              </template>
-              <template v-if="column.key === 'status'">
-                <ProStatus :value="record.status" :status-map="logStatusMap" />
-              </template>
-              <template v-if="column.key === 'duration'">
-                <span
-                  :style="{
-                    color:
-                      record.duration > 300
-                        ? '#ff4d4f'
-                        : record.duration > 100
-                          ? '#faad14'
-                          : '#52c41a',
-                  }"
-                >
-                  {{ record.duration }}ms
-                </span>
-              </template>
-            </template>
-          </ProTable>
-        </a-tab-pane>
-
-        <a-tab-pane key="login" :tab="t('log.loginLog')">
-          <ProTable
-            ref="loginTableRef"
-            :key="'login-' + loginRefreshKey"
-            :columns="loginColumns"
-            :request="loadLoginLogs"
-            :toolbar="{ title: t('log.loginLog') }"
-            :search="{ formItems: loginSearchFormItems }"
-          >
-            <template #toolbar-actions>
-              <a-button danger @click="handleClearLoginLog">
-                <DeleteOutlined /> {{ t("log.clearLog") }}
-              </a-button>
-            </template>
-            <template #bodyCell="{ column, record }">
-              <template v-if="column.key === 'status'">
-                <ProStatus :value="record.status" :status-map="logStatusMap" />
-              </template>
-            </template>
-          </ProTable>
-        </a-tab-pane>
-      </a-tabs>
+      <ProTable
+        ref="operationTableRef"
+        :key="'operation-' + operationRefreshKey"
+        :columns="operationColumns"
+        :request="loadOperationLogs"
+        :toolbar="{ title: t('log.operationLog') }"
+        :search="{ formItems: operationSearchFormItems }"
+      >
+        <template #toolbar-actions>
+          <a-button danger @click="handleClearOperationLog">
+            <DeleteOutlined /> {{ t("log.clearLog") }}
+          </a-button>
+        </template>
+        <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'action'">
+            <a-tag :color="actionColorMap[record.action] || 'default'">
+              {{ t(`log.actionTypes.${record.action}`) || record.action }}
+            </a-tag>
+          </template>
+          <template v-if="column.key === 'status'">
+            <ProStatus :value="record.status" :status-map="logStatusMap" />
+          </template>
+          <template v-if="column.key === 'duration'">
+            <span
+              :style="{
+                color:
+                  record.duration > 300
+                    ? '#ff4d4f'
+                    : record.duration > 100
+                      ? '#faad14'
+                      : '#52c41a',
+              }"
+            >
+              {{ record.duration }}ms
+            </span>
+          </template>
+        </template>
+      </ProTable>
     </div>
   </div>
 </template>
@@ -79,9 +53,7 @@ import { useI18n } from "vue-i18n";
 
 import {
   getOperationLogList,
-  getLoginLogList,
   clearOperationLog,
-  clearLoginLog,
 } from "@/api/log";
 import ProStatus from "@/components/Pro/ProStatus/index.vue";
 import ProTable from "@/components/Pro/ProTable/index.vue";
@@ -93,13 +65,9 @@ const logStatusMap = computed<ProStatusMap>(() => ({
   fail: { text: t("log.fail"), color: "#ff4d4f" },
 }));
 
-const activeTab = ref("operation");
 const operationRefreshKey = ref(0);
-const loginRefreshKey = ref(0);
 
 const actionColorMap: Record<string, string> = {
-  login: "blue",
-  logout: "default",
   create: "green",
   update: "orange",
   delete: "red",
@@ -117,10 +85,7 @@ const operationSearchFormItems = computed<ProFormItem[]>(() => [
     type: "select",
     options: [
       { label: t("log.modules.userManagement"), value: "userManagement" },
-      { label: t("log.modules.roleManagement"), value: "roleManagement" },
-      { label: t("log.modules.menuManagement"), value: "menuManagement" },
       { label: t("log.modules.dictionary"), value: "dictionary" },
-      { label: t("log.modules.systemLogin"), value: "systemLogin" },
       { label: t("log.modules.profile"), value: "profile" },
       { label: t("log.modules.dashboard"), value: "dashboard" },
     ],
@@ -130,8 +95,6 @@ const operationSearchFormItems = computed<ProFormItem[]>(() => [
     label: t("log.operationType"),
     type: "select",
     options: [
-      { label: t("log.actionTypes.login"), value: "login" },
-      { label: t("log.actionTypes.logout"), value: "logout" },
       { label: t("log.actionTypes.create"), value: "create" },
       { label: t("log.actionTypes.update"), value: "update" },
       { label: t("log.actionTypes.delete"), value: "delete" },
@@ -207,69 +170,6 @@ const operationColumns = computed<ProTableColumn[]>(() => [
   },
 ]);
 
-// login log search form items
-const loginSearchFormItems = computed<ProFormItem[]>(() => [
-  { name: "username", label: t("log.username"), type: "input" },
-  { name: "ip", label: t("log.ipAddress"), type: "input" },
-  {
-    name: "status",
-    label: t("common.status"),
-    type: "select",
-    options: [
-      { label: t("log.success"), value: "success" },
-      { label: t("log.fail"), value: "fail" },
-    ],
-  },
-]);
-
-// login log columns
-const loginColumns = computed<ProTableColumn[]>(() => [
-  {
-    title: t("log.username"),
-    dataIndex: "username",
-    key: "username",
-    width: 120,
-  },
-  {
-    title: t("log.ipAddress"),
-    dataIndex: "ip",
-    key: "ip",
-    width: 140,
-  },
-  {
-    title: t("log.browser"),
-    dataIndex: "browser",
-    key: "browser",
-    width: 130,
-  },
-  {
-    title: t("log.os"),
-    dataIndex: "os",
-    key: "os",
-    width: 130,
-  },
-  {
-    title: t("common.status"),
-    dataIndex: "status",
-    key: "status",
-    width: 80,
-  },
-  {
-    title: t("log.message"),
-    dataIndex: "message",
-    key: "message",
-    ellipsis: true,
-  },
-  {
-    title: t("log.loginTime"),
-    dataIndex: "createTime",
-    key: "createTime",
-    width: 170,
-  },
-]);
-
-const handleTabChange = () => {};
-
 const loadOperationLogs = async (params: Record<string, unknown>) => {
   try {
     const response = await getOperationLogList({
@@ -293,28 +193,6 @@ const loadOperationLogs = async (params: Record<string, unknown>) => {
   return { data: [], total: 0, success: false };
 };
 
-const loadLoginLogs = async (params: Record<string, unknown>) => {
-  try {
-    const response = await getLoginLogList({
-      username: params.username as string,
-      ip: params.ip as string,
-      status: params.status as string,
-      page: params.current as number,
-      pageSize: params.pageSize as number,
-    });
-    if (response.code === 200) {
-      return {
-        data: response.data.list,
-        total: response.data.total,
-        success: true,
-      };
-    }
-  } catch (error: unknown) {
-    console.error(t("log.loadLoginLogFailed"), (error as Error).message);
-  }
-  return { data: [], total: 0, success: false };
-};
-
 const handleClearOperationLog = () => {
   Modal.confirm({
     title: t("log.confirmClear"),
@@ -334,24 +212,6 @@ const handleClearOperationLog = () => {
   });
 };
 
-const handleClearLoginLog = () => {
-  Modal.confirm({
-    title: t("log.confirmClear"),
-    content: t("log.confirmClearLogin"),
-    okType: "danger",
-    onOk: async () => {
-      try {
-        const response = await clearLoginLog();
-        if (response.code === 200) {
-          message.success(t("log.clearSuccess"));
-          loginRefreshKey.value++;
-        }
-      } catch (_error: unknown) {
-        message.error(t("log.clearFailed"));
-      }
-    },
-  });
-};
 </script>
 
 <style scoped lang="scss">
@@ -364,30 +224,6 @@ const handleClearLoginLog = () => {
   min-height: 0;
   display: flex;
   flex-direction: column;
-
-  :deep(.ant-tabs) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  :deep(.ant-tabs-content-holder) {
-    flex: 1;
-    min-height: 0;
-  }
-
-  :deep(.ant-tabs-content) {
-    height: 100%;
-  }
-
-  :deep(.ant-tabs-tabpane) {
-    height: 100%;
-  }
-
-  :deep(.ant-tabs-nav) {
-    margin-bottom: 8px;
-  }
 
   :deep(.ant-table-thead > tr > th),
   :deep(.ant-table-thead > tr > td) {

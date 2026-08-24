@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import { rebuildDynamicRoutes, resetRouter, setupRouterGuards } from './guards';
+import { setupRouterGuards } from './guards';
 import { staticRoutes, basicRoutes, notFoundRoute } from './routes';
 
 const routes = [...staticRoutes, ...basicRoutes, notFoundRoute];
@@ -18,7 +18,5 @@ const router = createRouter({
 });
 
 setupRouterGuards(router);
-
-export { rebuildDynamicRoutes, resetRouter };
 
 export default router;

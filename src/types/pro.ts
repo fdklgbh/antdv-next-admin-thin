@@ -128,7 +128,6 @@ export interface ProTableAction {
   label: string;
   type?: 'link' | 'button' | 'dropdown';
   icon?: unknown;
-  permission?: string;
   danger?: boolean;
   disabled?: (record: Record<string, unknown>) => boolean;
   hidden?: (record: Record<string, unknown>) => boolean;

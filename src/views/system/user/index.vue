@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Role, User } from '@/types/auth';
+import type { User } from '@/types/auth';
 import type { ProFormItem, ProTableColumn } from '@/types/pro';
 
 import {
@@ -56,9 +56,8 @@ import {
   DownloadOutlined,
 } from '@antdv-next/icons';
 import { message, Modal } from 'antdv-next';
-import { computed, onMounted, ref } from 'vue';
+import { computed, ref } from 'vue';
 
-import { getRoleList } from '@/api/role';
 import { createUser, deleteUser, getUserList, updateUser } from '@/api/user';
 import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
@@ -73,7 +72,6 @@ type UserFormValues = {
   phone: string;
   gender: 'male' | 'female';
   status: boolean;
-  roleIds: string[];
   bio: string;
 };
 
@@ -93,7 +91,6 @@ const {
 } = useCrudFormSession<User, UserFormValues>(createDefaultFormValues);
 const submitting = ref(false);
 const editingUserId = computed(() => editingUser.value?.id ?? null);
-const roleOptions = ref<Role[]>([]);
 
 const toolbarConfig = computed(() => ({
   title: $t('user.title'),
@@ -112,13 +109,6 @@ const genderOptions = computed(() => [
   { label: $t('user.male'), value: 'male' },
   { label: $t('user.female'), value: 'female' },
 ]);
-
-const roleSelectOptions = computed(() => {
-  return roleOptions.value.map((role) => ({
-    label: role.name,
-    value: role.id,
-  }));
-});
 
 const genderValueEnum = computed<Record<string, { text: string; status?: string; color?: string }>>(
   () => ({
@@ -161,11 +151,6 @@ const columns = computed((): ProTableColumn[] => [
     title: $t('user.phone'),
     dataIndex: 'phone',
     width: 150,
-  },
-  {
-    title: $t('user.role'),
-    dataIndex: 'roleNames',
-    width: 220,
   },
   {
     title: $t('user.gender'),
@@ -262,17 +247,6 @@ const formItems = computed<ProFormItem[]>(() => [
     },
   },
   {
-    name: 'roleIds',
-    label: $t('user.role'),
-    type: 'select',
-    options: roleSelectOptions.value,
-    props: {
-      mode: 'multiple',
-      allowClear: true,
-    },
-    rules: [{ type: 'array', required: true, message: $t('user.selectRole') }],
-  },
-  {
     name: 'bio',
     label: $t('user.bio'),
     type: 'textarea',
@@ -293,17 +267,9 @@ function createDefaultFormValues(): UserFormValues {
     phone: '',
     gender: 'male',
     status: true,
-    roleIds: [],
     bio: '',
   };
 }
-
-const formatRoleNames = (roles: Role[]) => {
-  if (!roles || roles.length === 0) {
-    return '-';
-  }
-  return roles.map((role) => role.name).join(', ');
-};
 
 const fetchTableData = async (params: Record<string, unknown>) => {
   const response = await getUserList({
@@ -314,21 +280,11 @@ const fetchTableData = async (params: Record<string, unknown>) => {
     status: params.status as string,
   });
 
-  const list = response.data.list.map((item) => ({
-    ...item,
-    roleNames: formatRoleNames(item.roles),
-  }));
-
   return {
-    data: list,
+    data: response.data.list,
     total: response.data.total,
     success: true,
   };
-};
-
-const fetchRoleOptions = async () => {
-  const response = await getRoleList({ current: 1, pageSize: 200 });
-  roleOptions.value = response.data.list;
 };
 
 const refreshTable = () => {
@@ -352,7 +308,6 @@ const handleEdit = (record: User) => {
     phone: record.phone,
     gender: record.gender || 'male',
     status: statusStr === 'active',
-    roleIds: (record.roles || []).map((role) => role.id),
     bio: record.bio || '',
   };
   openEditForm(record, initialValues);
@@ -377,8 +332,6 @@ const handleDelete = async (record: User) => {
 const handleSubmit = async (rawValues: Record<string, unknown>) => {
   const values = rawValues as UserFormValues;
 
-  const selectedRoles = roleOptions.value.filter((role) => values.roleIds?.includes(role.id));
-
   const payload: Partial<User> = {
     username: values.username?.trim(),
     realName: values.realName?.trim(),
@@ -387,7 +340,6 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
     gender: values.gender,
     status: values.status ? 'active' : 'inactive',
     bio: values.bio?.trim(),
-    roles: selectedRoles,
   };
 
   submitting.value = true;
@@ -406,10 +358,6 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
     submitting.value = false;
   }
 };
-
-onMounted(async () => {
-  await fetchRoleOptions();
-});
 
 // export user data
 const handleExport = async () => {
@@ -431,14 +379,6 @@ const handleExport = async () => {
           title: $t('user.status'),
           dataIndex: 'status',
           render: (v: unknown) => (v === 'active' ? $t('user.active') : $t('user.inactive')),
-        },
-        {
-          title: $t('user.role'),
-          dataIndex: 'roles',
-          render: (_: unknown, r: unknown) =>
-            (((r as Record<string, unknown>).roles as Array<{ name: string }>) || [])
-              .map((role) => role.name)
-              .join(', '),
         },
         { title: $t('common.createTime'), dataIndex: 'createdAt' },
       ],

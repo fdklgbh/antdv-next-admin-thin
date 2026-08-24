@@ -16,9 +16,6 @@
         <a-button danger @click="runScenario('network')">{{
           $t("examples.scaffold.observability.simulateNetwork")
         }}</a-button>
-        <a-button danger @click="runScenario('auth')">{{
-          $t("examples.scaffold.observability.simulateAuth")
-        }}</a-button>
         <a-button danger @click="runScenario('business')">{{
           $t("examples.scaffold.observability.simulateBusiness")
         }}</a-button>
@@ -84,10 +81,6 @@
             <strong>{{ errorStats.network }}</strong>
           </div>
           <div class="stat-item">
-            <span>{{ $t("examples.scaffold.observability.authError") }}</span>
-            <strong>{{ errorStats.auth }}</strong>
-          </div>
-          <div class="stat-item">
             <span>{{
               $t("examples.scaffold.observability.businessError")
             }}</span>
@@ -119,7 +112,7 @@ import { reactive, ref } from "vue";
 
 import { $t, getLocale } from "@/locales";
 
-type Scenario = "success" | "empty" | "network" | "auth" | "business";
+type Scenario = "success" | "empty" | "network" | "business";
 type State = "idle" | "loading" | "success" | "empty" | "error";
 
 type LogLevel = "info" | "error" | "success";
@@ -131,7 +124,6 @@ const lastScenario = ref<Scenario | null>(null);
 
 const errorStats = reactive({
   network: 0,
-  auth: 0,
   business: 0,
 });
 
@@ -173,8 +165,6 @@ const mockFetch = async (scenario: Scenario) => {
       };
     case "network":
       throw new Error($t("examples.scaffold.observability.errorNetwork"));
-    case "auth":
-      throw new Error($t("examples.scaffold.observability.errorAuth"));
     case "business":
       throw new Error($t("examples.scaffold.observability.errorBusiness"));
     default:
@@ -189,9 +179,6 @@ const classifyError = (message: string) => {
   const lower = message.toLowerCase();
   if (lower.includes("network")) {
     return "network" as const;
-  }
-  if (lower.includes("auth") || lower.includes("token")) {
-    return "auth" as const;
   }
   return "business" as const;
 };
@@ -286,7 +273,7 @@ const retryLast = async () => {
 
 .error-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-bottom: 12px;
 }

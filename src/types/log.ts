@@ -8,7 +8,7 @@ export interface OperationLog {
   /** 操作模块 */
   module: string;
   /** 操作类型 */
-  action: 'login' | 'logout' | 'create' | 'update' | 'delete' | 'export' | 'import' | 'other';
+  action: 'create' | 'update' | 'delete' | 'export' | 'import' | 'other';
   /** 操作描述 */
   description: string;
   /** 请求方法 */
@@ -32,39 +32,12 @@ export interface OperationLog {
 }
 
 /**
- * 登录日志
- */
-export interface LoginLog {
-  id: string;
-  username: string;
-  ip: string;
-  browser: string;
-  os: string;
-  status: 'success' | 'fail';
-  message: string;
-  createTime: string;
-}
-
-/**
  * 操作日志查询参数
  */
 export interface OperationLogQueryParams {
   username?: string;
   module?: string;
   action?: string;
-  status?: string;
-  startTime?: string;
-  endTime?: string;
-  page?: number;
-  pageSize?: number;
-}
-
-/**
- * 登录日志查询参数
- */
-export interface LoginLogQueryParams {
-  username?: string;
-  ip?: string;
   status?: string;
   startTime?: string;
   endTime?: string;

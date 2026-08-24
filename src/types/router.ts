@@ -4,9 +4,6 @@ import type { RouteRecordRaw } from 'vue-router';
 export interface RouteMeta {
   title: string;
   icon?: string;
-  requiresAuth?: boolean;
-  requiredPermissions?: string[];
-  requiredRoles?: string[];
   keepAlive?: boolean;
   hidden?: boolean;
   order?: number;
@@ -28,20 +25,7 @@ export interface MenuItem {
   icon?: string;
   path?: string;
   badge?: string | number;
-  requiredPermissions?: string[];
-  requiredRoles?: string[];
   hidden?: boolean;
   children?: MenuItem[];
   meta?: RouteMeta;
-}
-
-// Backend Route Config (from API)
-export interface RouteConfig {
-  id: string;
-  name: string;
-  path: string;
-  component: string;
-  redirect?: string;
-  meta?: RouteMeta;
-  children?: RouteConfig[];
 }

@@ -9,7 +9,6 @@ export { useAuthStore } from './auth';
 export { useLayoutStore } from './layout';
 export { useThemeStore } from './theme';
 export { useTabsStore } from './tabs';
-export { usePermissionStore } from './permission';
 export { useNotificationStore } from './notification';
 export { useMenuPreferencesStore } from './menuPreferences';
 export { useSettingsStore } from './settings';

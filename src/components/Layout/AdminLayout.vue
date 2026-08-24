@@ -198,7 +198,6 @@ import logoImg from '@/assets/images/logo.png';
 import { basicRoutes } from '@/router/routes';
 import { routesToMenuTree } from '@/router/utils';
 import { useLayoutStore } from '@/stores/layout';
-import { usePermissionStore } from '@/stores/permission';
 import { useSettingsStore } from '@/stores/settings';
 import { useTabsStore } from '@/stores/tabs';
 import { useWatermarkStore } from '@/stores/watermark';
@@ -218,7 +217,6 @@ const router = useRouter();
 const layoutStore = useLayoutStore();
 const settingsStore = useSettingsStore();
 const tabsStore = useTabsStore();
-const permissionStore = usePermissionStore();
 const watermarkStore = useWatermarkStore();
 
 const menuAreaRef = ref<HTMLElement>();
@@ -261,16 +259,11 @@ const effectiveAiPanelWidth = computed(() => {
   return Math.max(MIN_AI_PANEL_WIDTH, Math.min(layoutStore.aiPanelWidth, maxAiPanelWidth.value));
 });
 
-const fallbackMenuItems = computed(() => {
-  const basicChildren = basicRoutes.flatMap((item) => item.children || []);
-  return routesToMenuTree(basicChildren);
-});
-
 const menuItems = computed(() => {
-  if (permissionStore.menuTree.length > 0) {
-    return permissionStore.menuTree;
-  }
-  return fallbackMenuItems.value;
+  const menuRoutes = basicRoutes.flatMap((menuRoute) =>
+    menuRoute.name === 'Root' ? menuRoute.children || [] : [menuRoute],
+  );
+  return routesToMenuTree(menuRoutes);
 });
 
 const convertHorizontalMenus = (

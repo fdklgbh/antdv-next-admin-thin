@@ -208,7 +208,7 @@ const userDistributionChartData = computed(() => [
 const activities = computed(() => [
   {
     id: 1,
-    action: $t('dashboard.activities.permissionUpdated'),
+    action: $t('dashboard.activities.systemUpdated'),
     time: $t('dashboard.minutesAgo', { value: 2 }),
     tag: $t('dashboard.activityTags.system'),
     tagColor: 'blue',

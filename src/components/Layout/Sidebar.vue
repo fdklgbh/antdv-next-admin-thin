@@ -43,7 +43,6 @@ import logoImg from '@/assets/images/logo.png';
 import { basicRoutes } from '@/router/routes';
 import { routesToMenuTree } from '@/router/utils';
 import { useLayoutStore } from '@/stores/layout';
-import { usePermissionStore } from '@/stores/permission';
 import { useSettingsStore } from '@/stores/settings';
 import { resolveLocaleText } from '@/utils/i18n';
 import { renderIcon } from '@/utils/icon';
@@ -52,22 +51,16 @@ const route = useRoute();
 const router = useRouter();
 const layoutStore = useLayoutStore();
 const settingsStore = useSettingsStore();
-const permissionStore = usePermissionStore();
 
 const selectedKeys = ref<string[]>([]);
 const openKeys = ref<string[]>([]);
 const cachedOpenKeys = ref<string[]>([]);
 
-const fallbackMenuItems = computed(() => {
-  const basicChildren = basicRoutes.flatMap((r) => r.children || []);
-  return routesToMenuTree(basicChildren);
-});
-
 const menuItems = computed(() => {
-  if (permissionStore.menuTree.length > 0) {
-    return permissionStore.menuTree;
-  }
-  return fallbackMenuItems.value;
+  const menuRoutes = basicRoutes.flatMap((menuRoute) =>
+    menuRoute.name === 'Root' ? menuRoute.children || [] : [menuRoute],
+  );
+  return routesToMenuTree(menuRoutes);
 });
 
 const effectiveSidebarTheme = computed<SidebarTheme>(() => {

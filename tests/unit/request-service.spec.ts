@@ -1,34 +1,9 @@
-import type { AxiosError } from 'axios';
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-
-const { clearSessionState, push, refreshToken } = vi.hoisted(() => ({
-  clearSessionState: vi.fn(),
-  push: vi.fn(),
-  refreshToken: vi.fn(),
-}));
 
 vi.mock('antdv-next', () => ({
   message: {
     error: vi.fn(),
   },
-}));
-
-vi.mock('@/router', () => ({
-  default: {
-    push,
-  },
-}));
-
-vi.mock('@/stores/auth', () => ({
-  useAuthStore: () => ({
-    refreshToken,
-    token: null,
-  }),
-}));
-
-vi.mock('@/utils/session', () => ({
-  clearSessionState,
 }));
 
 import { service } from '@/utils/request';
@@ -49,23 +24,22 @@ describe('request service', () => {
     expect(service.defaults.headers['Content-Type']).toBe('application/json');
   });
 
-  it('clears the complete session when token refresh fails', async () => {
-    const refreshError = new Error('refresh failed');
-    refreshToken.mockRejectedValueOnce(refreshError);
+  it('does not inject authentication headers or redirect on a public request', async () => {
+    let authorizationHeader: unknown;
     service.defaults.adapter = async (config) => {
+      authorizationHeader = config.headers?.Authorization;
       throw {
         config,
-        response: { status: 401 },
-      } as AxiosError;
+        request: {},
+      };
     };
 
     await expect(
-      service.get('/protected', {
+      service.get('/public', {
         skipErrorMessage: true,
       }),
-    ).rejects.toBe(refreshError);
+    ).rejects.toBeDefined();
 
-    expect(clearSessionState).toHaveBeenCalledOnce();
-    expect(push).toHaveBeenCalledWith('/login');
+    expect(authorizationHeader).toBeUndefined();
   });
 });

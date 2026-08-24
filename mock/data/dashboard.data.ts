@@ -62,7 +62,7 @@ const ACTIVITY_USERS = [
 ] as const;
 
 const ACTIVITY_ACTIONS = [
-  'Created a new user', 'Updated role permissions', 'Deleted expired data',
+  'Created a new user', 'Updated system settings', 'Deleted expired data',
   'Exported reports', 'Updated system settings', 'Uploaded a new file',
 ] as const;
 

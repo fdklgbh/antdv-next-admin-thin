@@ -4,9 +4,9 @@ import { resolveLocalizedText } from '@/utils/localizedText';
 
 describe('resolveLocalizedText', () => {
   const localizedName = {
-    'zh-CN': '角色管理',
-    'en-US': 'Role Management',
-    'ja-JP': 'ロール管理',
+    'zh-CN': '团队管理',
+    'en-US': 'Team Management',
+    'ja-JP': 'チーム管理',
   };
 
   it('returns plain strings without modification', () => {
@@ -14,16 +14,16 @@ describe('resolveLocalizedText', () => {
   });
 
   it('selects the current locale and never stringifies the object', () => {
-    const label = `${resolveLocalizedText(localizedName, 'en-US')} (system.role.view)`;
+    const label = `${resolveLocalizedText(localizedName, 'en-US')} (system.team.view)`;
 
-    expect(label).toBe('Role Management (system.role.view)');
+    expect(label).toBe('Team Management (system.team.view)');
     expect(label).not.toContain('[object Object]');
   });
 
   it('falls back to Chinese, English, and then the first available value', () => {
-    expect(resolveLocalizedText(localizedName, 'ko-KR')).toBe('角色管理');
-    expect(resolveLocalizedText({ 'en-US': 'Role Management' }, 'ko-KR')).toBe('Role Management');
-    expect(resolveLocalizedText({ custom: 'Custom role' }, 'ko-KR')).toBe('Custom role');
+    expect(resolveLocalizedText(localizedName, 'ko-KR')).toBe('团队管理');
+    expect(resolveLocalizedText({ 'en-US': 'Team Management' }, 'ko-KR')).toBe('Team Management');
+    expect(resolveLocalizedText({ custom: 'Custom team' }, 'ko-KR')).toBe('Custom team');
   });
 
   it('returns an empty string for empty values', () => {

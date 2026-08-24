@@ -47,22 +47,6 @@
 
             <div class="info-item">
               <span class="info-label">
-                <TeamOutlined class="info-icon" />
-                {{ $t("profile.role") }}
-              </span>
-              <span class="info-value">
-                <a-tag
-                  v-for="role in authStore.user?.roles"
-                  :key="role.id"
-                  color="blue"
-                >
-                  {{ role.name }}
-                </a-tag>
-              </span>
-            </div>
-
-            <div class="info-item">
-              <span class="info-label">
                 <ClockCircleOutlined class="info-icon" />
                 {{ $t("profile.joinDate") }}
               </span>
@@ -153,7 +137,6 @@ import {
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
-  TeamOutlined,
   ClockCircleOutlined,
 } from "@antdv-next/icons";
 import { message } from "antdv-next";

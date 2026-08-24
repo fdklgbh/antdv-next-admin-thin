@@ -21,8 +21,6 @@ export const mockUsers: User[] = Array.from({ length: 50 }, () => ({
   status: faker.helpers.arrayElement(["active", "inactive"] as const),
   createdAt: faker.date.past().toISOString(),
   updatedAt: faker.date.recent().toISOString(),
-  roles: [],
-  permissions: [],
 }));
 
 // Admin user
@@ -39,28 +37,6 @@ export const adminUser: User = {
   status: "active",
   createdAt: "2023-01-01T00:00:00.000Z",
   updatedAt: new Date().toISOString(),
-  roles: [
-    {
-      id: "1",
-      name: "Administrator",
-      code: "admin",
-      description: "System Administrator",
-      permissions: [],
-      createdAt: "2023-01-01T00:00:00.000Z",
-      updatedAt: "2023-01-01T00:00:00.000Z",
-    },
-  ],
-  permissions: [
-    {
-      id: "1",
-      name: "All Permissions",
-      code: "*",
-      description: "Has all permissions",
-      resource: "*",
-      action: "*",
-      type: "api",
-    },
-  ],
 };
 
 // Regular user
@@ -77,28 +53,6 @@ export const regularUser: User = {
   status: "active",
   createdAt: "2023-01-01T00:00:00.000Z",
   updatedAt: new Date().toISOString(),
-  roles: [
-    {
-      id: "2",
-      name: "User",
-      code: "user",
-      description: "Regular User",
-      permissions: [],
-      createdAt: "2023-01-01T00:00:00.000Z",
-      updatedAt: "2023-01-01T00:00:00.000Z",
-    },
-  ],
-  permissions: [
-    {
-      id: "2",
-      name: "View Dashboard",
-      code: "dashboard.view",
-      description: "Can view dashboard",
-      resource: "dashboard",
-      action: "view",
-      type: "menu",
-    },
-  ],
 };
 
 // Add admin and regular users to the beginning of the array

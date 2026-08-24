@@ -63,13 +63,7 @@ describe('splitKeywords', () => {
 
 const e2eCode = `import { test, expect } from '@playwright/test'
 
-test('login and filter users by keyword', async ({ page }) => {
-  await page.goto('/login')
-
-  await page.getByPlaceholder('请输入用户名').fill('admin')
-  await page.getByPlaceholder('请输入密码').fill('123456')
-  await page.getByRole('button', { name: '登录' }).click()
-
+test('open and filter users by keyword', async ({ page }) => {
   await page.goto('/examples/table')
   await page.getByRole('columnheader', { name: '用户名' }).click()
 
