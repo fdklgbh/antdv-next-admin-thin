@@ -17,8 +17,8 @@
 ## 快速开始
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 开发服务默认运行在 `http://localhost:3000`。
@@ -26,21 +26,21 @@ npm run dev
 常用验证命令:
 
 ```bash
-npm run lint             # oxlint src mock
-npm run format:check     # oxfmt --check src mock
-npm run type-check       # vue-tsc --noEmit
-npm run test:unit:run    # Vitest one-shot
-npm run build            # 仅生产构建
-npm run build:demo       # 在线 Demo 构建，启用浏览器端 Mock
-npm run build:check      # 类型检查 + 生产构建
-npm run build:demo:check # 类型检查 + 在线 Demo 构建
-npm run preview          # 预览生产构建
+pnpm run lint             # oxlint src mock
+pnpm run format:check     # oxfmt --check src mock
+pnpm run type-check       # vue-tsc --noEmit
+pnpm run test:unit:run    # Vitest one-shot
+pnpm run build            # 仅生产构建
+pnpm run build:demo       # 在线 Demo 构建，启用浏览器端 Mock
+pnpm run build:check      # 类型检查 + 生产构建
+pnpm run build:demo:check # 类型检查 + 在线 Demo 构建
+pnpm run preview          # 预览生产构建
 ```
 
 发布或提交前建议执行:
 
 ```bash
-npm run lint && npm run format:check && npm run type-check && npm run test:unit:run && npm run build:check
+pnpm run lint && pnpm run format:check && pnpm run type-check && pnpm run test:unit:run && pnpm run build:check
 ```
 
 ## 技术栈
@@ -68,7 +68,7 @@ src/router/guards.ts
   -> 页面标题 / 字典预加载 / Tabs 初始化 / 菜单访问记录
 
 src/stores/auth.ts
-  -> 缓存当前用户资料并初始化本地用户状态
+  -> 提供默认用户资料并初始化本地用户状态
 
 src/utils/request.ts
   -> Axios 封装 / 统一响应错误处理
@@ -88,11 +88,11 @@ src/router/               # 路由表与导航守卫
 src/stores/               # 按领域拆分的 Pinia stores
 src/types/                # API、路由、Pro 组件等共享类型
 src/utils/                # 请求、存储、i18n、图标等工具
-src/views/                # 页面与示例
+src/views/                # Dashboard、系统页面、个人资料、通知、关于、异常页
+src/mock/                 # Demo 模式的浏览器端 Mock
 mock/data/                # Mock 数据源
 mock/handlers/            # Mock 接口处理器
 tests/unit/               # Vitest 单元测试
-tests/e2e/                # Playwright starter，依赖未安装
 ```
 
 ## 功能矩阵
@@ -105,7 +105,7 @@ tests/e2e/                # Playwright starter，依赖未安装
 | 国际化 | 支持 `zh-CN`、`en-US`、`ja-JP`、`ko-KR`，非默认语言按需异步加载 |
 | Mock 数据 | 覆盖用户、字典、配置、文件、操作日志、Dashboard 等模块 |
 | 内容编辑 | TipTap 富文本、Milkdown Markdown、CodeMirror 代码编辑器 |
-| 示例体系 | ProTable、复杂表单、主从表、虚拟表格、JSON 输入、i18n 输入、高级筛选、导入导出、可观测性、测试示例等 |
+| 通用组件 | ProTable、ProForm、ProModal、图表、编辑器、验证码、JSON 输入、i18n 输入、上传等 |
 | 工程质量 | strict TypeScript、Vitest、oxlint、oxfmt、vue-tsc、生产构建检查 |
 
 ## Pro 组件
@@ -171,14 +171,16 @@ async function loadData(
 
 ## 环境变量与后端接入
 
-开发环境默认启用 Vite Mock 服务:
+开发环境通过 `vite-plugin-mock-dev-server` 提供 Mock 服务，接口前缀为 `/api`。
+`VITE_USE_MOCK` 目前是环境变量约定，源码不会直接用它切换 Mock；开发环境的
+Mock 插件由 `vite.config.ts` 注册:
 
 ```bash
 VITE_USE_MOCK=true
 VITE_API_BASE_URL=/api
 ```
 
-真实生产构建默认关闭 Mock。发布真实项目时，请将 `.env.production` 中的 API 地址替换为你的后端服务:
+真实生产构建默认关闭文档中约定的 Mock。发布真实项目时，请将 `.env.production` 中的 API 地址替换为你的后端服务:
 
 ```bash
 VITE_USE_MOCK=false
@@ -186,7 +188,8 @@ VITE_DEMO_MODE=false
 VITE_API_BASE_URL=https://your-api-domain.com/api
 ```
 
-在线 Demo 使用独立的 `.env.demo`，通过浏览器端 Mock 支持 GitHub Pages 等纯静态托管:
+在线 Demo 使用独立的 `.env.demo`。当 `VITE_DEMO_MODE=true` 时，`src/main.ts`
+会加载 `src/mock/browser.ts`，通过浏览器端 Mock 支持 GitHub Pages 等纯静态托管:
 
 ```bash
 VITE_USE_MOCK=true
@@ -194,7 +197,8 @@ VITE_DEMO_MODE=true
 VITE_API_BASE_URL=/api
 ```
 
-真实生产发布使用 `npm run build`；在线 Demo 发布使用 `npm run build:demo`。不要将 `.env.demo` 作为真实项目的生产配置。
+真实生产发布使用 `pnpm run build`；在线 Demo 发布使用 `pnpm run build:demo`。
+不要将 `.env.demo` 作为真实项目的生产配置。
 
 接口响应建议遵循:
 
@@ -206,7 +210,8 @@ interface ApiResponse<T> {
 }
 ```
 
-`src/utils/request.ts` 的 Axios 响应拦截器会返回 `response.data`，并将 `{ code !== 200 }` 视为错误。业务 API 方法应按调用方实际消费的数据结构声明类型。
+`src/utils/request.ts` 的请求方法会返回 `response.data`，响应中的 `{ code !== 200 }`
+会被视为错误。业务 API 方法应按调用方实际消费的数据结构声明类型。
 
 ## Mock 数据
 
@@ -230,18 +235,85 @@ src/api/[entity].ts
 src/types/[entity].ts
 ```
 
+如果接口需要在静态 Demo 中可用，还需要同步更新 `src/mock/browser.ts`。
+
+## 国际化翻译维护
+
+当前支持 `zh-CN`、`en-US`、`ja-JP`、`ko-KR` 四种语言，默认语言为 `zh-CN`。
+国际化入口位于 `src/locales/index.ts`，非默认语言通过动态 import 按需加载，缺失
+翻译时回退到 `zh-CN`。四个语言资源文件必须保持相同的 key 结构:
+
+```text
+src/locales/zh-CN.ts
+src/locales/en-US.ts
+src/locales/ja-JP.ts
+src/locales/ko-KR.ts
+```
+
+### 添加或修改翻译项
+
+1. 先在 `src/locales/zh-CN.ts` 中选择对应业务分组，例如 `common`、`layout`、
+   `menu`、`dashboard`，添加新的 key。
+2. 在 `en-US.ts`、`ja-JP.ts`、`ko-KR.ts` 的相同层级添加相同 key，并分别填写
+   对应语言的文本。不要只修改默认语言，否则其他语言会静默回退到中文。
+3. 在组件中使用 `$t('dashboard.newLabel')`、`useI18n().t`，或在 TypeScript
+   文件中使用 `src/locales` 导出的 `$t`。路由菜单标题应使用已有的 locale key，
+   例如 `menu.dashboard`。
+4. 文本包含变量时，四种语言都使用相同的占位符名称，例如
+   `$t('common.searchLabel', { label })` 对应资源中的 `搜索{label}`。
+5. 如果使用了动态 key，例如 `config.groups.${group}`，除了搜索静态引用，还要
+   检查运行时可能出现的所有值是否都在四种资源中存在。
+6. 完成后切换四种语言手动检查，并运行:
+
+```bash
+pnpm run type-check
+pnpm run test:unit:run
+pnpm run build:check
+```
+
+### 删除翻译项
+
+删除某个翻译 key 前，先使用 `rg -n '旧 key' src` 查找代码引用。推荐顺序为:
+
+1. 删除或替换组件、路由和工具中的引用。
+2. 从四个语言资源文件的相同位置删除该 key。
+3. 对动态 key、菜单标题和错误提示进行手动搜索，避免只删除了静态引用。
+4. 切换所有语言确认界面没有出现 key 原文，再运行类型检查和单元测试。
+
+### 添加一种语言
+
+新增语言不只是新增一个资源文件，还必须同步更新语言加载和界面入口:
+
+1. 复制 `src/locales/zh-CN.ts` 为新的语言文件，例如 `src/locales/fr-FR.ts`，
+   保持默认导出和完整的嵌套 key 结构，再完成翻译。
+2. 修改 `src/locales/index.ts` 中的 `SupportedLocale`、
+   `SUPPORTED_LOCALE_VALUES`、`LOCALE_NATIVE_LABELS`、`localeLoaders` 和
+   `DAYJS_LOCALE_MAP`。如果 dayjs 支持该语言，还要添加对应的 dayjs locale import。
+3. 修改 `src/components/Layout/LanguageSwitch.vue`，增加语言选项。
+4. 修改 `src/components/Layout/Header.vue`，增加语言菜单项和切换分支。
+5. 修改 `src/App.vue`，添加对应的 Antdv Next locale import 和 `antdLocaleMap` 映射。
+6. 更新 README 的语言列表，切换新语言并运行类型检查、单元测试和构建检查。
+
+### 删除一种语言
+
+删除语言时按添加语言的步骤反向处理：删除语言资源文件，并从
+`src/locales/index.ts` 的类型、列表、标签、loader、dayjs 映射，以及
+`LanguageSwitch.vue`、`Header.vue`、`App.vue` 的映射和菜单中一并移除。检查已有
+的 `app-locale` 本地存储值，确保旧值会回退到 `zh-CN`。`zh-CN` 是当前默认语言和
+fallback，不应直接删除，除非同时重构默认语言和回退策略。
+
 ## 测试
 
 单元测试使用 Vitest，配置在 `vitest.config.ts`:
 
 ```bash
-npm run test:unit       # watch mode
-npm run test:unit:run   # one-shot
+pnpm run test:unit       # 监听模式
+pnpm run test:unit:run   # 单次运行
 ```
 
 当前单测覆盖无登录路由、ProTable 请求、搜索、表头过滤和关键词搜索等逻辑。
 
-`tests/e2e/*.spec.ts` 是 Playwright starter，当前项目未安装 Playwright 依赖；如需启用 E2E，需要先补齐依赖、脚本和运行环境。
+当前项目没有受 Git 跟踪的 `tests/e2e` 测试目录，也没有 Playwright 依赖。
 
 ## 开发约定
 
@@ -259,7 +331,8 @@ npm run test:unit:run   # one-shot
 
 - 组织管理: 用户
 - 系统管理: 配置、字典、文件、日志
-- 示例中心: 快速开始、表单输入、内容编辑、基础交互、业务脚手架、安全工程、集成导航、异常页
+- 工作台与辅助页面: Dashboard、个人资料、通知、关于、异常页
+- 通用组件: Pro 组件、编辑器、验证码、JSON 输入、图标和国际化输入
 
 ## 许可证
 

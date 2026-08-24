@@ -1,264 +1,178 @@
-# Antdv Next Admin - Agent Guidelines
+# Antdv Next Admin - Agent 指南
 
-A Vue 3 + TypeScript + Ant Design Vue admin scaffold with RBAC, theming, i18n (zh-CN/en-US/ja-JP/ko-KR), Tailwind CSS 4, Codemirror 6, and mock APIs.
+## 项目概览
 
-## Project Structure
+Antdv Next Admin 是一个 Vue 3.5、TypeScript 6、Vite 8 管理后台脚手架，使用
+Antdv Next、Pinia、Vue Router、vue-i18n、Tailwind CSS 4、SCSS、Pro 组件、
+TipTap、Milkdown、CodeMirror、ECharts 和 Mock API。
 
-```
+当前应用是无认证脚手架。项目目前没有登录路由、角色或权限路由、认证 API、
+Token 持久化，也不会注入 Authorization 请求头。src/stores/auth.ts 仅提供默认
+的本地用户资料。
+
+项目命令使用 pnpm。仓库包含 pnpm-lock.yaml 和 pnpm-workspace.yaml，请避免
+无必要地修改额外存在的 npm 锁文件。
+
+## 项目结构
+
+~~~text
 src/
-├── api/              # API layer - organized by domain (auth.ts, user.ts)
-├── assets/styles/    # Global styles (variables.css, animations.css, global.css)
-├── components/       # Reusable components (Layout/, Permission/, etc.)
-├── composables/      # Composition functions (usePermission.ts, useWatermark.ts)
-├── directives/       # Custom Vue directives (permission.ts)
-├── locales/          # i18n translations (zh-CN.ts, en-US.ts)
-├── router/           # Vue Router (routes.ts, guards.ts, utils.ts)
-├── stores/           # Pinia stores - one per domain (auth.ts, theme.ts, layout.ts)
-├── types/            # TypeScript interfaces/types (auth.ts, api.ts, router.ts)
-├── utils/            # Pure utility functions (request.ts, storage.ts, helpers.ts)
-└── views/            # Page components (dashboard/, system/, examples/)
-
+  api/                  API 请求封装：config、dict、file、log、user
+  assets/styles/        CSS 变量、全局样式、动画、Tailwind 入口
+  components/Layout/    主布局、侧边栏、顶部栏、标签页、搜索、设置
+  components/Pro/       ProTable、ProForm、ProModal 等 Pro 组件
+  components/Captcha/   滑块、旋转、拼图、点选验证码
+  components/           编辑器、Milkdown、Icon、JSON、国际化输入等通用组件
+  composables/          可复用的组合式函数
+  locales/              zh-CN、en-US、ja-JP、ko-KR 翻译资源
+  mock/                 Demo 模式的浏览器端 Mock 初始化
+  router/               路由定义、导航守卫、Router 初始化
+  stores/               按领域拆分的 Pinia setup store
+  types/                API、路由、布局、用户、Pro 组件共享类型
+  utils/                请求、存储、i18n、图标、菜单、表单、导出等工具
+  views/                Dashboard、系统页面、个人资料、通知、关于、异常页
 mock/
-├── data/             # Mock datasets (users.data.ts, roles.data.ts)
-└── handlers/         # Mock API handlers (auth.mock.ts, user.mock.ts)
+  data/                 共享 Mock 数据集
+  handlers/             /api 前缀下的 Vite Mock 服务处理器
+tests/unit/             Vitest 单元测试，配置范围为 tests/unit/**/*.spec.ts
+docs/images/            文档截图
+~~~
 
-tests/
-├── e2e/              # End-to-end tests (*.spec.ts) - templates for future Playwright setup
-└── unit/             # Unit tests (*.spec.ts) - templates for future Vitest setup
-```
+重要运行文件：
 
-## Build, Test, and Development Commands
+- src/main.ts 负责初始化 Pinia、Router、i18n、全局样式、组件默认属性，并在
+  Demo 模式下启用浏览器端 Mock。
+- src/router/routes.ts 定义 staticRoutes、basicRoutes 和兜底路由。当前路由是
+  静态路由，不使用 RBAC。
+- src/router/guards.ts 负责页面标题、字典加载、标签页初始化、活动标签页和
+ 菜单历史记录，不负责用户认证。
+- src/utils/request.ts 提供 Axios 实例和带类型的请求方法。
+- src/components/Global/defaultComponentProps.ts 保存全局 Antdv Next 组件默认属性。
+  修改表单或按钮行为前应先检查该文件。
 
-### Essential Commands
-```bash
-npm install              # Install all dependencies
-npm run dev              # Start dev server at http://localhost:3000 (with mock APIs)
-npm run build            # Production build → dist/
-npm run build:check      # vue-tsc type check + production build
-npm run build:demo       # Demo build for static hosting (browser-side mock)
-npm run preview          # Preview production build locally
-npm run type-check       # Run vue-tsc --noEmit (NO auto-fix)
+## 常用命令
 
-# Testing (Vitest)
-npm run test:unit        # Run unit tests in watch mode
-npm run test:unit:run    # Run unit tests once
+~~~bash
+pnpm install
+pnpm run dev              # 启动 Vite 开发服务：http://localhost:3000
+pnpm run build            # 生产构建，输出到 dist/
+pnpm run build:check      # vue-tsc 类型检查加生产构建
+pnpm run build:demo       # 启用浏览器端 Mock 的静态 Demo 构建
+pnpm run build:demo:check # 类型检查加静态 Demo 构建
+pnpm run preview          # 预览生产构建
+pnpm run type-check       # vue-tsc --noEmit
 
-# Linting & Formatting
-npm run lint             # Lint with oxlint
-npm run lint:fix         # Auto-fix lint issues
-npm run format           # Format with oxfmt
-npm run format:check     # Check formatting
-```
+pnpm run test:unit        # Vitest 监听模式
+pnpm run test:unit:run    # Vitest 单次运行
 
-### Pre-commit Requirements
-**BEFORE any commit or PR:**
-1. Run `npm run type-check` - must exit 0 with no errors
-2. Run `npm run lint` - must exit 0 with no errors
-3. Run `npm run build` - must complete successfully
-4. For RBAC/auth changes: manually verify login with `admin/123456` and `user/123456`
+pnpm run lint             # oxlint src mock
+pnpm run lint:fix         # oxlint --fix src mock
+pnpm run format           # oxfmt --write src mock
+pnpm run format:check     # oxfmt --check src mock
+~~~
 
-### Testing
-- **Vitest** is configured (`vitest.config.ts`): `environment: 'node'`, `globals: false`
-- Test files: `tests/unit/**/*.spec.ts` — must import `describe`/`it`/`expect` from vitest
-- **Playwright** e2e templates exist in `tests/e2e/` but Playwright is not yet installed
+提交或创建 Pull Request 前运行：
 
-## Code Style Guidelines
+~~~bash
+pnpm run lint
+pnpm run format:check
+pnpm run type-check
+pnpm run test:unit:run
+pnpm run build:check
+~~~
 
-### Formatting (EditorConfig)
-- **Indentation**: 2 spaces (NO tabs)
-- **Line endings**: LF (Unix-style)
-- **Encoding**: UTF-8
-- **Final newline**: required
-- **Trailing whitespace**: trimmed (except in .md files)
+## 环境与 Mock API
 
-### TypeScript
-- **Strict mode enabled** (`tsconfig.json`): all strict checks ON
-- **Path aliases**: use `@/` for `src/` (e.g., `import { useAuthStore } from '@/stores/auth'`)
-- **Type annotations**: explicit return types for public functions/composables
-- **Type definitions**: place shared types in `src/types/`, domain-specific types near usage
-- **No type suppression**: NEVER use `as any`, `@ts-ignore`, or `@ts-expect-error`
+- .env 设置 VITE_APP_TITLE 和默认的 VITE_API_BASE_URL（/api）。
+- .env.development 设置开发环境的 Mock 相关变量。
+- .env.demo 设置静态托管使用的 VITE_DEMO_MODE=true。
+- .env.production 关闭文档中约定的 Mock 配置，并包含一个占位后端地址。真实
+  部署前必须替换该地址。
 
-### Vue Component Style
-**Component naming:**
-- **Files**: PascalCase for reusable components (`NotificationPanel.vue`, `ThemeToggle.vue`)
-- **Views**: route-based folders with `index.vue` (`src/views/dashboard/index.vue`)
+vite.config.ts 中配置了带 /api 前缀的 Vite Mock 插件，并从 mock/handlers
+加载处理器。Demo 模式下，src/main.ts 会调用 src/mock/browser.ts 中的
+setupBrowserMock，该实现使用 axios-mock-adapter。
 
-**Component structure (Composition API only):**
-```vue
-<template>
-  <!-- Template using script setup's reactive state -->
-</template>
+VITE_DEMO_MODE 是浏览器端 Mock 的运行时开关，VITE_USE_MOCK 目前只是环境变量
+约定和类型声明，未在源码中作为条件进行判断。
 
-<script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import type { User } from '@/types/auth'
+Mock 数据覆盖用户、字典、配置、文件、操作日志和 Dashboard。新增 API 通常需要
+同步更新以下文件：
 
-// Props
-interface Props {
-  userId: string
-  mode?: 'edit' | 'view'
-}
-const props = withDefaults(defineProps<Props>(), {
-  mode: 'view'
-})
+~~~text
+src/types/[entity].ts
+src/api/[entity].ts
+mock/data/[entity].data.ts
+mock/handlers/[entity].mock.ts
+~~~
 
-// Emits
-const emit = defineEmits<{
-  save: [user: User]
-  cancel: []
-}>()
+如果功能必须支持静态 Demo，还需要同步更新 src/mock/browser.ts。
+Mock 响应通常使用 { code: 200, message, success: true, data } 结构。
+request 方法返回 response.data；非 200 响应会被拒绝，并在未设置
+skipErrorMessage 时显示错误提示。
 
-// State
-const authStore = useAuthStore()
-const loading = ref(false)
-const user = computed(() => authStore.user)
+## TypeScript 与格式规范
 
-// Methods (prefer explicit function declarations)
-function handleSave() {
-  // Implementation
-}
-</script>
+- 使用 2 个空格、LF 换行、UTF-8 编码、文件末尾换行，并删除行尾空白。
+  Markdown 文件可以按照 .editorconfig 保留行尾空白。
+- .oxfmtrc.json 是源码格式的最终依据：每行最多 100 列、单引号、分号、尾随逗号
+  和自动排序 import。
+- TypeScript 开启 strict、noUnusedLocals、noUnusedParameters 和
+  noFallthroughCasesInSwitch。应修复根因，不要使用 any、@ts-ignore 或
+  @ts-expect-error 压制错误。
+- src/ 使用 @/ 路径别名。import 顺序遵循 oxfmt 分组：类型 import、内置或第三方
+  import、内部别名 import、相对路径 import。
+- 共享类型放在 src/types/，功能专用类型放在对应功能附近。
 
-<style scoped>
-/* Component-specific styles */
-</style>
-```
+## Vue、状态与界面约定
 
-### Import Ordering
-Group imports in this order (blank line between groups):
-```ts
-// 1. Vue core
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+- 使用 Composition API 和 <script setup lang="ts">。
+- 可复用组件文件使用 PascalCase。路由页面通常使用目录加 index.vue 入口文件。
+- Pinia 使用 setup store，并按领域组织状态和操作，避免增加跨领域的巨型 store。
+- Antdv Next 组件通过 unplugin-vue-components 和 AntdvNextResolver 自动导入。
+  Select、DatePicker 和 DateRangePicker 被排除在自动解析之外，使用这些组件时
+  先检查现有的显式 import。
+- 主题相关样式使用 src/assets/styles/variables.css 中的 CSS 变量。局部布局和
+  组件样式可以使用 Tailwind 或 SCSS。
+- 路由元信息、语言 key 和菜单行为必须与四种语言资源及路由定义保持一致。新增
+  用户可见文本时，应同步补充所有支持的语言。
 
-// 2. Third-party libraries
-import { message } from 'antdv-next'
-import dayjs from 'dayjs'
+## 持久化与导航
 
-// 3. Project imports (@/ alias)
-import { useAuthStore } from '@/stores/auth'
-import { login, getUserInfo } from '@/api/auth'
-import type { User, LoginParams } from '@/types/auth'
-```
+主题、布局、水印、标签页、菜单偏好和历史记录、语言以及 Demo 状态使用浏览器
+存储。调试外观、标签页或菜单异常时，先清理相关 localStorage，再判断是否需要
+修改业务逻辑。Router 还会从 sessionStorage 恢复 GitHub Pages 重定向地址。
 
-### Naming Conventions
-| Type | Convention | Example |
-|------|-----------|---------|
-| Components | PascalCase | `NotificationPanel.vue`, `TabBar.vue` |
-| Composables | `useXxx.ts` | `usePermission.ts`, `useFullscreen.ts` |
-| Stores | Domain-based | `auth.ts`, `permission.ts`, `theme.ts` |
-| Types/Interfaces | PascalCase | `User`, `LoginParams`, `ApiResponse<T>` |
-| Functions | camelCase | `getUserInfo()`, `checkPermission()` |
-| Constants | SCREAMING_SNAKE_CASE | `TOKEN_KEY`, `API_BASE_URL` |
+## 测试
 
-### Error Handling
-- **Try/catch**: wrap all async operations with meaningful error messages
-- **Axios interceptors**: global error handling in `src/utils/request.ts`
-- **User feedback**: use `message.error()` or `notification.error()` from antdv-next
-```ts
-try {
-  const response = await getUserInfo()
-  // Success path
-} catch (error) {
-  console.error('Failed to fetch user info:', error)
-  message.error('获取用户信息失败')
-}
-```
+Vitest 配置在 vitest.config.ts 中，使用 node 环境，关闭全局 API，并且只包含
+tests/unit/**/*.spec.ts。现有测试覆盖 auth store 默认值、请求服务、浏览器 Mock、
+路由定义、菜单行为、Pro 组件、主题设置及相关工具。测试中应从 vitest 显式导入
+describe、it、expect 和 vi。
 
-### State Management (Pinia)
-- **Setup stores only** (NOT options API)
-- **One store per domain** - no god-objects
-- **Store structure pattern:**
-```ts
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+当前没有受 Git 跟踪的 tests/e2e 测试目录，也没有 Playwright 依赖。除非实际加入
+这些功能，否则不要描述或依赖登录凭据、RBAC 检查或 E2E 命令。
 
-export const useAuthStore = defineStore('auth', () => {
-  // State (ref)
-  const token = ref<string | null>(null)
-  
-  // Getters (computed)
-  const isLoggedIn = computed(() => !!token.value)
-  
-  // Actions (functions)
-  const setToken = (newToken: string | null) => {
-    token.value = newToken
-  }
-  
-  return { token, isLoggedIn, setToken }
-})
-```
+## 修改边界
 
-### Permission System Usage
-**Directive (in templates):**
-```vue
-<!-- Single permission (OR logic by default) -->
-<a-button v-permission="'user.create'">Create</a-button>
+- 编辑前先阅读相关源码、类型和测试文件，优先沿用已有实现模式，再考虑新增工具
+  或抽象。
+- 除非任务明确要求，否则不要新增测试文件。
+- 不要修改仓库以外的文件；除非明确要求，不要默认提交，也不要执行 Git 远程操作。
+- 保留与当前任务无关的工作区改动，避免大范围重构或无必要的锁文件变更。
+- 敏感信息放在本地环境文件中，不要提交凭据或生产密钥。
 
-<!-- Multiple permissions (OR logic) -->
-<a-button v-permission="['user.edit', 'user.delete']">Actions</a-button>
+## 提交约定
 
-<!-- ALL permissions required (AND logic) -->
-<a-button v-permission.all="['user.edit', 'user.approve']">Approve</a-button>
-```
+只有在明确要求提交时才创建提交，并使用 Conventional Commits：
 
-**Composable (in script):**
-```ts
-const { can, canAll, hasRole } = usePermission()
+~~~text
+feat(scope): add a feature
+fix(scope): correct behavior
+refactor(scope): simplify implementation
+docs(scope): update documentation
+test(scope): update tests
+chore(scope): update tooling
+~~~
 
-if (can('user.create')) {
-  // User has permission
-}
-
-if (canAll(['user.edit', 'user.approve'])) {
-  // User has ALL permissions
-}
-```
-
-## Configuration & Environment
-
-### Environment Variables
-- **Development** (`.env.development`): `VITE_USE_MOCK=true`, `VITE_API_BASE_URL=/api`
-- **Production** (`.env.production`): `VITE_USE_MOCK=false`, set real API URL
-- **Never commit secrets** - use `.env.local` for sensitive values (gitignored)
-
-### Mock API System
-- **Auto-enabled in dev** via `vite-plugin-mock-dev-server`
-- **Handlers**: `mock/handlers/*.mock.ts` define endpoints
-- **Data**: `mock/data/*.data.ts` contain sample datasets
-- **Prefix**: all mock APIs use `/api` prefix (e.g., `/api/auth/login`)
-
-## Common Pitfalls to Avoid
-
-1. **Oxlint** lints `src/` and `mock/` — run `npm run lint` before committing. Oxfmt handles import sorting automatically.
-2. **Don't suppress TypeScript errors** - fix the root cause instead
-3. **Test files are templates** - don't try to run them without installing test frameworks
-4. **Mock users**: `admin/123456` has full permissions, `user/123456` has limited permissions
-5. **Dynamic routes**: permissions control route visibility via `src/router/guards.ts`
-6. **KeepAlive caching**: managed by `tabs` store - check cached component names
-
-## Commit Guidelines
-
-**Use Conventional Commits:**
-```
-type(scope): summary
-
-Examples:
-feat(auth): add biometric login support
-fix(permission): correct role-based route filtering
-refactor(layout): extract sidebar menu logic to composable
-docs(readme): update installation instructions
-```
-
-**Commit types:** `feat`, `fix`, `refactor`, `docs`, `style`, `test`, `chore`, `perf`
-
-## Pull Request Checklist
-
-- [ ] `npm run type-check` passes
-- [ ] `npm run build` succeeds
-- [ ] Manually tested login flow (if auth-related)
-- [ ] Manually verified permissions (if RBAC-related)
-- [ ] Screenshots/GIFs included (for UI changes)
-- [ ] Commit messages follow Conventional Commits
-- [ ] Changes are scoped (no unrelated refactors mixed in)
+提交应只包含当前任务相关改动，并在提交前通过上面的验证命令。
