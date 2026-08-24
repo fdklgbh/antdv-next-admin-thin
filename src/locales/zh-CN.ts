@@ -441,6 +441,7 @@ export default {
     sort: '排序',
     addChild: '新增子级',
     codeRequired: '请输入权限编码',
+    nameRequired: '请输入名称',
     codePattern: '权限编码仅支持字母、数字、下划线和中划线',
     menuRouteRequired: '菜单类型必须填写路由路径',
     icon: '图标',

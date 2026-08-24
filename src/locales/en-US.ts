@@ -442,6 +442,7 @@ export default {
     sort: 'Sort',
     addChild: 'Add Child',
     codeRequired: 'Please enter permission code',
+    nameRequired: 'Please enter name',
     codePattern: 'Permission code only supports letters, numbers, underscores and hyphens',
     menuRouteRequired: 'Route path is required for menu type',
     icon: 'Icon',

@@ -432,6 +432,7 @@ export default {
     sort: '종류',
     addChild: '자녀 추가',
     codeRequired: '허가코드를 입력해주세요',
+    nameRequired: '이름을 입력해주세요',
     codePattern: '권한 코드는 문자, 숫자, 밑줄, 하이픈만 지원합니다.',
     menuRouteRequired: '메뉴 유형에는 경로 경로가 필요합니다.',
     icon: '상',

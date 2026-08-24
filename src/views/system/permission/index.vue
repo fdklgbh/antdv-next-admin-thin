@@ -73,10 +73,11 @@ import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
 import { $t, getLocale } from '@/locales';
+import { useSettingsStore } from '@/stores/settings';
 import { resolveLocalizedText } from '@/utils/localizedText';
 
 type PermissionFormValues = {
-  name: LocalizedText;
+  name: string | LocalizedText;
   code: string;
   type: Permission['type'];
   description: string;
@@ -92,6 +93,10 @@ type PermissionFormValues = {
 const tableRef = ref<{
   refresh: () => void;
 } | null>(null);
+
+const settingsStore = useSettingsStore();
+const useI18nName = computed(() => settingsStore.showLanguageSwitch);
+
 const {
   open: modalVisible,
   mode: modalMode,
@@ -166,7 +171,10 @@ const permissionVisibleValueEnum = computed<
   false: { text: $t('permission.hide'), color: 'default' },
 }));
 
-function createLocalizedName(value = ''): LocalizedText {
+function createLocalizedName(value = ''): string | LocalizedText {
+  if (!useI18nName.value) {
+    return value;
+  }
   return {
     'zh-CN': value,
     'en-US': value,
@@ -277,17 +285,28 @@ const columns = computed((): ProTableColumn[] => [
 ]);
 
 const formItems = computed<ProFormItem[]>(() => [
-  {
-    name: 'name',
-    label: $t('permission.name'),
-    type: 'custom',
-    render: I18nInput,
-    required: true,
-    props: {
-      placeholder: $t('permission.name'),
-      modalTitle: $t('permission.name'),
-    },
-  },
+  useI18nName.value
+    ? {
+        name: 'name',
+        label: $t('permission.name'),
+        type: 'custom',
+        render: I18nInput,
+        required: true,
+        props: {
+          placeholder: $t('permission.name'),
+          modalTitle: $t('permission.name'),
+        },
+      }
+    : {
+        name: 'name',
+        label: $t('permission.name'),
+        type: 'input',
+        required: true,
+        props: {
+          placeholder: $t('permission.name'),
+        },
+        rules: [{ required: true, message: $t('permission.nameRequired') }],
+      },
   {
     name: 'code',
     label: $t('permission.code'),
@@ -493,7 +512,12 @@ const handleCreateChild = (record: Permission) => {
 
 const handleEdit = (record: Permission) => {
   const initialValues: PermissionFormValues = {
-    name: typeof record.name === 'string' ? createLocalizedName(record.name) : record.name,
+    name:
+      useI18nName.value
+        ? typeof record.name === 'string'
+          ? createLocalizedName(record.name)
+          : record.name
+        : resolveLocalizedText(record.name, getLocale()),
     code: record.code,
     type: record.type,
     description: record.description || '',

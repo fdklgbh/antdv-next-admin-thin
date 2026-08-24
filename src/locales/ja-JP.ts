@@ -432,6 +432,7 @@ export default {
     sort: '選別',
     addChild: '子の追加',
     codeRequired: '許可コードを入力してください',
+    nameRequired: '名前を入力してください',
     codePattern: '許可コードは文字、数字、アンダースコア、ハイフンのみをサポートします',
     menuRouteRequired: 'メニュータイプにはルートパスが必要です',
     icon: 'アイコン',
