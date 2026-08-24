@@ -599,7 +599,7 @@ export default {
     rowText: 'デモ データ行 #{index}',
     confirmSuccess: '正常に確認されました',
   },
-  exampleException: {
+  exception: {
     '404title': '404',
     '404description': '申し訳ありませんが、アクセスしたページは存在しません',
     '500title': '500',

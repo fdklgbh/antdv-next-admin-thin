@@ -743,7 +743,7 @@ export default {
     confirmSuccess: '确认操作成功',
   },
 
-  exampleException: {
+  exception: {
     '404title': '404',
     '404description': '抱歉，您访问的页面不存在',
     '500title': '500',

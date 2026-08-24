@@ -596,7 +596,7 @@ export default {
     rowText: '데모 데이터 행 #{index}',
     confirmSuccess: '성공적으로 확인되었습니다',
   },
-  exampleException: {
+  exception: {
     '404title': '404',
     '404description': '죄송합니다. 방문한 페이지가 존재하지 않습니다.',
     '500title': '500',

@@ -3,8 +3,8 @@
     <div class="card flex flex-1 min-h-[500px] items-center justify-center">
       <a-result
         status="500"
-        :title="$t('exampleException.500title')"
-        :sub-title="$t('exampleException.500description')"
+        :title="$t('exception.500title')"
+        :sub-title="$t('exception.500description')"
       >
         <template #extra>
           <a-button type="primary" @click="router.push('/')">

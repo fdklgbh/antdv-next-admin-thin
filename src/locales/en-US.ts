@@ -758,7 +758,7 @@ export default {
     confirmSuccess: 'Confirmed successfully',
   },
 
-  exampleException: {
+  exception: {
     '404title': '404',
     '404description': 'Sorry, the page you visited does not exist',
     '500title': '500',
