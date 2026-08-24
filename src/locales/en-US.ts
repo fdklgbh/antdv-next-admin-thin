@@ -439,6 +439,7 @@ export default {
     hide: 'Hide',
     routePath: 'Route Path',
     componentPath: 'Component Path',
+    componentPathPlaceholder: 'Select a component path',
     sort: 'Sort',
     addChild: 'Add Child',
     codeRequired: 'Please enter permission code',

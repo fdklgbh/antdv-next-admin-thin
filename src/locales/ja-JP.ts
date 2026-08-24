@@ -429,6 +429,7 @@ export default {
     hide: '隠れる',
     routePath: 'ルートパス',
     componentPath: 'コンポーネントのパス',
+    componentPathPlaceholder: 'コンポーネントパスを選択してください',
     sort: '選別',
     addChild: '子の追加',
     codeRequired: '許可コードを入力してください',

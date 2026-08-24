@@ -90,6 +90,15 @@ type PermissionFormValues = {
   visible: boolean;
 };
 
+const viewModules = import.meta.glob('/src/views/**/*.vue');
+const componentPathOptions = Object.keys(viewModules)
+  .map((filePath) => filePath.replace(/^\/src\/views\//, '').replace(/\.vue$/, ''))
+  .sort((firstPath, secondPath) => firstPath.localeCompare(secondPath))
+  .map((componentPath) => ({
+    label: componentPath,
+    value: componentPath,
+  }));
+
 const tableRef = ref<{
   refresh: () => void;
 } | null>(null);
@@ -356,8 +365,13 @@ const formItems = computed<ProFormItem[]>(() => [
   {
     name: 'component',
     label: $t('permission.componentPath'),
-    type: 'input',
+    type: 'select',
     hidden: currentType.value !== 'menu',
+    options: componentPathOptions,
+    props: {
+      showSearch: true,
+      placeholder: $t('permission.componentPathPlaceholder'),
+    },
   },
   {
     name: 'icon',

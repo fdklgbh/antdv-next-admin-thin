@@ -438,6 +438,7 @@ export default {
     hide: '隐藏',
     routePath: '路由路径',
     componentPath: '组件路径',
+    componentPathPlaceholder: '请选择组件路径',
     sort: '排序',
     addChild: '新增子级',
     codeRequired: '请输入权限编码',

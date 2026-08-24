@@ -429,6 +429,7 @@ export default {
     hide: '숨다',
     routePath: '경로 경로',
     componentPath: '구성 요소 경로',
+    componentPathPlaceholder: '구성 요소 경로를 선택하세요',
     sort: '종류',
     addChild: '자녀 추가',
     codeRequired: '허가코드를 입력해주세요',
