@@ -69,7 +69,7 @@
         <ThemeToggle />
 
         <!-- Language Switch -->
-        <LanguageSwitch />
+        <LanguageSwitch v-if="settingsStore.showLanguageSwitch" />
 
         <!-- Settings -->
         <a-tooltip :title="$t('settings.title')">
@@ -125,6 +125,7 @@ import {
 
 import { $t, setLocale, LOCALE_NATIVE_LABELS } from '@/locales';
 import { useLayoutStore } from '@/stores/layout';
+import { useSettingsStore } from '@/stores/settings';
 import { useThemeStore } from '@/stores/theme';
 
 import AvatarDropdown from './AvatarDropdown.vue';
@@ -156,6 +157,7 @@ withDefaults(defineProps<Props>(), {
 });
 
 const layoutStore = useLayoutStore();
+const settingsStore = useSettingsStore();
 const themeStore = useThemeStore();
 const globalSearchLoaded = ref(false);
 const settingsDrawerLoaded = ref(false);
@@ -260,32 +262,40 @@ const moreMenuProps = computed(() => {
         },
       ],
     },
-    {
-      key: 'language',
-      label: $t('layout.language'),
-      icon: h(GlobalOutlined),
-      children: [
-        {
-          key: 'lang-zh',
-          label: LOCALE_NATIVE_LABELS['zh-CN'],
-        },
-        {
-          key: 'lang-en',
-          label: LOCALE_NATIVE_LABELS['en-US'],
-        },
-        {
-          key: 'lang-ja',
-          label: LOCALE_NATIVE_LABELS['ja-JP'],
-        },
-        {
-          key: 'lang-ko',
-          label: LOCALE_NATIVE_LABELS['ko-KR'],
-        },
-      ],
-    },
-    {
-      type: 'divider',
-    },
+  );
+
+  if (settingsStore.showLanguageSwitch) {
+    items.push(
+      {
+        key: 'language',
+        label: $t('layout.language'),
+        icon: h(GlobalOutlined),
+        children: [
+          {
+            key: 'lang-zh',
+            label: LOCALE_NATIVE_LABELS['zh-CN'],
+          },
+          {
+            key: 'lang-en',
+            label: LOCALE_NATIVE_LABELS['en-US'],
+          },
+          {
+            key: 'lang-ja',
+            label: LOCALE_NATIVE_LABELS['ja-JP'],
+          },
+          {
+            key: 'lang-ko',
+            label: LOCALE_NATIVE_LABELS['ko-KR'],
+          },
+        ],
+      },
+      {
+        type: 'divider',
+      },
+    );
+  }
+
+  items.push(
     {
       key: 'settings',
       label: $t('settings.title'),

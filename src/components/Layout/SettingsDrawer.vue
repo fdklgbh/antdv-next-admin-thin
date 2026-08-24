@@ -98,6 +98,16 @@
         </div>
       </div>
 
+      <!-- Language Switch -->
+      <div class="settings-section">
+        <h4>{{ $t('settings.languageSwitch') }}</h4>
+        <a-switch
+          :checked="settingsStore.showLanguageSwitch"
+          @change="handleLanguageSwitchChange"
+        />
+        <div class="hint">{{ $t('settings.languageSwitchHint') }}</div>
+      </div>
+
       <!-- Actions -->
       <div class="settings-actions">
         <a-button block @click="handleReset">
@@ -207,6 +217,10 @@ const handleReset = () => {
 
 const handleAiEntryChange = (checked: boolean) => {
   layoutStore.setAiEntryVisible(checked);
+};
+
+const handleLanguageSwitchChange = (checked: boolean) => {
+  settingsStore.setShowLanguageSwitch(checked);
 };
 </script>
 
