@@ -58,6 +58,7 @@
         :sticky="effectiveFixedHeader"
         :scroll="tableScroll"
         v-bind="$attrs"
+        :expandable="tableExpandable"
         @change="handleTableChange"
       >
         <template v-if="toolbarConfig" #title>
@@ -338,6 +339,7 @@ import {
   defineComponent,
   markRaw,
   toRaw,
+  useAttrs,
 } from 'vue';
 
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
@@ -527,6 +529,7 @@ const props = withDefaults(defineProps<Props>(), {
   formModalWidth: 640,
 });
 
+const attrs = useAttrs();
 const emit = defineEmits(['refresh', 'form-submit']);
 const { modal } = App.useApp();
 
@@ -864,6 +867,24 @@ const displayColumns = computed<ProTableColumn[]>(() => {
   ];
 });
 
+const tableExpandable = computed(() => {
+  const expandable = attrs.expandable;
+  if (!expandable || typeof expandable !== 'object' || Array.isArray(expandable)) {
+    return expandable;
+  }
+
+  const expandIconColumnIndex = (expandable as { expandIconColumnIndex?: unknown })
+    .expandIconColumnIndex;
+  if (!showIndexColumn.value || typeof expandIconColumnIndex !== 'number') {
+    return expandable;
+  }
+
+  return {
+    ...expandable,
+    expandIconColumnIndex: expandIconColumnIndex + 1,
+  };
+});
+
 const hasFixedColumns = computed(() => {
   return displayColumns.value.some((col) => Boolean(col.fixed));
 });
@@ -1182,7 +1203,7 @@ const densityMenuProps = computed(() => ({
 // Methods
 const initializeColumnStates = () => {
   const previousFilters = { ...tableFilters.value };
-  const states = props.columns.map((column, index) => {
+  const states = props.columns.filter((column) => !column.hideInTable).map((column, index) => {
     const key = resolveColumnKey(column, index);
     const checked = !column.hideInTable;
     return {

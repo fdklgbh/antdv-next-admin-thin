@@ -74,6 +74,7 @@ import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
 import { $t, getLocale } from '@/locales';
 import { useSettingsStore } from '@/stores/settings';
+import { renderIcon } from '@/utils/icon';
 import { resolveLocalizedText } from '@/utils/localizedText';
 
 type PermissionFormValues = {
@@ -223,6 +224,13 @@ const columns = computed((): ProTableColumn[] => [
     width: 220,
     fixed: 'left',
     render: (value) => resolveLocalizedText(value as Permission['name'], getLocale()),
+  },
+  {
+    title: $t('permission.icon'),
+    dataIndex: 'icon',
+    width: 80,
+    align: 'center',
+    render: (value) => renderIcon(value as string) || '-',
   },
   {
     title: $t('permission.code'),
