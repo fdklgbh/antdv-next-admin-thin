@@ -64,7 +64,7 @@
 
       <div class="pane-right-head">
         <div class="login-tools">
-          <LanguageSwitch />
+          <LanguageSwitch v-if="settingsStore.showLanguageSwitch" />
           <ThemeToggle />
         </div>
       </div>
@@ -188,10 +188,12 @@ import LanguageSwitch from '@/components/Layout/LanguageSwitch.vue';
 import ThemeToggle from '@/components/Layout/ThemeToggle.vue';
 import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
+import { useSettingsStore } from '@/stores/settings';
 import { clearSessionState } from '@/utils/session';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const settingsStore = useSettingsStore();
 
 const loading = ref(false);
 const captchaVerified = ref(false);
