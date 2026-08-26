@@ -19,7 +19,7 @@ export default defineConfig({
       dts: false,
       resolvers: [
         AntdvNextResolver({
-          exclude: ["Select", "DatePicker", "DateRangePicker"],
+          exclude: [/^Select$/, /^DatePicker$/, /^DateRangePicker$/],
         }),
       ],
     }),
