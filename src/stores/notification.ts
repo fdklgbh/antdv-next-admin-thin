@@ -106,7 +106,6 @@ export const useNotificationStore = defineStore('notification', () => {
         category: 'task',
         timestamp: Date.now() - 1000 * 60 * 60 * 5, // 5小时前
         read: true,
-        link: '/system/file',
       },
       {
         id: '5',

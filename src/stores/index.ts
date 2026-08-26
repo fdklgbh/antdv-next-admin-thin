@@ -14,4 +14,3 @@ export { useMenuPreferencesStore } from './menuPreferences';
 export { useSettingsStore } from './settings';
 export { useWatermarkStore } from './watermark';
 export { useDemoStateCacheStore } from './demoStateCache';
-export { useDictStore } from './dict';

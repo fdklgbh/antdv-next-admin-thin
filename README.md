@@ -65,7 +65,7 @@ src/router/routes.ts
   -> staticRoutes / basicRoutes / notFoundRoute
 
 src/router/guards.ts
-  -> 页面标题 / 字典预加载 / Tabs 初始化 / 菜单访问记录
+  -> 页面标题 / Tabs 初始化 / 菜单访问记录
 
 src/stores/auth.ts
   -> 提供默认用户资料并初始化本地用户状态
@@ -88,7 +88,7 @@ src/router/               # 路由表与导航守卫
 src/stores/               # 按领域拆分的 Pinia stores
 src/types/                # API、路由、Pro 组件等共享类型
 src/utils/                # 请求、存储、i18n、图标等工具
-src/views/                # Dashboard、系统页面、个人资料、通知、关于、异常页
+src/views/                # Dashboard、个人资料、通知、关于、异常页
 src/mock/                 # Demo 模式的浏览器端 Mock
 mock/data/                # Mock 数据源
 mock/handlers/            # Mock 接口处理器
@@ -103,7 +103,7 @@ tests/unit/               # Vitest 单元测试
 | 布局系统 | 垂直/水平布局、响应式侧边栏、面包屑、多标签页、右键菜单、全局搜索 |
 | 主题系统 | 亮色、暗色、跟随系统、6 种主题色、灰色模式、色弱模式、CSS Variables 驱动 |
 | 国际化 | 支持 `zh-CN`、`en-US`、`ja-JP`、`ko-KR`，非默认语言按需异步加载 |
-| Mock 数据 | 覆盖用户、字典、配置、文件、操作日志、Dashboard 等模块 |
+| Mock 数据 | 覆盖 Dashboard 模块 |
 | 内容编辑 | TipTap 富文本、Milkdown Markdown、CodeMirror 代码编辑器 |
 | 通用组件 | ProTable、ProForm、ProModal、图表、编辑器、验证码、JSON 输入、i18n 输入、上传等 |
 | 工程质量 | strict TypeScript、Vitest、oxlint、oxfmt、vue-tsc、生产构建检查 |
@@ -219,11 +219,6 @@ interface ApiResponse<T> {
 
 已覆盖模块:
 
-- 用户: `/api/users`、`/api/users/:id`、`/api/users/batch`、`/api/users/change-password`
-- 字典: `/api/dict/types`、`/api/dict/type/list`、`/api/dict/data/list`、`/api/dict/data/:typeCode`
-- 配置: `/api/config/list`、`/api/config/key/:key`、`/api/config`
-- 文件: `/api/file/list`、`/api/file/:id`、`/api/file/upload`
-- 日志: `/api/log/operation/list`
 - Dashboard: `/api/dashboard/stats`、`/api/dashboard/sales-trend`、`/api/dashboard/user-distribution`、`/api/dashboard/activities`、`/api/dashboard/chart-data`
 
 新增 Mock 接口时通常需要同时新增:
@@ -261,9 +256,7 @@ src/locales/ko-KR.ts
    例如 `menu.dashboard`。
 4. 文本包含变量时，四种语言都使用相同的占位符名称，例如
    `$t('common.searchLabel', { label })` 对应资源中的 `搜索{label}`。
-5. 如果使用了动态 key，例如 `config.groups.${group}`，除了搜索静态引用，还要
-   检查运行时可能出现的所有值是否都在四种资源中存在。
-6. 完成后切换四种语言手动检查，并运行:
+5. 完成后切换四种语言手动检查，并运行:
 
 ```bash
 pnpm run type-check
@@ -329,8 +322,6 @@ pnpm run test:unit:run   # 单次运行
 
 ## 模块划分
 
-- 组织管理: 用户
-- 系统管理: 配置、字典、文件、日志
 - 工作台与辅助页面: Dashboard、个人资料、通知、关于、异常页
 - 通用组件: Pro 组件、编辑器、验证码、JSON 输入、图标和国际化输入
 

@@ -5,7 +5,7 @@
         {{ authStore.user?.username?.charAt(0).toUpperCase() }}
       </a-avatar>
       <span class="username desktop-only">{{
-        authStore.user?.realName || authStore.user?.username
+        authStore.user?.username
       }}</span>
       <DownOutlined class="dropdown-icon desktop-only" />
     </div>

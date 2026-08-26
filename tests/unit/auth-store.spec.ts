@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from '@/stores/auth';
 
@@ -23,6 +23,7 @@ describe('auth store without authentication', () => {
     if (originalLocalStorage) {
       Object.defineProperty(globalThis, 'localStorage', originalLocalStorage);
     } else {
+      // @ts-ignore
       delete (globalThis as typeof globalThis & { localStorage?: Storage }).localStorage;
     }
   });
@@ -30,19 +31,18 @@ describe('auth store without authentication', () => {
   it('starts with the default administrator and does not depend on local storage', () => {
     const authStore = useAuthStore();
 
-    expect(authStore.user).toMatchObject({
-      id: '1',
+    expect(authStore.user).toEqual({
       username: 'admin',
-      email: 'admin@example.com',
-      realName: 'Administrator',
-      status: 'active',
+      avatar: expect.any(String),
+      createdAt: '2023-01-01T00:00:00.000Z',
     });
 
     authStore.initAuth();
 
-    expect(authStore.user).toMatchObject({
+    expect(authStore.user).toEqual({
       username: 'admin',
-      realName: 'Administrator',
+      avatar: expect.any(String),
+      createdAt: '2023-01-01T00:00:00.000Z',
     });
   });
 });

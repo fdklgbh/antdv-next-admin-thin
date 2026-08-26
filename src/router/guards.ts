@@ -2,7 +2,6 @@ import type { MenuHistoryItem } from '@/types/navigation';
 import type { AppRouteRecordRaw } from '@/types/router';
 import type { Router, RouteLocationNormalized } from 'vue-router';
 
-import { useDictStore } from '@/stores/dict';
 import { useTabsStore } from '@/stores/tabs';
 import { resolveLocaleText } from '@/utils/i18n';
 import { normalizeMenuHistoryItems } from '@/utils/menuPreferences';
@@ -76,7 +75,6 @@ export function setupRouterGuards(router: Router): void {
 
     setDocumentTitle(to);
     initTabsIfNeeded(tabsStore);
-    void useDictStore().loadDictData();
 
     if (shouldAddTab(to)) {
       tabsStore.addTab(to);
