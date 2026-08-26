@@ -230,6 +230,8 @@ export default {
     aiCollab: 'AI 채팅 분할 보기',
     aiCollabHint: '상단 내비게이션 바에 AI 채팅 입구 아이콘을 표시합니다',
     aiCollabHintMobile: '모바일에서는 AI 채팅 분할 보기를 사용할 수 없습니다',
+    languageSwitch: '언어 전환',
+    languageSwitchHint: '상단 내비게이션 바와 모바일 메뉴에 언어 전환 버튼을 표시합니다',
     reset: '재설정 설정',
     confirmReset: '모든 기본 설정을 재설정하시겠습니까?',
     colors: {

@@ -46,6 +46,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const pageAnimation = ref<PageAnimation>('slide-left');
   const grayMode = ref(false);
   const rememberTabState = ref(true);
+  const showLanguageSwitch = ref(true);
 
   // Actions
   const setPrimaryColor = (color: PrimaryColor) => {
@@ -104,6 +105,11 @@ export const useSettingsStore = defineStore('settings', () => {
     localStorage.setItem('app-remember-tab-state', enabled.toString());
   };
 
+  const setShowLanguageSwitch = (enabled: boolean) => {
+    showLanguageSwitch.value = enabled;
+    localStorage.setItem('app-show-language-switch', enabled.toString());
+  };
+
   const resetSettings = () => {
     setPrimaryColor('blue');
     setSidebarTheme('dark');
@@ -111,6 +117,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setPageAnimation('slide-left');
     setGrayMode(false);
     setRememberTabState(true);
+    setShowLanguageSwitch(true);
   };
 
   const initSettings = () => {
@@ -122,6 +129,7 @@ export const useSettingsStore = defineStore('settings', () => {
     const savedPageAnimation = localStorage.getItem('app-page-animation') as PageAnimation;
     const savedGrayMode = localStorage.getItem('app-gray-mode');
     const savedRememberTabState = localStorage.getItem('app-remember-tab-state');
+    const savedShowLanguageSwitch = localStorage.getItem('app-show-language-switch');
 
     if (savedCustomPrimaryColor) {
       setCustomPrimaryColor(savedCustomPrimaryColor);
@@ -135,6 +143,9 @@ export const useSettingsStore = defineStore('settings', () => {
     }
     if (savedGrayMode) setGrayMode(savedGrayMode === 'true');
     rememberTabState.value = savedRememberTabState !== 'false';
+    if (savedShowLanguageSwitch !== null) {
+      showLanguageSwitch.value = savedShowLanguageSwitch !== 'false';
+    }
   };
 
   return {
@@ -147,6 +158,7 @@ export const useSettingsStore = defineStore('settings', () => {
     pageAnimation,
     grayMode,
     rememberTabState,
+    showLanguageSwitch,
     // Actions
     setPrimaryColor,
     setCustomPrimaryColor,
@@ -155,6 +167,7 @@ export const useSettingsStore = defineStore('settings', () => {
     setPageAnimation,
     setGrayMode,
     setRememberTabState,
+    setShowLanguageSwitch,
     resetSettings,
     initSettings,
   };

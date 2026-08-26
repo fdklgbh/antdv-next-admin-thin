@@ -230,6 +230,8 @@ export default {
     aiCollab: 'AI チャット分割表示',
     aiCollabHint: 'トップナビゲーションバーに AI チャットのエントリアイコンを表示します',
     aiCollabHintMobile: 'モバイルでは AI チャット分割表示を利用できません',
+    languageSwitch: '言語切り替え',
+    languageSwitchHint: 'トップナビゲーションバーとモバイルメニューに言語切り替えボタンを表示します',
     reset: '設定をリセットする',
     confirmReset: 'すべての設定をリセットしてもよろしいですか?',
     colors: {

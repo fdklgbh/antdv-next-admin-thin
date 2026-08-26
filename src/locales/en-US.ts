@@ -236,6 +236,8 @@ export default {
     aiCollab: 'AI Chat Split View',
     aiCollabHint: 'Show AI chat entry icon in the top navigation bar',
     aiCollabHintMobile: 'AI chat split view is not available on mobile',
+    languageSwitch: 'Language Switch',
+    languageSwitchHint: 'Show language switch button in the top navigation bar and mobile menu',
     reset: 'Reset Settings',
     confirmReset: 'Are you sure you want to reset all preferences?',
     colors: {

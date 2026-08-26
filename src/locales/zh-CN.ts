@@ -236,6 +236,8 @@ export default {
     aiCollab: 'AI 对话分屏',
     aiCollabHint: '在顶部导航栏显示 AI 对话入口图标',
     aiCollabHintMobile: '移动端暂不支持 AI 对话分屏',
+    languageSwitch: '语言切换',
+    languageSwitchHint: '在顶部导航栏和移动端菜单显示语言切换按钮',
     reset: '重置设置',
     confirmReset: '确定要重置所有偏好设置吗？',
     colors: {
