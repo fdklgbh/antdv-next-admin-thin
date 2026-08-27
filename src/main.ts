@@ -1,3 +1,4 @@
+import { CurrentUsername } from '@wails/antdv-next-admin-thin-wails/internal/system/service';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
@@ -5,8 +6,8 @@ import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { useAuthStore } from './stores/auth';
-import { useMenuPreferencesStore } from './stores/menuPreferences';
+import { useAuthStore } from '@/stores';
+import { useMenuPreferencesStore } from '@/stores';
 import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
@@ -46,7 +47,10 @@ async function bootstrap() {
 
   // Register plugins
   app.use(pinia);
-  useAuthStore(pinia).initAuth();
+  const authStore = useAuthStore(pinia);
+  authStore.initAuth();
+  const username = await CurrentUsername();
+  authStore.setUserInfo({ ...authStore.user, username });
   // Capture and migrate legacy tab favorites before router guards can rewrite tab state.
   useMenuPreferencesStore(pinia);
   app.use(router);

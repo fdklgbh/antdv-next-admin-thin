@@ -625,7 +625,7 @@ watch(
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 var(--spacing-lg);
+      padding: 0 10px 0 var(--spacing-lg);
       background: var(--color-bg-container);
       box-shadow: var(--shadow-1);
       box-sizing: border-box;
