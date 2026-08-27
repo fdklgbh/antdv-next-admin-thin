@@ -59,9 +59,6 @@
           </a-button>
         </a-tooltip>
 
-        <!-- Fullscreen Toggle -->
-        <FullscreenToggle />
-
         <!-- Notifications -->
         <NotificationPanel v-if="!layoutStore.isMobile" />
 
@@ -91,6 +88,7 @@
 
       <!-- User Avatar Dropdown -->
       <AvatarDropdown />
+      <WindowControls v-if="!layoutStore.isMobile" />
     </div>
 
     <!-- Global Search Modal -->
@@ -130,9 +128,9 @@ import { useThemeStore } from '@/stores/theme';
 
 import AvatarDropdown from './AvatarDropdown.vue';
 import Breadcrumb from './Breadcrumb.vue';
-import FullscreenToggle from './FullscreenToggle.vue';
 import LanguageSwitch from './LanguageSwitch.vue';
 import ThemeToggle from './ThemeToggle.vue';
+import WindowControls from './WindowControls.vue';
 
 const GlobalSearch = defineAsyncComponent(() => import('./GlobalSearch.vue'));
 const NotificationPanel = defineAsyncComponent(() => import('./NotificationPanel.vue'));
@@ -336,6 +334,16 @@ onBeforeUnmount(() => {
   height: 50px;
   line-height: 50px;
   border-bottom: 1px solid var(--color-border-secondary);
+  --wails-draggable: drag;
+
+  :deep(button),
+  :deep(a),
+  :deep([role='button']),
+  :deep(input),
+  :deep(textarea),
+  :deep(select) {
+    --wails-draggable: no-drag;
+  }
 
   .header-left {
     display: flex;

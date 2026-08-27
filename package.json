@@ -75,6 +75,7 @@
     "@uiw/codemirror-theme-solarized": "^4.25.11",
     "@uiw/codemirror-theme-tokyo-night": "^4.25.11",
     "@uiw/codemirror-themes": "^4.25.11",
+    "@wailsio/runtime": "3.0.0-beta.13",
     "antdv-next": "^1.5.2",
     "axios": "^1.19.0",
     "dayjs": "^1.11.23",
