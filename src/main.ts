@@ -15,6 +15,7 @@ import './assets/styles/tailwind.css';
 import './assets/styles/variables.css';
 import './assets/styles/animations.css';
 import './assets/styles/global.css';
+import { CurrentUsername } from "@wails/go/system/Service";
 
 function restoreGitHubPagesRedirect() {
   const redirect = sessionStorage.getItem('redirect');
@@ -46,7 +47,10 @@ async function bootstrap() {
 
   // Register plugins
   app.use(pinia);
-  useAuthStore(pinia).initAuth();
+  const authStore = useAuthStore(pinia);
+  authStore.initAuth();
+  const username = await CurrentUsername();
+  authStore.setUserInfo({ ...authStore.user, username });
   // Capture and migrate legacy tab favorites before router guards can rewrite tab state.
   useMenuPreferencesStore(pinia);
   app.use(router);

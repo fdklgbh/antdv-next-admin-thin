@@ -36,3 +36,4 @@ dist-ssr
 /wailsjs/runtime/runtime.d.ts
 /wailsjs/runtime/runtime.js
 /package.json.md5
+/wailsjs/
