@@ -58,6 +58,16 @@ export const basicRoutes: AppRouteRecordRaw[] = [
         },
       },
       {
+        path: "examples/icon-library",
+        name: "ExamplesIconLibrary",
+        component: () => import("@/views/examples/icon-library/index.vue"),
+        meta: {
+          title: "menu.iconLibrary",
+          icon: "AppstoreOutlined",
+          order: 2,
+        },
+      },
+      {
         path: "profile",
         name: "Profile",
         component: () => import("@/views/profile/index.vue"),

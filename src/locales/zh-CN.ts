@@ -85,6 +85,7 @@ export default {
 
   menu: {
     dashboard: '数据看板',
+    iconLibrary: '图标库',
     exception: '异常页面',
     exception404: '404',
     exception500: '500',
@@ -316,6 +317,35 @@ export default {
     searchPlaceholder: '搜索图标名称...',
     onlineSearchFailed: '在线搜索失败',
     onlineSearchFailedDetail: '在线搜索失败：{message}',
+  },
+
+  iconLibrary: {
+    kicker: 'ICON CATALOG',
+    title: '图标库',
+    description: '浏览项目已接入的图标集合，按图标库分类查找并复制图标名称。',
+    totalLabel: '项目支持图标总数',
+    totalUnit: '个图标',
+    categoryLabel: '图标库分类',
+    categories: {
+      all: '全部',
+      ri: 'RI',
+      mdi: 'MDI',
+      ion: 'ION',
+      antdv: 'Antdv',
+    },
+    searchLabel: '搜索图标名称',
+    searchPlaceholder: '搜索图标名称...',
+    resultsLabel: '图标列表',
+    loading: '正在加载项目图标...',
+    loadFailedTitle: '图标库加载失败',
+    loadFailed: '无法加载项目支持的图标。',
+    emptyTitle: '未找到匹配图标',
+    emptyDescription: '请更换搜索词或切换图标库分类。',
+    copyTooltip: '复制 {name}',
+    copyAriaLabel: '复制图标 {name}',
+    resultSummary: '显示 {start}-{end}，共 {total} 个图标',
+    copySuccess: '图标名称已复制',
+    copyFailed: '复制失败，请检查浏览器剪贴板权限',
   },
 
   captcha: {
