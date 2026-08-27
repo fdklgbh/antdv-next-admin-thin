@@ -85,6 +85,7 @@ export default {
 
   menu: {
     dashboard: 'Dashboard',
+    iconLibrary: 'Icon Library',
     exception: 'Exception',
     exception404: '404',
     exception500: '500',
@@ -323,6 +324,36 @@ export default {
     searchPlaceholder: 'Search icon name...',
     onlineSearchFailed: 'Online search failed',
     onlineSearchFailedDetail: 'Online search failed: {message}',
+  },
+
+  iconLibrary: {
+    kicker: 'ICON CATALOG',
+    title: 'Icon Library',
+    description:
+      'Browse the icon sets bundled with this project, filter by library, and copy names.',
+    totalLabel: 'Total supported icons',
+    totalUnit: 'icons',
+    categoryLabel: 'Icon library categories',
+    categories: {
+      all: 'All',
+      ri: 'RI',
+      mdi: 'MDI',
+      ion: 'ION',
+      antdv: 'Antdv',
+    },
+    searchLabel: 'Search icon names',
+    searchPlaceholder: 'Search icon names...',
+    resultsLabel: 'Icon list',
+    loading: 'Loading project icons...',
+    loadFailedTitle: 'Icon library failed to load',
+    loadFailed: 'The supported project icons could not be loaded.',
+    emptyTitle: 'No matching icons',
+    emptyDescription: 'Try another search term or switch icon library.',
+    copyTooltip: 'Copy {name}',
+    copyAriaLabel: 'Copy icon {name}',
+    resultSummary: 'Showing {start}-{end} of {total} icons',
+    copySuccess: 'Icon name copied',
+    copyFailed: 'Copy failed. Check the browser clipboard permission.',
   },
 
   captcha: {

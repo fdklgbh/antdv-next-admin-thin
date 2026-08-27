@@ -15,13 +15,15 @@
 </template>
 
 <script setup lang="ts">
-import { App as AntApp, ConfigProvider, theme as antdTheme, type ThemeConfig } from 'antdv-next';
+import { App as AntApp, ConfigProvider } from 'antdv-next';
 import enUS from 'antdv-next/dist/locale/en_US';
 import jaJP from 'antdv-next/dist/locale/ja_JP';
 import koKR from 'antdv-next/dist/locale/ko_KR';
 import zhCN from 'antdv-next/dist/locale/zh_CN';
 import { computed, h, onMounted, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import { createAntdvThemeConfig } from '@/config/antd-theme';
 
 import { appDefaultSettings } from './settings';
 import { useNotificationStore } from './stores/notification';
@@ -42,13 +44,12 @@ const antdLocaleMap = {
   'ko-KR': koKR,
 };
 
-const antdThemeConfig = computed<ThemeConfig>(() => ({
-  algorithm: themeStore.isDark ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm,
-  token: {
-    colorPrimary: settingsStore.primaryColorHex,
-    colorLink: settingsStore.primaryColorHex,
-  },
-}));
+const antdThemeConfig = computed(() => {
+  return createAntdvThemeConfig({
+    isDark: themeStore.isDark,
+    primaryColor: settingsStore.primaryColorHex,
+  });
+});
 
 const inputConfig = computed(() => appDefaultSettings.input);
 const selectConfig = computed(

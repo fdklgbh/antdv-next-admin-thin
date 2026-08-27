@@ -3,7 +3,7 @@ import { createApp } from 'vue';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
-import i18n from './locales';
+import i18n, { localeReady } from './locales';
 import router from './router';
 import { useAuthStore } from './stores/auth';
 import { useMenuPreferencesStore } from './stores/menuPreferences';
@@ -32,6 +32,8 @@ function restoreGitHubPagesRedirect() {
 }
 
 async function bootstrap() {
+  await localeReady;
+
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
     const { setupBrowserMock } = await import('./mock/browser');
     setupBrowserMock(service);
