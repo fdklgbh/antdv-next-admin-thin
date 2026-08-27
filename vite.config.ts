@@ -42,7 +42,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      "@wails": fileURLToPath(new URL("./bindings", import.meta.url)),
+      "@wails": fileURLToPath(new URL("./wailsjs", import.meta.url)),
     },
   },
   server: {

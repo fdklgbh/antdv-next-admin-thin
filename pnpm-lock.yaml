@@ -173,9 +173,6 @@ importers:
       '@uiw/codemirror-themes':
         specifier: ^4.25.11
         version: 4.25.11(@codemirror/language@6.12.4)(@codemirror/state@6.7.1)(@codemirror/view@6.43.9)
-      '@wailsio/runtime':
-        specifier: 3.0.0-beta.13
-        version: 3.0.0-beta.13
       antdv-next:
         specifier: ^1.5.2
         version: 1.5.2(vue@3.5.41(typescript@6.0.3))
@@ -1782,9 +1779,6 @@ packages:
     resolution: {integrity: sha512-JRgY90Sz8DDtPMsaDflvPMp9xYk69JZAmbuDvAquUVXKr2gEjqtzGNTTthLfckH0BzBqvnu31gb4a8TGLRe79g==}
     peerDependencies:
       vue: ^3.5.0
-
-  '@wailsio/runtime@3.0.0-beta.13':
-    resolution: {integrity: sha512-59nmw/qiRN8LukEmIDDmyTZBZJ/pCoxpLowAtnS6VVJvoQhiTryB28menjgNhkbZg36g8nd4GifBlKzjmtycyA==}
 
   acorn@8.18.0:
     resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
@@ -5024,8 +5018,6 @@ snapshots:
   '@vueuse/shared@14.4.0(vue@3.5.41(typescript@6.0.3))':
     dependencies:
       vue: 3.5.41(typescript@6.0.3)
-
-  '@wailsio/runtime@3.0.0-beta.13': {}
 
   acorn@8.18.0: {}
 

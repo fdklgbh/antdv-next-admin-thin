@@ -1,17 +1,23 @@
-import { Window as WailsWindow } from '@wailsio/runtime';
+import {
+  Quit,
+  WindowIsMaximised,
+  WindowMaximise,
+  WindowMinimise,
+  WindowUnmaximise,
+} from '@wails/runtime/runtime';
 
 export interface WindowApi {
-  minimize(): Promise<void>;
-  maximize(): Promise<void>;
-  restore(): Promise<void>;
-  close(): Promise<void>;
+  minimize(): void;
+  maximize(): void;
+  restore(): void;
+  close(): void;
   isMaximized(): Promise<boolean>;
 }
 
 export const windowApi: WindowApi = {
-  minimize: () => WailsWindow.Minimise(),
-  maximize: () => WailsWindow.Maximise(),
-  restore: () => WailsWindow.Restore(),
-  close: () => WailsWindow.Close(),
-  isMaximized: () => WailsWindow.IsMaximised(),
+  minimize: WindowMinimise,
+  maximize: WindowMaximise,
+  restore: WindowUnmaximise,
+  close: Quit,
+  isMaximized: WindowIsMaximised,
 };

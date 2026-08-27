@@ -30,3 +30,9 @@ dist-ssr
 .claude
 .agents
 /bindings/
+/wailsjs/go/main/App.d.ts
+/wailsjs/go/main/App.js
+/wailsjs/runtime/package.json
+/wailsjs/runtime/runtime.d.ts
+/wailsjs/runtime/runtime.js
+/package.json.md5
