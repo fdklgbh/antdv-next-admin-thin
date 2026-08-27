@@ -145,6 +145,7 @@ const sizeCss = computed(() => {
 const baseStyle = computed(() => ({
   width: sizeCss.value,
   height: sizeCss.value,
+  fontSize: sizeCss.value,
   lineHeight: sizeCss.value,
   display: 'inline-flex',
   alignItems: 'center',

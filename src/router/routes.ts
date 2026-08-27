@@ -455,6 +455,17 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
             },
           },
           {
+            path: "/examples/icon-library",
+            name: "ExamplesIconLibrary",
+            component: () => import("@/views/examples/icon-library/index.vue"),
+            meta: {
+              title: "menu.iconLibrary",
+              icon: "AppstoreOutlined",
+              requiresAuth: true,
+              order: 4,
+            },
+          },
+          {
             path: "/examples/spin",
             name: "ExamplesSpin",
             component: () => import("@/views/examples/spin/index.vue"),
@@ -462,7 +473,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.spin",
               icon: "LoadingOutlined",
               requiresAuth: true,
-              order: 4,
+              order: 5,
             },
           },
           {
@@ -473,7 +484,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.captcha",
               icon: "SafetyCertificateOutlined",
               requiresAuth: true,
-              order: 5,
+              order: 6,
             },
           },
           {
@@ -484,7 +495,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.watermark",
               icon: "HighlightOutlined",
               requiresAuth: true,
-              order: 6,
+              order: 7,
             },
           },
           {
@@ -495,7 +506,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.splitter",
               icon: "ColumnHeightOutlined",
               requiresAuth: true,
-              order: 7,
+              order: 8,
             },
           },
           {
@@ -506,7 +517,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.tour",
               icon: "CompassOutlined",
               requiresAuth: true,
-              order: 8,
+              order: 9,
             },
           },
           {
@@ -517,7 +528,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.qrcode",
               icon: "QrcodeOutlined",
               requiresAuth: true,
-              order: 9,
+              order: 10,
             },
           },
           {
@@ -528,7 +539,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.segmented",
               icon: "AppstoreOutlined",
               requiresAuth: true,
-              order: 10,
+              order: 11,
             },
           },
           {
@@ -539,7 +550,7 @@ export const asyncRoutes: AppRouteRecordRaw[] = [
               title: "menu.colorPicker",
               icon: "BgColorsOutlined",
               requiresAuth: true,
-              order: 11,
+              order: 12,
             },
           },
         ],

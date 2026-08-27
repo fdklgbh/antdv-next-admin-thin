@@ -88,7 +88,7 @@ export async function loadLocaleMessages(locale: string): Promise<SupportedLocal
   return targetLocale;
 }
 
-void loadLocaleMessages(savedLocale);
+export const localeReady = loadLocaleMessages(savedLocale);
 
 type TranslateLike = (key: string, ...args: unknown[]) => unknown;
 

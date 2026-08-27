@@ -4,9 +4,9 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import { setupDirectives } from './directives';
-import i18n from './locales';
+import i18n, { localeReady } from './locales';
 import router from './router';
-import { useMenuPreferencesStore } from './stores/menuPreferences';
+import { useMenuPreferencesStore } from '@/stores';
 import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
@@ -32,6 +32,8 @@ function restoreGitHubPagesRedirect() {
 }
 
 async function bootstrap() {
+  await localeReady;
+
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
     const { setupBrowserMock } = await import('./mock/browser');
     setupBrowserMock(service);
