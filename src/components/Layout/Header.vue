@@ -328,7 +328,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   box-sizing: border-box;
-  padding: 0 20px;
+  padding: 0 10px 0 20px;
   background: var(--color-bg-container);
   box-shadow: var(--shadow-1);
   height: 50px;
