@@ -469,12 +469,13 @@ const recalculateVisibleMenuCount = () => {
   let used = 0;
   let count = 0;
 
-  widths.forEach((width) => {
-    if (used + width <= maxWidth) {
-      used += width;
-      count += 1;
+  for (const width of widths) {
+    if (used + width > maxWidth) {
+      break;
     }
-  });
+    used += width;
+    count += 1;
+  }
 
   visibleMenuCount.value = count;
 };
@@ -491,6 +492,20 @@ const scheduleMenuLayout = () => {
       recalculateVisibleMenuCount();
     });
   });
+};
+
+const syncHorizontalMenuResizeObserver = () => {
+  if (!resizeObserver) {
+    return;
+  }
+
+  resizeObserver.disconnect();
+  if (settingsStore.layoutMode !== 'horizontal') {
+    return;
+  }
+
+  if (menuAreaRef.value) resizeObserver.observe(menuAreaRef.value);
+  if (measureMenuWrapRef.value) resizeObserver.observe(measureMenuWrapRef.value);
 };
 
 onMounted(() => {
@@ -510,8 +525,7 @@ onMounted(() => {
       syncAiPanelWidth();
     });
 
-    if (menuAreaRef.value) resizeObserver.observe(menuAreaRef.value);
-    if (measureMenuWrapRef.value) resizeObserver.observe(measureMenuWrapRef.value);
+    syncHorizontalMenuResizeObserver();
     if (workspaceRef.value) workspaceResizeObserver.observe(workspaceRef.value);
   }
 });
@@ -541,8 +555,11 @@ watch(
 watch(
   () => settingsStore.layoutMode,
   () => {
-    scheduleMenuLayout();
     nextTick(() => {
+      syncHorizontalMenuResizeObserver();
+      if (settingsStore.layoutMode === 'horizontal') {
+        scheduleMenuLayout();
+      }
       if (workspaceResizeObserver) {
         workspaceResizeObserver.disconnect();
         if (workspaceRef.value) {
@@ -639,6 +656,7 @@ watch(
         align-items: stretch;
         flex: 1;
         min-width: 0;
+        height: 100%;
         overflow: hidden;
 
         .logo {
@@ -679,6 +697,7 @@ watch(
           --ant-menu-item-height: 49px;
           height: calc(100% - 1px);
           line-height: 49px;
+          white-space: nowrap;
 
           :deep(.ant-menu-horizontal::after) {
             border-bottom: none !important;
