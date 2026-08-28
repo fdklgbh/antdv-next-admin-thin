@@ -25,6 +25,12 @@ interface ViewTransitionLike {
 
 type StartViewTransition = (callback: () => void) => ViewTransitionLike;
 
+let isLinuxRuntime = false;
+
+export const configureThemeRuntimePlatform = (platform: string) => {
+  isLinuxRuntime = platform === 'linux';
+};
+
 export const useThemeStore = defineStore('theme', () => {
   // State
   const mode = ref<ThemeMode>('system');
@@ -72,6 +78,9 @@ export const useThemeStore = defineStore('theme', () => {
   };
 
   const supportsCircularRevealTransition = () => {
+    if (isLinuxRuntime) {
+      return false;
+    }
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       return false;
     }

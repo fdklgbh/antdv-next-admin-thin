@@ -1,3 +1,4 @@
+import { Environment } from '@wails/runtime/runtime';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
@@ -5,8 +6,8 @@ import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { useAuthStore } from './stores/auth';
-import { useMenuPreferencesStore } from './stores/menuPreferences';
+import { useMenuPreferencesStore, useAuthStore } from '@/stores';
+import { configureThemeRuntimePlatform } from './stores/theme';
 import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
@@ -41,6 +42,9 @@ async function bootstrap() {
   }
 
   restoreGitHubPagesRedirect();
+
+  const { platform } = await Environment();
+  configureThemeRuntimePlatform(platform);
 
   const app = createApp(App);
   const pinia = createPinia();
