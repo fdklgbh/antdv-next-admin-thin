@@ -49,6 +49,14 @@ export default defineConfig({
     port: 3000,
     open: false,
     proxy: {},
+    warmup: {
+      clientFiles: [
+        './src/main.ts',
+        './src/App.vue',
+        './src/components/Layout/AdminLayout.vue',
+        './src/views/dashboard/index.vue',
+      ],
+    },
   },
   build: {
     target: "es2020",
@@ -56,24 +64,5 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (
-            id.includes("node_modules/vue/") ||
-            id.includes("node_modules/vue-router/") ||
-            id.includes("node_modules/pinia/")
-          ) {
-            return "vue-vendor";
-          }
-          if (
-            id.includes("node_modules/echarts/") ||
-            id.includes("node_modules/vue-echarts/")
-          ) {
-            return "chart-vendor";
-          }
-        },
-      },
-    },
   },
 });

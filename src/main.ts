@@ -1,3 +1,4 @@
+import { CurrentUsername } from '@wails/go/system/Service';
 import { Environment } from '@wails/runtime/runtime';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
@@ -6,9 +7,9 @@ import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { useMenuPreferencesStore, useAuthStore } from '@/stores';
 import { configureThemeRuntimePlatform } from './stores/theme';
 import { service } from './utils/request';
+import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
 import 'antdv-next/dist/reset.css';
@@ -16,7 +17,6 @@ import './assets/styles/tailwind.css';
 import './assets/styles/variables.css';
 import './assets/styles/animations.css';
 import './assets/styles/global.css';
-import { CurrentUsername } from "@wails/go/system/Service";
 
 function restoreGitHubPagesRedirect() {
   const redirect = sessionStorage.getItem('redirect');
@@ -43,9 +43,6 @@ async function bootstrap() {
 
   restoreGitHubPagesRedirect();
 
-  const { platform } = await Environment();
-  configureThemeRuntimePlatform(platform);
-
   const app = createApp(App);
   const pinia = createPinia();
 
@@ -53,15 +50,18 @@ async function bootstrap() {
   app.use(pinia);
   const authStore = useAuthStore(pinia);
   authStore.initAuth();
-  const username = await CurrentUsername();
-  authStore.setUserInfo({ ...authStore.user, username });
   // Capture and migrate legacy tab favorites before router guards can rewrite tab state.
   useMenuPreferencesStore(pinia);
   app.use(router);
   app.use(i18n);
   registerDefaultComponentProps(app);
 
+  await router.isReady();
   app.mount('#app');
+
+  const [{ platform }, username] = await Promise.all([Environment(), CurrentUsername()]);
+  configureThemeRuntimePlatform(platform);
+  authStore.setUserInfo({ ...authStore.user, username });
 }
 
 void bootstrap();

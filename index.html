@@ -5,6 +5,120 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Antdv Next Admin</title>
+    <script>
+      (function () {
+        var theme = localStorage.getItem('theme-mode');
+        var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle(
+          'dark',
+          theme === 'dark' || (theme !== 'light' && prefersDark),
+        );
+      })();
+    </script>
+    <style>
+      html,
+      body,
+      #app {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+      }
+
+      body {
+        min-width: 320px;
+        overflow: hidden;
+        background: #f5f7fa;
+      }
+
+      .startup-shell {
+        display: grid;
+        width: 100%;
+        min-height: 100%;
+        place-items: center;
+        color: #1f2937;
+        background: #f5f7fa;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+
+      .startup-brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        width: min(240px, calc(100vw - 48px));
+      }
+
+      .startup-logo {
+        display: block;
+        width: 64px;
+        height: 64px;
+      }
+
+      .startup-title {
+        overflow-wrap: anywhere;
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 1.4;
+        text-align: center;
+      }
+
+      .startup-progress {
+        position: relative;
+        width: 120px;
+        height: 2px;
+        overflow: hidden;
+        background: #d9dfe8;
+      }
+
+      .startup-progress::after {
+        position: absolute;
+        inset: 0;
+        width: 45%;
+        content: '';
+        background: #1677ff;
+        animation: startup-progress 1.1s ease-in-out infinite;
+      }
+
+      .startup-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .dark body,
+      .dark .startup-shell {
+        color: #f3f4f6;
+        background: #121820;
+      }
+
+      .dark .startup-progress {
+        background: #344050;
+      }
+
+      @keyframes startup-progress {
+        from {
+          transform: translateX(-125%);
+        }
+        to {
+          transform: translateX(225%);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .startup-progress::after {
+          animation: none;
+          transform: translateX(60%);
+        }
+      }
+    </style>
     <!-- GitHub Pages SPA 路由重定向处理 -->
     <script>
       (function() {
@@ -17,7 +131,16 @@
     </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="startup-shell" role="status" aria-live="polite">
+        <div class="startup-brand" aria-hidden="true">
+          <img class="startup-logo" src="/logo.png" width="64" height="64" alt="" />
+          <div class="startup-title">Antdv Next Admin</div>
+          <div class="startup-progress"></div>
+        </div>
+        <span class="startup-sr-only">正在启动 Antdv Next Admin</span>
+      </div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
