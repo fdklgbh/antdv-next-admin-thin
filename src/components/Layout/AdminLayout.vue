@@ -4,6 +4,7 @@
       {{ $t('layout.skipToContent') }}
     </a>
     <a-layout
+      :key="settingsStore.layoutMode"
       class="admin-layout"
       :class="[settingsStore.layoutMode, { mobile: layoutStore.isMobile }]"
     >
