@@ -37,3 +37,4 @@ dist-ssr
 /wailsjs/runtime/runtime.js
 /package.json.md5
 /wailsjs/
+/pnpm-workspace.yaml
