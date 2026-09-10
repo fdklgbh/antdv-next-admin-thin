@@ -1,7 +1,8 @@
-import { CurrentUsername } from '@wails/go/system/Service';
 import { Environment } from '@wails/runtime/runtime';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
+
+import { CurrentUsername } from '@/services/system';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
