@@ -32,3 +32,6 @@ dist-ssr
 /bindings/
 /wailsjs
 /package.json.md5
+
+# pnpm 构建脚本许可必须随源码提交，供 CI 与本地共同使用。
+!/pnpm-workspace.yaml
