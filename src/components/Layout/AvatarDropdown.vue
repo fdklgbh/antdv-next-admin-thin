@@ -4,21 +4,14 @@
       <a-avatar :src="authStore.user?.avatar" :size="32">
         {{ authStore.user?.username?.charAt(0).toUpperCase() }}
       </a-avatar>
-      <span class="username desktop-only">{{
-        authStore.user?.username
-      }}</span>
+      <span class="username desktop-only">{{ authStore.user?.username }}</span>
       <DownOutlined class="dropdown-icon desktop-only" />
     </div>
   </a-dropdown>
 </template>
 
 <script setup lang="ts">
-import {
-  DownOutlined,
-  UserOutlined,
-  GithubOutlined,
-  BookOutlined,
-} from '@antdv-next/icons';
+import { DownOutlined, UserOutlined, GithubOutlined, BookOutlined } from '@antdv-next/icons';
 import { computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 

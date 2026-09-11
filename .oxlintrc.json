@@ -8,6 +8,7 @@
   },
   "rules": {
     "no-unused-vars": "warn",
+    "eslint/no-underscore-dangle": ["warn", { "allow": ["__APP_VERSION__"] }],
     "typescript/no-explicit-any": "warn",
     "typescript/no-unnecessary-type-assertion": "warn",
     "import/no-duplicates": "error",

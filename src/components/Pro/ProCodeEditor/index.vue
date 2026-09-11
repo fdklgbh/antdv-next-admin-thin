@@ -18,22 +18,14 @@
             :options="languageOptions"
             @change="handleLanguageChange"
           />
-          <a-button
-            v-if="language === 'json' && !readonly"
-            size="small"
-            @click="formatJson"
-          >
-            {{ $t("codeEditor.format") }}
+          <a-button v-if="language === 'json' && !readonly" size="small" @click="formatJson">
+            {{ $t('codeEditor.format') }}
           </a-button>
-          <a-button
-            v-if="language === 'json' && !readonly"
-            size="small"
-            @click="minifyJson"
-          >
-            {{ $t("codeEditor.minify") }}
+          <a-button v-if="language === 'json' && !readonly" size="small" @click="minifyJson">
+            {{ $t('codeEditor.minify') }}
           </a-button>
           <a-button size="small" @click="copyToClipboard">
-            {{ $t("codeEditor.copy") }}
+            {{ $t('codeEditor.copy') }}
           </a-button>
         </a-space>
       </slot>
@@ -54,11 +46,35 @@
 </template>
 
 <script setup lang="ts">
-import { Codemirror } from "vue-codemirror";
-import type { Extension } from "@codemirror/state";
+import type { Extension } from '@codemirror/state';
+
+import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
+import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirror/commands';
+import { css } from '@codemirror/lang-css';
+import { go } from '@codemirror/lang-go';
+import { html } from '@codemirror/lang-html';
+import { java } from '@codemirror/lang-java';
+import { javascript } from '@codemirror/lang-javascript';
+import { json, jsonParseLinter } from '@codemirror/lang-json';
+import { markdown } from '@codemirror/lang-markdown';
+import { php } from '@codemirror/lang-php';
+import { python } from '@codemirror/lang-python';
+import { rust } from '@codemirror/lang-rust';
+import { sql } from '@codemirror/lang-sql';
+import { xml } from '@codemirror/lang-xml';
+import { yaml } from '@codemirror/lang-yaml';
+import {
+  indentOnInput,
+  syntaxHighlighting,
+  defaultHighlightStyle,
+  bracketMatching,
+  foldGutter as createFoldGutter,
+} from '@codemirror/language';
+import { linter } from '@codemirror/lint';
+import { oneDark } from '@codemirror/theme-one-dark';
 import {
   keymap,
-  lineNumbers,
+  lineNumbers as createLineNumbers,
   highlightActiveLineGutter,
   highlightSpecialChars,
   drawSelection,
@@ -66,97 +82,68 @@ import {
   rectangularSelection,
   crosshairCursor,
   highlightActiveLine,
-} from "@codemirror/view";
-import {
-  defaultKeymap,
-  history,
-  historyKeymap,
-  indentWithTab,
-} from "@codemirror/commands";
-import {
-  indentOnInput,
-  syntaxHighlighting,
-  defaultHighlightStyle,
-  bracketMatching,
-  foldGutter,
-} from "@codemirror/language";
-import { closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
-import { oneDark } from "@codemirror/theme-one-dark";
-import { githubLight, githubDark } from "@uiw/codemirror-theme-github";
-import { dracula } from "@uiw/codemirror-theme-dracula";
-import { material, materialDark } from "@uiw/codemirror-theme-material";
-import { monokai } from "@uiw/codemirror-theme-monokai";
-import { nord } from "@uiw/codemirror-theme-nord";
-import { tokyoNight } from "@uiw/codemirror-theme-tokyo-night";
-import { solarizedLight, solarizedDark } from "@uiw/codemirror-theme-solarized";
-import { json, jsonParseLinter } from "@codemirror/lang-json";
-import { javascript } from "@codemirror/lang-javascript";
-import { html } from "@codemirror/lang-html";
-import { css } from "@codemirror/lang-css";
-import { markdown } from "@codemirror/lang-markdown";
-import { sql } from "@codemirror/lang-sql";
-import { yaml } from "@codemirror/lang-yaml";
-import { xml } from "@codemirror/lang-xml";
-import { python } from "@codemirror/lang-python";
-import { java } from "@codemirror/lang-java";
-import { php } from "@codemirror/lang-php";
-import { rust } from "@codemirror/lang-rust";
-import { go } from "@codemirror/lang-go";
-import { linter } from "@codemirror/lint";
+} from '@codemirror/view';
+import { dracula } from '@uiw/codemirror-theme-dracula';
+import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
+import { material, materialDark } from '@uiw/codemirror-theme-material';
+import { monokai } from '@uiw/codemirror-theme-monokai';
+import { nord } from '@uiw/codemirror-theme-nord';
+import { solarizedLight, solarizedDark } from '@uiw/codemirror-theme-solarized';
+import { tokyoNight } from '@uiw/codemirror-theme-tokyo-night';
+import { message } from 'antdv-next';
+import { computed, ref, watch, type CSSProperties, type PropType } from 'vue';
+import { Codemirror } from 'vue-codemirror';
 
-import { message } from "antdv-next";
-import { computed, ref, watch, type CSSProperties, type PropType } from "vue";
-
-import { $t } from "@/locales";
-import { useThemeStore } from "@/stores/theme";
+import { $t } from '@/locales';
+import { useThemeStore } from '@/stores/theme';
 
 defineOptions({
-  name: "ProCodeEditor",
+  name: 'ProCodeEditor',
 });
 
 export type SupportedLanguage =
-  | "json"
-  | "javascript"
-  | "typescript"
-  | "html"
-  | "css"
-  | "markdown"
-  | "sql"
-  | "yaml"
-  | "xml"
-  | "python"
-  | "java"
-  | "php"
-  | "rust"
-  | "go";
+  | 'json'
+  | 'javascript'
+  | 'typescript'
+  | 'html'
+  | 'css'
+  | 'markdown'
+  | 'sql'
+  | 'yaml'
+  | 'xml'
+  | 'python'
+  | 'java'
+  | 'php'
+  | 'rust'
+  | 'go';
 
 export type EditorTheme =
-  | "auto"
-  | "light"
-  | "dark"
-  | "github"
-  | "githubDark"
-  | "dracula"
-  | "material"
-  | "materialDark"
-  | "monokai"
-  | "nord"
-  | "tokyoNight"
-  | "solarized"
-  | "solarizedDark";
+  | 'auto'
+  | 'light'
+  | 'dark'
+  | 'github'
+  | 'githubDark'
+  | 'dracula'
+  | 'material'
+  | 'materialDark'
+  | 'monokai'
+  | 'nord'
+  | 'tokyoNight'
+  | 'solarized'
+  | 'solarizedDark';
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: "",
+    default: '',
   },
   language: {
     type: String as PropType<SupportedLanguage>,
-    default: "json",
+    default: 'json',
   },
   theme: {
     type: String as PropType<EditorTheme>,
-    default: "auto",
+    default: 'auto',
   },
   readonly: {
     type: Boolean,
@@ -167,12 +154,12 @@ const props = defineProps({
     default: false,
   },
   height: {
-    type: [Number, String] as PropType<number | "auto">,
+    type: [Number, String] as PropType<number | 'auto'>,
     default: 300,
   },
   placeholder: {
     type: String,
-    default: "",
+    default: '',
   },
   lineNumbers: {
     type: Boolean,
@@ -197,94 +184,91 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (e: "update:modelValue", value: string): void;
-  (e: "change", value: string): void;
-  (e: "focus"): void;
-  (e: "blur"): void;
-  (e: "languageChange", language: SupportedLanguage): void;
+  (e: 'update:modelValue', value: string): void;
+  (e: 'change', value: string): void;
+  (e: 'focus'): void;
+  (e: 'blur'): void;
+  (e: 'languageChange', language: SupportedLanguage): void;
 }>();
 
 const themeStore = useThemeStore();
 const emitLanguage = ref<SupportedLanguage>(props.language);
 
 const languageOptions: Array<{ label: string; value: SupportedLanguage }> = [
-  { label: "JSON", value: "json" },
-  { label: "JavaScript", value: "javascript" },
-  { label: "TypeScript", value: "typescript" },
-  { label: "HTML", value: "html" },
-  { label: "CSS", value: "css" },
-  { label: "Markdown", value: "markdown" },
-  { label: "SQL", value: "sql" },
-  { label: "YAML", value: "yaml" },
-  { label: "XML", value: "xml" },
-  { label: "Python", value: "python" },
-  { label: "Java", value: "java" },
-  { label: "PHP", value: "php" },
-  { label: "Rust", value: "rust" },
-  { label: "Go", value: "go" },
+  { label: 'JSON', value: 'json' },
+  { label: 'JavaScript', value: 'javascript' },
+  { label: 'TypeScript', value: 'typescript' },
+  { label: 'HTML', value: 'html' },
+  { label: 'CSS', value: 'css' },
+  { label: 'Markdown', value: 'markdown' },
+  { label: 'SQL', value: 'sql' },
+  { label: 'YAML', value: 'yaml' },
+  { label: 'XML', value: 'xml' },
+  { label: 'Python', value: 'python' },
+  { label: 'Java', value: 'java' },
+  { label: 'PHP', value: 'php' },
+  { label: 'Rust', value: 'rust' },
+  { label: 'Go', value: 'go' },
 ];
 
-const computedTheme = computed<"light" | "dark">(() => {
-  if (props.theme === "auto") {
-    return themeStore.isDark ? "dark" : "light";
+const computedTheme = computed<'light' | 'dark'>(() => {
+  if (props.theme === 'auto') {
+    return themeStore.isDark ? 'dark' : 'light';
   }
-  const lightThemes = ["light", "github", "material", "solarized"];
-  return lightThemes.includes(props.theme) ? "light" : "dark";
+  const lightThemes = ['light', 'github', 'material', 'solarized'];
+  return lightThemes.includes(props.theme) ? 'light' : 'dark';
 });
 
 const showDefaultToolbar = computed(() => {
-  return (
-    props.showToolbar || props.showLanguageSelect || props.language === "json"
-  );
+  return props.showToolbar || props.showLanguageSelect || props.language === 'json';
 });
 
 const containerStyle = computed<CSSProperties>(() => {
-  if (props.height === "auto") {
+  if (props.height === 'auto') {
     return {
-      height: "auto",
-      minHeight: "100px",
+      height: 'auto',
+      minHeight: '100px',
     };
   }
   return {
-    height:
-      typeof props.height === "number" ? `${props.height}px` : props.height,
+    height: typeof props.height === 'number' ? `${props.height}px` : props.height,
   };
 });
 
 const editorStyle = computed<CSSProperties>(() => ({
-  height: "100%",
-  fontSize: "13px",
+  height: '100%',
+  fontSize: '13px',
 }));
 
 function getLanguageExtension(lang: SupportedLanguage) {
   switch (lang) {
-    case "json":
+    case 'json':
       return json();
-    case "javascript":
+    case 'javascript':
       return javascript();
-    case "typescript":
+    case 'typescript':
       return javascript({ typescript: true });
-    case "html":
+    case 'html':
       return html();
-    case "css":
+    case 'css':
       return css();
-    case "markdown":
+    case 'markdown':
       return markdown();
-    case "sql":
+    case 'sql':
       return sql();
-    case "yaml":
+    case 'yaml':
       return yaml();
-    case "xml":
+    case 'xml':
       return xml();
-    case "python":
+    case 'python':
       return python();
-    case "java":
+    case 'java':
       return java();
-    case "php":
+    case 'php':
       return php();
-    case "rust":
+    case 'rust':
       return rust();
-    case "go":
+    case 'go':
       return go();
     default:
       return json();
@@ -305,8 +289,8 @@ function getThemeExtension(theme: EditorTheme): Extension[] {
     solarizedDark,
   };
 
-  if (theme === "light") return [];
-  if (theme === "dark") return [oneDark];
+  if (theme === 'light') return [];
+  if (theme === 'dark') return [oneDark];
 
   const ext = themeMap[theme];
   return ext ? [ext] : [];
@@ -321,12 +305,7 @@ const baseExtensions = computed<Extension[]>(() => {
     rectangularSelection(),
     crosshairCursor(),
     highlightActiveLine(),
-    keymap.of([
-      ...closeBracketsKeymap,
-      ...defaultKeymap,
-      ...historyKeymap,
-      indentWithTab,
-    ]),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, indentWithTab]),
     indentOnInput(),
     syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
     bracketMatching(),
@@ -334,17 +313,17 @@ const baseExtensions = computed<Extension[]>(() => {
   ];
 
   if (props.lineNumbers) {
-    ext.push(lineNumbers());
+    ext.push(createLineNumbers());
     ext.push(highlightActiveLineGutter());
   }
 
   if (props.foldGutter) {
-    ext.push(foldGutter());
+    ext.push(createFoldGutter());
   }
 
-  if (props.theme === "auto") {
+  if (props.theme === 'auto') {
     if (themeStore.isDark) ext.push(oneDark);
-  } else if (props.theme === "dark") {
+  } else if (props.theme === 'dark') {
     ext.push(oneDark);
   } else {
     ext.push(...getThemeExtension(props.theme));
@@ -352,7 +331,7 @@ const baseExtensions = computed<Extension[]>(() => {
 
   ext.push(getLanguageExtension(emitLanguage.value));
 
-  if (emitLanguage.value === "json") {
+  if (emitLanguage.value === 'json') {
     ext.push(linter(jsonParseLinter()));
   }
 
@@ -361,63 +340,61 @@ const baseExtensions = computed<Extension[]>(() => {
 
 const extensions = computed(() => baseExtensions.value);
 
-function handleUpdate(viewUpdate: {
-  state: { doc: { toString: () => string } };
-}) {
+function handleUpdate(viewUpdate: { state: { doc: { toString: () => string } } }) {
   if (props.readonly || props.disabled) return;
   const value = viewUpdate.state.doc.toString();
-  emit("update:modelValue", value);
-  emit("change", value);
+  emit('update:modelValue', value);
+  emit('change', value);
 }
 
 function handleFocus() {
-  emit("focus");
+  emit('focus');
 }
 
 function handleBlur() {
-  if (props.formatOnBlur && emitLanguage.value === "json" && props.modelValue) {
+  if (props.formatOnBlur && emitLanguage.value === 'json' && props.modelValue) {
     try {
       const parsed = JSON.parse(props.modelValue);
       const formatted = JSON.stringify(parsed, null, 2);
-      emit("update:modelValue", formatted);
-      emit("change", formatted);
+      emit('update:modelValue', formatted);
+      emit('change', formatted);
     } catch (error) {
-      console.warn("JSON format on blur failed:", error);
+      console.warn('JSON format on blur failed:', error);
     }
   }
-  emit("blur");
+  emit('blur');
 }
 
 function handleLanguageChange(lang: SupportedLanguage) {
   emitLanguage.value = lang;
-  emit("languageChange", lang);
+  emit('languageChange', lang);
 }
 
 function formatJson() {
-  if (emitLanguage.value !== "json" || !props.modelValue) return;
+  if (emitLanguage.value !== 'json' || !props.modelValue) return;
   try {
     const parsed = JSON.parse(props.modelValue);
     const formatted = JSON.stringify(parsed, null, 2);
-    emit("update:modelValue", formatted);
-    emit("change", formatted);
-    message.success($t("codeEditor.formatSuccess"));
+    emit('update:modelValue', formatted);
+    emit('change', formatted);
+    message.success($t('codeEditor.formatSuccess'));
   } catch (error) {
-    console.warn("JSON format failed:", error);
-    message.error($t("codeEditor.jsonError"));
+    console.warn('JSON format failed:', error);
+    message.error($t('codeEditor.jsonError'));
   }
 }
 
 function minifyJson() {
-  if (emitLanguage.value !== "json" || !props.modelValue) return;
+  if (emitLanguage.value !== 'json' || !props.modelValue) return;
   try {
     const parsed = JSON.parse(props.modelValue);
     const minified = JSON.stringify(parsed);
-    emit("update:modelValue", minified);
-    emit("change", minified);
-    message.success($t("codeEditor.minifySuccess"));
+    emit('update:modelValue', minified);
+    emit('change', minified);
+    message.success($t('codeEditor.minifySuccess'));
   } catch (error) {
-    console.warn("JSON minify failed:", error);
-    message.error($t("codeEditor.jsonError"));
+    console.warn('JSON minify failed:', error);
+    message.error($t('codeEditor.jsonError'));
   }
 }
 
@@ -425,10 +402,10 @@ async function copyToClipboard() {
   if (!props.modelValue) return;
   try {
     await navigator.clipboard.writeText(props.modelValue);
-    message.success($t("codeEditor.copySuccess"));
+    message.success($t('codeEditor.copySuccess'));
   } catch (error) {
-    console.warn("Copy to clipboard failed:", error);
-    message.error($t("codeEditor.copyFailed"));
+    console.warn('Copy to clipboard failed:', error);
+    message.error($t('codeEditor.copyFailed'));
   }
 }
 
@@ -483,7 +460,7 @@ watch(
   }
 
   :deep(.cm-scroller) {
-    font-family: "Monaco", "Menlo", "Consolas", monospace;
+    font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
   }
 
   :deep(.cm-content) {

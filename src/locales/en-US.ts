@@ -455,5 +455,4 @@ export default {
     passwordPattern: 'Password must be at least 8 characters and include letters and numbers',
     confirmPassword: 'The two passwords do not match',
   },
-
 };

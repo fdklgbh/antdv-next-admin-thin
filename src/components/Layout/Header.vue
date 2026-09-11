@@ -293,13 +293,11 @@ const moreMenuProps = computed(() => {
     );
   }
 
-  items.push(
-    {
-      key: 'settings',
-      label: $t('settings.title'),
-      icon: h(SettingOutlined),
-    },
-  );
+  items.push({
+    key: 'settings',
+    label: $t('settings.title'),
+    icon: h(SettingOutlined),
+  });
 
   return { items, onClick: handleMoreMenuClick };
 });

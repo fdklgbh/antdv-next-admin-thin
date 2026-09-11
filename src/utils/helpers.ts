@@ -57,7 +57,7 @@ export function throttle<T extends (...args: unknown[]) => unknown>(
  * Deep clone object
  */
 export function deepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== "object") {
+  if (obj === null || typeof obj !== 'object') {
     return obj;
   }
 
@@ -86,29 +86,28 @@ export function deepClone<T>(obj: T): T {
  * Format file size
  */
 export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
+  if (bytes === 0) return '0 B';
 
   const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
 }
 
 /**
  * Format number with comma separator
  */
 export function formatNumber(num: number): string {
-  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 /**
  * Generate random string
  */
 export function randomString(length: number = 8): string {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  let result = "";
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
   for (let i = 0; i < length; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -119,9 +118,9 @@ export function randomString(length: number = 8): string {
  * Generate UUID
  */
 export function uuid(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
     const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
     return v.toString(16);
   });
 }
@@ -131,9 +130,9 @@ export function uuid(): string {
  */
 export function isEmpty(value: unknown): boolean {
   if (value === null || value === undefined) return true;
-  if (typeof value === "string") return value.trim().length === 0;
+  if (typeof value === 'string') return value.trim().length === 0;
   if (Array.isArray(value)) return value.length === 0;
-  if (typeof value === "object") return Object.keys(value).length === 0;
+  if (typeof value === 'object') return Object.keys(value).length === 0;
   return false;
 }
 
@@ -142,13 +141,13 @@ export function isEmpty(value: unknown): boolean {
  */
 export function parseQuery(url: string): Record<string, string> {
   const query: Record<string, string> = {};
-  const queryString = url.split("?")[1];
+  const queryString = url.split('?')[1];
 
   if (!queryString) return query;
 
-  queryString.split("&").forEach((param) => {
-    const [key, value] = param.split("=");
-    query[decodeURIComponent(key)] = decodeURIComponent(value || "");
+  queryString.split('&').forEach((param) => {
+    const [key, value] = param.split('=');
+    query[decodeURIComponent(key)] = decodeURIComponent(value || '');
   });
 
   return query;
@@ -159,17 +158,11 @@ export function parseQuery(url: string): Record<string, string> {
  */
 export function buildQuery(params: Record<string, unknown>): string {
   const query = Object.keys(params)
-    .filter(
-      (key) =>
-        params[key] !== undefined && params[key] !== null && params[key] !== "",
-    )
-    .map(
-      (key) =>
-        `${encodeURIComponent(key)}=${encodeURIComponent(String(params[key]))}`,
-    )
-    .join("&");
+    .filter((key) => params[key] !== undefined && params[key] !== null && params[key] !== '')
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(String(params[key]))}`)
+    .join('&');
 
-  return query ? `?${query}` : "";
+  return query ? `?${query}` : '';
 }
 
 /**
@@ -177,7 +170,7 @@ export function buildQuery(params: Record<string, unknown>): string {
  */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = window.URL.createObjectURL(blob);
-  const link = document.createElement("a");
+  const link = document.createElement('a');
   link.href = url;
   link.download = filename;
   document.body.appendChild(link);
@@ -196,18 +189,18 @@ export async function copyToClipboard(text: string): Promise<boolean> {
       return true;
     } else {
       // Fallback for older browsers
-      const textarea = document.createElement("textarea");
+      const textarea = document.createElement('textarea');
       textarea.value = text;
-      textarea.style.position = "fixed";
-      textarea.style.opacity = "0";
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
       document.body.appendChild(textarea);
       textarea.select();
-      const success = document.execCommand("copy");
+      const success = document.execCommand('copy');
       document.body.removeChild(textarea);
       return success;
     }
   } catch (error) {
-    console.error("Failed to copy to clipboard:", error);
+    console.error('Failed to copy to clipboard:', error);
     return false;
   }
 }
@@ -240,7 +233,7 @@ export async function retry<T>(
  * Get file extension
  */
 export function getFileExtension(filename: string): string {
-  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 2);
+  return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2);
 }
 
 /**
@@ -264,8 +257,8 @@ export function isValidPhone(phone: string): boolean {
  */
 export function isValidURL(url: string): boolean {
   try {
-    const _url = new URL(url);
-    return _url !== null;
+    const parsedUrl = new URL(url);
+    return parsedUrl !== null;
   } catch {
     return false;
   }
@@ -274,11 +267,7 @@ export function isValidURL(url: string): boolean {
 /**
  * Truncate text with ellipsis
  */
-export function truncate(
-  text: string,
-  length: number,
-  suffix: string = "...",
-): string {
+export function truncate(text: string, length: number, suffix: string = '...'): string {
   if (text.length <= length) return text;
   return text.slice(0, length) + suffix;
 }
@@ -295,8 +284,8 @@ export function capitalize(text: string): string {
  */
 export function kebabCase(text: string): string {
   return text
-    .replace(/([a-z])([A-Z])/g, "$1-$2")
-    .replace(/[\s_]+/g, "-")
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
     .toLowerCase();
 }
 
@@ -304,19 +293,17 @@ export function kebabCase(text: string): string {
  * Convert to camelCase
  */
 export function camelCase(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ""));
+  return text.toLowerCase().replace(/[-_\s]+(.)?/g, (_, c) => (c ? c.toUpperCase() : ''));
 }
 
 /**
  * Get contrast color (black or white) for background
  */
 export function getContrastColor(hexColor: string): string {
-  const hex = hexColor.replace("#", "");
+  const hex = hexColor.replace('#', '');
   const r = parseInt(hex.substr(0, 2), 16);
   const g = parseInt(hex.substr(2, 2), 16);
   const b = parseInt(hex.substr(4, 2), 16);
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 128 ? "#000000" : "#ffffff";
+  return brightness > 128 ? '#000000' : '#ffffff';
 }

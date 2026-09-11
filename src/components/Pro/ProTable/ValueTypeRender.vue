@@ -7,12 +7,12 @@
 
     <!-- Date -->
     <span v-else-if="type === 'date'">
-      {{ formatDate(value, resolvedValueTypeProps.format || "YYYY-MM-DD") }}
+      {{ formatDate(value, resolvedValueTypeProps.format || 'YYYY-MM-DD') }}
     </span>
 
     <!-- DateTime -->
     <span v-else-if="type === 'dateTime'">
-      {{ formatDate(value, resolvedValueTypeProps.format || "YYYY-MM-DD HH:mm:ss") }}
+      {{ formatDate(value, resolvedValueTypeProps.format || 'YYYY-MM-DD HH:mm:ss') }}
     </span>
 
     <!-- Tag -->
@@ -29,7 +29,7 @@
 
     <!-- Money -->
     <span v-else-if="type === 'money'" class="money">
-      {{ resolvedValueTypeProps.symbol ?? "¥"
+      {{ resolvedValueTypeProps.symbol ?? '¥'
       }}{{ formatMoney(value, resolvedValueTypeProps.precision) }}
     </span>
 
@@ -71,15 +71,14 @@
 </template>
 
 <script setup lang="ts">
-import type { ValueType } from "@/types/pro";
+import type { ValueType } from '@/types/pro';
 
-import { computed } from "vue";
+import { message } from 'antdv-next';
+import dayjs from 'dayjs';
+import { computed } from 'vue';
 
-import { message } from "antdv-next";
-import dayjs from "dayjs";
-
-import { $t } from "@/locales";
-import { copyToClipboard } from "@/utils/helpers";
+import { $t } from '@/locales';
+import { copyToClipboard } from '@/utils/helpers';
 
 interface ValueTypeProps {
   format?: string;
@@ -89,7 +88,7 @@ interface ValueTypeProps {
   width?: number;
 }
 
-type BadgeStatus = "success" | "processing" | "default" | "error" | "warning";
+type BadgeStatus = 'success' | 'processing' | 'default' | 'error' | 'warning';
 
 interface Props {
   value: unknown;
@@ -101,7 +100,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  type: "text",
+  type: 'text',
   copyable: false,
   valueTypeProps: () => ({}),
 });
@@ -109,19 +108,15 @@ const props = withDefaults(defineProps<Props>(), {
 const resolvedValueTypeProps = computed<ValueTypeProps>(() => props.valueTypeProps ?? {});
 
 const asString = (val: unknown): string | undefined => {
-  return typeof val === "string" ? val : undefined;
+  return typeof val === 'string' ? val : undefined;
 };
 
 const asNumber = (val: unknown): number | undefined => {
-  return typeof val === "number" ? val : undefined;
+  return typeof val === 'number' ? val : undefined;
 };
 
 const getEnumKey = (value: unknown) => {
-  if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  ) {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
   return undefined;
@@ -135,11 +130,11 @@ const getEnumConfig = (value: unknown) => {
 const getBadgeStatus = (value: unknown): BadgeStatus | undefined => {
   const status = getEnumConfig(value)?.status;
   if (
-    status === "success" ||
-    status === "processing" ||
-    status === "default" ||
-    status === "error" ||
-    status === "warning"
+    status === 'success' ||
+    status === 'processing' ||
+    status === 'default' ||
+    status === 'error' ||
+    status === 'warning'
   ) {
     return status;
   }
@@ -147,23 +142,23 @@ const getBadgeStatus = (value: unknown): BadgeStatus | undefined => {
 };
 
 const formatDate = (value: unknown, format: string) => {
-  if (!value) return "-";
-  if (typeof value === "string" || typeof value === "number" || value instanceof Date) {
+  if (!value) return '-';
+  if (typeof value === 'string' || typeof value === 'number' || value instanceof Date) {
     return dayjs(value).format(format);
   }
-  return "-";
+  return '-';
 };
 
 const formatMoney = (value: unknown, precision?: number) => {
-  if (value === null || value === undefined) return "0.00";
+  if (value === null || value === undefined) return '0.00';
   const p = precision ?? 2;
   return Number(value)
     .toFixed(p)
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 };
 
 const formatPercent = (value: unknown, precision?: number) => {
-  if (value === null || value === undefined) return "0";
+  if (value === null || value === undefined) return '0';
   const p = precision ?? 2;
   return Number(value).toFixed(p);
 };
@@ -172,9 +167,9 @@ const handleCopy = async () => {
   if (props.copyable && props.value) {
     const success = await copyToClipboard(String(props.value));
     if (success) {
-      message.success($t("common.copySuccess"));
+      message.success($t('common.copySuccess'));
     } else {
-      message.error($t("common.copyFailed"));
+      message.error($t('common.copyFailed'));
     }
   }
 };

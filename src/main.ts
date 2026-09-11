@@ -3,6 +3,7 @@ import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
 import { CurrentUsername } from '@/services/system';
+import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
@@ -10,7 +11,6 @@ import i18n, { localeReady } from './locales';
 import router from './router';
 import { configureThemeRuntimePlatform } from './stores/theme';
 import { service } from './utils/request';
-import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
 import 'antdv-next/dist/reset.css';

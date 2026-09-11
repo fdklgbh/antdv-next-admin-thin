@@ -452,5 +452,4 @@ export default {
     passwordPattern: '密码至少8位，包含字母和数字',
     confirmPassword: '两次输入的密码不一致',
   },
-
 };

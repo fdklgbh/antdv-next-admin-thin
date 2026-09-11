@@ -64,11 +64,7 @@
     />
 
     <!-- Switch -->
-    <a-switch
-      v-else-if="item.type === 'switch'"
-      v-model:checked="modelValue"
-      v-bind="item.props"
-    />
+    <a-switch v-else-if="item.type === 'switch'" v-model:checked="modelValue" v-bind="item.props" />
 
     <!-- Date Picker -->
     <a-date-picker
@@ -126,18 +122,10 @@
     />
 
     <!-- Slider -->
-    <a-slider
-      v-else-if="item.type === 'slider'"
-      v-model:value="modelValue"
-      v-bind="item.props"
-    />
+    <a-slider v-else-if="item.type === 'slider'" v-model:value="modelValue" v-bind="item.props" />
 
     <!-- Rate -->
-    <a-rate
-      v-else-if="item.type === 'rate'"
-      v-model:value="modelValue"
-      v-bind="item.props"
-    />
+    <a-rate v-else-if="item.type === 'rate'" v-model:value="modelValue" v-bind="item.props" />
 
     <!-- Cascader -->
     <a-cascader

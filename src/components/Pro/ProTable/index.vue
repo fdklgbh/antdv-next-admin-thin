@@ -1088,8 +1088,8 @@ const tableColumns = computed(() => {
     };
 
     if (headerFilter) {
-      enhancedColumn.__proHeaderFilter = headerFilter;
-      enhancedColumn.__proHeaderFilterKey = key;
+      enhancedColumn.proHeaderFilter = headerFilter;
+      enhancedColumn.proHeaderFilterKey = key;
       enhancedColumn.filteredValue = selectedValues.length > 0 ? selectedValues : null;
       enhancedColumn.filterIcon =
         enhancedColumn.filterIcon ??
@@ -1208,22 +1208,24 @@ const densityMenuProps = computed(() => ({
 // Methods
 const initializeColumnStates = () => {
   const previousFilters = { ...tableFilters.value };
-  const states = props.columns.filter((column) => !column.hideInTable).map((column, index) => {
-    const key = resolveColumnKey(column, index);
-    const checked = !column.hideInTable;
-    return {
-      key,
-      title: String(column.title ?? column.dataIndex ?? key),
-      checked,
-      fixed: column.fixed,
-      defaultChecked: checked,
-      defaultFixed: column.fixed,
-      column: {
-        ...column,
-        key: column.key || key,
-      },
-    } as ColumnState;
-  });
+  const states = props.columns
+    .filter((column) => !column.hideInTable)
+    .map((column, index) => {
+      const key = resolveColumnKey(column, index);
+      const checked = !column.hideInTable;
+      return {
+        key,
+        title: String(column.title ?? column.dataIndex ?? key),
+        checked,
+        fixed: column.fixed,
+        defaultChecked: checked,
+        defaultFixed: column.fixed,
+        column: {
+          ...column,
+          key: column.key || key,
+        },
+      } as ColumnState;
+    });
 
   columnStates.value = states;
   defaultColumnStates.value = states.map(cloneColumnState);
@@ -1351,8 +1353,8 @@ const getHeaderFilterEntry = (column: Record<string, unknown>) => {
     return undefined;
   }
 
-  const directHeaderFilter = column.__proHeaderFilter as ProTableHeaderFilter | undefined;
-  const directKey = column.__proHeaderFilterKey as string | undefined;
+  const directHeaderFilter = column.proHeaderFilter as ProTableHeaderFilter | undefined;
+  const directKey = column.proHeaderFilterKey as string | undefined;
   if (directHeaderFilter) {
     return {
       key: String(directKey || column.key || column.dataIndex || ''),

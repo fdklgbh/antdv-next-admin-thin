@@ -189,7 +189,8 @@ export default {
     aiCollabHint: 'トップナビゲーションバーに AI チャットのエントリアイコンを表示します',
     aiCollabHintMobile: 'モバイルでは AI チャット分割表示を利用できません',
     languageSwitch: '言語切り替え',
-    languageSwitchHint: 'トップナビゲーションバーとモバイルメニューに言語切り替えボタンを表示します',
+    languageSwitchHint:
+      'トップナビゲーションバーとモバイルメニューに言語切り替えボタンを表示します',
     reset: '設定をリセットする',
     confirmReset: 'すべての設定をリセットしてもよろしいですか?',
     colors: {
@@ -436,5 +437,4 @@ export default {
     passwordPattern: 'パスワードは 8 文字以上で、文字と数字を含める必要があります',
     confirmPassword: '2 つのパスワードが一致しません',
   },
-
 };

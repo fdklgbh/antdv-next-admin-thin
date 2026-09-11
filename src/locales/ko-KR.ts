@@ -436,5 +436,4 @@ export default {
     passwordPattern: '비밀번호는 8자 이상이어야 하며 문자와 숫자를 포함해야 합니다.',
     confirmPassword: '두 비밀번호가 일치하지 않습니다.',
   },
-
 };
