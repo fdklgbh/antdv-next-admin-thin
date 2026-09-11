@@ -59,6 +59,7 @@ async function bootstrap() {
   app.use(i18n);
   registerDefaultComponentProps(app);
 
+  await router.isReady();
   app.mount('#app');
 }
 

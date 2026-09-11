@@ -128,6 +128,7 @@ export const useThemeStore = defineStore('theme', () => {
   const applyTheme = (themeMode = mode.value) => {
     const root = document.documentElement;
     root.classList.toggle('dark', resolveIsDark(themeMode));
+    root.style.colorScheme = resolveIsDark(themeMode) ? 'dark' : 'light';
     localStorage.setItem('theme-mode', themeMode);
   };
 

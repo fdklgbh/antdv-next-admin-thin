@@ -5,6 +5,89 @@
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Antdv Next Admin</title>
+    <script>
+      (function () {
+        var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        try {
+          var mode = localStorage.getItem('theme-mode');
+          if (mode === 'dark' || mode === 'light') dark = mode === 'dark';
+        } catch (error) {
+          console.warn('无法读取开屏明暗模式', error);
+        }
+        var root = document.documentElement;
+        root.classList.toggle('dark', dark);
+        root.style.colorScheme = dark ? 'dark' : 'light';
+        root.style.setProperty('--startup-background', dark ? '#141414' : '#fff');
+      })();
+    </script>
+    <style>
+      html { background: var(--color-bg-layout, var(--startup-background)); }
+      body { margin: 0; }
+
+      #startup-loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--startup-background);
+        color: #1890ff;
+      }
+
+      /* From Uiverse.io by alexruix — adapted to the saved application theme. */
+      .startup-loader {
+        width: 48px;
+        height: 48px;
+        position: relative;
+        margin-bottom: 18px;
+      }
+
+      .startup-loader::before {
+        content: '';
+        width: 48px;
+        height: 5px;
+        background: currentColor;
+        opacity: 0.31;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        border-radius: 50%;
+        animation: startup-shadow 0.5s linear infinite;
+      }
+
+      .startup-loader::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        background: currentColor;
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 4px;
+        animation: startup-jump 0.5s linear infinite;
+      }
+
+      @keyframes startup-jump {
+        15% { border-bottom-right-radius: 3px; }
+        25% { transform: translateY(9px) rotate(22.5deg); }
+        50% {
+          transform: translateY(18px) scale(1, 0.9) rotate(45deg);
+          border-bottom-right-radius: 40px;
+        }
+        75% { transform: translateY(9px) rotate(67.5deg); }
+        100% { transform: translateY(0) rotate(90deg); }
+      }
+
+      @keyframes startup-shadow {
+        0%, 100% { transform: scale(1, 1); }
+        50% { transform: scale(1.2, 1); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .startup-loader::before,
+        .startup-loader::after { animation: none; }
+      }
+    </style>
     <!-- GitHub Pages SPA 路由重定向处理 -->
     <script>
       (function() {
@@ -17,7 +100,37 @@
     </script>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="startup-loading" role="status" aria-label="正在加载" aria-busy="true">
+        <div class="startup-loader" aria-hidden="true"></div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var loading = document.getElementById('startup-loading');
+        var colors = {
+          blue: '#1890ff', green: '#52c41a', purple: '#722ed1',
+          red: '#f5222d', orange: '#fa8c16', cyan: '#13c2c2'
+        };
+        try {
+          var labels = {
+            'zh-CN': '正在加载', 'en-US': 'Loading',
+            'ja-JP': '読み込み中', 'ko-KR': '로딩 중'
+          };
+          var locale = localStorage.getItem('app-locale');
+          if (Object.prototype.hasOwnProperty.call(labels, locale)) {
+            loading.setAttribute('aria-label', labels[locale]);
+          }
+          var preset = localStorage.getItem('app-primary-color');
+          var custom = localStorage.getItem('app-custom-primary-color');
+          var color = Object.prototype.hasOwnProperty.call(colors, preset) ? colors[preset] : colors.blue;
+          if (custom && /^#[\da-f]{6}$/i.test(custom)) color = custom;
+          loading.style.color = color;
+        } catch (error) {
+          console.warn('无法读取开屏主题设置', error);
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

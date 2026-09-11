@@ -37,6 +37,10 @@ const watermarkStore = useWatermarkStore();
 const notificationStore = useNotificationStore();
 const { locale } = useI18n();
 
+// Restore the theme before the first component render replaces the splash.
+themeStore.initTheme();
+settingsStore.initSettings();
+
 const antdLocaleMap = {
   'zh-CN': zhCN,
   'en-US': enUS,
@@ -83,9 +87,6 @@ watchEffect(() => {
 notificationStore.initNotifications();
 
 onMounted(() => {
-  // Initialize theme and settings from localStorage
-  themeStore.initTheme();
-  settingsStore.initSettings();
   watermarkStore.initWatermark();
 });
 </script>
