@@ -134,7 +134,7 @@ export const useThemeStore = defineStore('theme', () => {
 
   const updateTheme = (options: ThemeUpdateOptions = {}, applyThemeCallback = applyTheme) => {
     const { withTransition = false, origin, direction } = options;
-    // Set from the running OS before mounting; only Ubuntu 22 skips animations.
+    // Set before mounting: Ubuntu 22 and 24.04 skip both theme animations.
     if (!withTransition || disableThemeTransitions.value) {
       applyThemeCallback();
       return;

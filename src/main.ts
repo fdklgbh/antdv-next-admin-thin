@@ -1,7 +1,7 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
-import { CurrentUsername, IsUbuntu22 } from '@/services/system';
+import { CurrentUsername, ShouldDisableThemeTransitions } from '@/services/system';
 import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
 
@@ -48,7 +48,7 @@ async function bootstrap() {
 
   // Register plugins
   app.use(pinia);
-  useThemeStore(pinia).disableThemeTransitions = await IsUbuntu22();
+  useThemeStore(pinia).disableThemeTransitions = await ShouldDisableThemeTransitions();
   const authStore = useAuthStore(pinia);
   authStore.initAuth();
   const username = await CurrentUsername();
