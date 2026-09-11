@@ -1,17 +1,11 @@
-import axios, {
-  AxiosError,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-} from 'axios';
-
 import { message } from 'antdv-next';
+import { create, AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 
 export interface RequestConfig extends AxiosRequestConfig {
   skipErrorMessage?: boolean;
 }
 
-export const service: AxiosInstance = axios.create({
+export const service: AxiosInstance = create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   timeout: 15000,
   headers: {

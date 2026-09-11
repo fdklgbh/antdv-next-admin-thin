@@ -1,6 +1,6 @@
-import type { AxiosInstance } from "axios";
+import type { AxiosInstance } from 'axios';
 
-import AxiosMockAdapter from "axios-mock-adapter";
+import AxiosMockAdapter from 'axios-mock-adapter';
 
 import {
   mockActivities,
@@ -8,9 +8,9 @@ import {
   mockSalesTrend,
   mockStats,
   mockUserDistribution,
-} from "../../mock/data/dashboard.data";
+} from '../../mock/data/dashboard.data';
 
-const SUCCESS_MESSAGE = "success";
+const SUCCESS_MESSAGE = 'success';
 
 function successResponse<T>(data: T) {
   return {
@@ -22,7 +22,7 @@ function successResponse<T>(data: T) {
 }
 
 function parseJsonBody<T>(data: unknown, fallback: T): T {
-  if (typeof data !== "string") return fallback;
+  if (typeof data !== 'string') return fallback;
 
   try {
     return JSON.parse(data) as T;
@@ -32,27 +32,27 @@ function parseJsonBody<T>(data: unknown, fallback: T): T {
 }
 
 function getQueryParam(configUrl: string | undefined, key: string): string {
-  const url = new URL(configUrl || "", "https://mock.local");
-  return url.searchParams.get(key) || "";
+  const url = new URL(configUrl || '', 'https://mock.local');
+  return url.searchParams.get(key) || '';
 }
 
 function getPageParams(url: string | undefined) {
   return {
-    current: Number(getQueryParam(url, "current") || getQueryParam(url, "page") || 1),
-    pageSize: Number(getQueryParam(url, "pageSize") || 10),
+    current: Number(getQueryParam(url, 'current') || getQueryParam(url, 'page') || 1),
+    pageSize: Number(getQueryParam(url, 'pageSize') || 10),
   };
 }
 
 function fallbackDemoResponse(config: { data?: unknown; method?: string; url?: string }) {
-  const method = config.method?.toLowerCase() || "get";
-  const url = config.url || "";
+  const method = config.method?.toLowerCase() || 'get';
+  const url = config.url || '';
 
-  if (method === "get" && /\/list(?:\?.*)?$|[?&](current|page|pageSize)=/.test(url)) {
+  if (method === 'get' && /\/list(?:\?.*)?$|[?&](current|page|pageSize)=/.test(url)) {
     const { current, pageSize } = getPageParams(url);
     return successResponse({ list: [], total: 0, current, pageSize });
   }
 
-  if (method === "post" || method === "put" || method === "patch") {
+  if (method === 'post' || method === 'put' || method === 'patch') {
     return successResponse(parseJsonBody(config.data, null));
   }
 
@@ -69,9 +69,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     data: { enabled: true },
   });
 
-  mock
-    .onGet(/\/api\/dashboard\/stats$|\/dashboard\/stats$/)
-    .reply(200, successResponse(mockStats));
+  mock.onGet(/\/api\/dashboard\/stats$|\/dashboard\/stats$/).reply(200, successResponse(mockStats));
   mock
     .onGet(/\/api\/dashboard\/sales-trend$|\/dashboard\/sales-trend$/)
     .reply(200, successResponse(mockSalesTrend));

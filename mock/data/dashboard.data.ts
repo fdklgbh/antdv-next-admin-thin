@@ -1,4 +1,4 @@
-const avatarImg = "/src/assets/images/avatar-256.png";
+const avatarImg = '/src/assets/images/avatar-256.png';
 
 /**
  * Deterministic pseudo-random number generator (mulberry32).
@@ -56,14 +56,25 @@ export const mockUserDistribution = [
 
 // Recent activities
 const ACTIVITY_USERS = [
-  'Administrator', 'Alice Johnson', 'Bob Smith', 'Carol White',
-  'David Brown', 'Eva Martinez', 'Frank Wilson', 'Grace Lee',
-  'Henry Davis', 'Iris Taylor',
+  'Administrator',
+  'Alice Johnson',
+  'Bob Smith',
+  'Carol White',
+  'David Brown',
+  'Eva Martinez',
+  'Frank Wilson',
+  'Grace Lee',
+  'Henry Davis',
+  'Iris Taylor',
 ] as const;
 
 const ACTIVITY_ACTIONS = [
-  'Created a new user', 'Updated system settings', 'Deleted expired data',
-  'Exported reports', 'Updated system settings', 'Uploaded a new file',
+  'Created a new user',
+  'Updated system settings',
+  'Deleted expired data',
+  'Exported reports',
+  'Updated system settings',
+  'Uploaded a new file',
 ] as const;
 
 const ACTIVITY_TYPES = ['success', 'info', 'warning', 'error'] as const;

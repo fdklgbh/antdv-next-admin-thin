@@ -1,9 +1,9 @@
-import type { App, Component } from "vue";
+import type { App, Component } from 'vue';
 
-import { DatePicker, DateRangePicker, Select } from "antdv-next";
-import { defineComponent, h } from "vue";
+import { DatePicker, DateRangePicker, Select } from 'antdv-next';
+import { defineComponent, h } from 'vue';
 
-import { appDefaultSettings } from "@/settings";
+import { appDefaultSettings } from '@/settings';
 
 type AttrMap = Record<string, unknown>;
 
@@ -27,25 +27,25 @@ const withAllowClearDefault = (
 };
 
 const SelectWithDefaults = withAllowClearDefault(
-  "ASelectWithDefaults",
+  'ASelectWithDefaults',
   Select,
   () => appDefaultSettings.select.allowClear,
 );
 
 const DatePickerWithDefaults = withAllowClearDefault(
-  "ADatePickerWithDefaults",
+  'ADatePickerWithDefaults',
   DatePicker,
   () => appDefaultSettings.datePicker.allowClear,
 );
 
 const RangePickerWithDefaults = withAllowClearDefault(
-  "ARangePickerWithDefaults",
+  'ARangePickerWithDefaults',
   DateRangePicker,
   () => appDefaultSettings.datePicker.allowClear,
 );
 
 export const registerDefaultComponentProps = (app: App) => {
-  app.component("ASelect", SelectWithDefaults);
-  app.component("ADatePicker", DatePickerWithDefaults);
-  app.component("ARangePicker", RangePickerWithDefaults);
+  app.component('ASelect', SelectWithDefaults);
+  app.component('ADatePicker', DatePickerWithDefaults);
+  app.component('ARangePicker', RangePickerWithDefaults);
 };

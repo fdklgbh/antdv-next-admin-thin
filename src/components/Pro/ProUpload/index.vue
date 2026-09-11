@@ -12,7 +12,7 @@
   >
     <a-button>
       <UploadOutlined />
-      {{ buttonText || $t("proUpload.uploadFile") }}
+      {{ buttonText || $t('proUpload.uploadFile') }}
     </a-button>
     <template v-if="hint" #itemRender>
       <span />
@@ -33,7 +33,7 @@
     <p class="ant-upload-drag-icon">
       <InboxOutlined />
     </p>
-    <p class="ant-upload-text">{{ buttonText || $t("proUpload.dragHint") }}</p>
+    <p class="ant-upload-text">{{ buttonText || $t('proUpload.dragHint') }}</p>
     <p v-if="hint" class="ant-upload-hint">{{ hint }}</p>
   </a-upload-dragger>
 
@@ -52,7 +52,7 @@
     <div v-if="!maxCount || fileList.length < maxCount">
       <PlusOutlined />
       <div style="margin-top: 8px">
-        {{ buttonText || $t("proUpload.uploadImage") }}
+        {{ buttonText || $t('proUpload.uploadImage') }}
       </div>
     </div>
   </a-upload>
@@ -73,9 +73,7 @@
     <div class="pro-upload-avatar-wrapper">
       <a-avatar v-if="avatarUrl" :src="avatarUrl" :size="96" />
       <div v-else class="pro-upload-avatar-placeholder">
-        <UserOutlined
-          style="font-size: 32px; color: var(--color-text-quaternary)"
-        />
+        <UserOutlined style="font-size: 32px; color: var(--color-text-quaternary)" />
       </div>
       <div class="pro-upload-avatar-overlay">
         <CameraOutlined />
@@ -85,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ProUploadMode } from "@/types/pro";
+import type { ProUploadMode } from '@/types/pro';
 
 import {
   UploadOutlined,
@@ -93,11 +91,11 @@ import {
   PlusOutlined,
   UserOutlined,
   CameraOutlined,
-} from "@antdv-next/icons";
-import { message } from "antdv-next";
-import { ref, watch, computed } from "vue";
+} from '@antdv-next/icons';
+import { message } from 'antdv-next';
+import { ref, watch, computed } from 'vue';
 
-import { $t } from "@/locales";
+import { $t } from '@/locales';
 
 interface UploadFile {
   uid: string;
@@ -121,15 +119,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  mode: "button",
+  mode: 'button',
   maxSize: 10,
 });
 
-const emit = defineEmits(["update:value", "change"]);
+const emit = defineEmits(['update:value', 'change']);
 
-const fileList = ref<UploadFile[]>(
-  (props.value as UploadFile[] | undefined) ?? []
-);
+const fileList = ref<UploadFile[]>((props.value as UploadFile[] | undefined) ?? []);
 
 watch(
   () => props.value,
@@ -140,32 +136,32 @@ watch(
 
 const avatarUrl = computed(() => {
   const file = fileList.value[0];
-  if (!file) return "";
+  if (!file) return '';
   if (file.thumbUrl) return file.thumbUrl;
   if (file.url) return file.url;
   if (file.originFileObj) return URL.createObjectURL(file.originFileObj);
-  return "";
+  return '';
 });
 
 const handleBeforeUpload = (file: File) => {
   if (props.maxSize) {
     const isLt = file.size / 1024 / 1024 < props.maxSize;
     if (!isLt) {
-      message.error($t("proUpload.fileSizeExceed", { size: props.maxSize }));
+      message.error($t('proUpload.fileSizeExceed', { size: props.maxSize }));
       return false;
     }
   }
   if (props.accept) {
-    const acceptList = props.accept.split(",").map((s) => s.trim());
-    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    const acceptList = props.accept.split(',').map((s) => s.trim());
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
     const mime = file.type;
     const match = acceptList.some((a) => {
-      if (a.startsWith(".")) return ext === a.toLowerCase();
-      if (a.endsWith("/*")) return mime.startsWith(a.replace("/*", "/"));
+      if (a.startsWith('.')) return ext === a.toLowerCase();
+      if (a.endsWith('/*')) return mime.startsWith(a.replace('/*', '/'));
       return mime === a;
     });
     if (!match) {
-      message.error($t("proUpload.fileTypeNotAllowed"));
+      message.error($t('proUpload.fileTypeNotAllowed'));
       return false;
     }
   }
@@ -174,8 +170,8 @@ const handleBeforeUpload = (file: File) => {
 
 const handleChange = (files: UploadFile[]) => {
   fileList.value = files;
-  emit("update:value", files);
-  emit("change", files);
+  emit('update:value', files);
+  emit('change', files);
 };
 </script>
 

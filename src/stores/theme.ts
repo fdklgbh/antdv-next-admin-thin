@@ -29,6 +29,7 @@ export const useThemeStore = defineStore('theme', () => {
   // State
   const mode = ref<ThemeMode>('system');
   const systemPrefersDark = ref(false);
+  const disableThemeTransitions = ref(false);
   let transitionTimer: number | null = null;
 
   // Getters
@@ -130,22 +131,16 @@ export const useThemeStore = defineStore('theme', () => {
     localStorage.setItem('theme-mode', themeMode);
   };
 
-  const updateTheme = (
-    options: ThemeUpdateOptions = {},
-    applyThemeCallback = applyTheme,
-  ) => {
+  const updateTheme = (options: ThemeUpdateOptions = {}, applyThemeCallback = applyTheme) => {
     const { withTransition = false, origin, direction } = options;
-    if (!withTransition) {
+    // Set from the running OS before mounting; only Ubuntu 22 skips animations.
+    if (!withTransition || disableThemeTransitions.value) {
       applyThemeCallback();
       return;
     }
 
     if (origin && supportsCircularRevealTransition()) {
-      const success = runCircularRevealTransition(
-        origin,
-        direction,
-        applyThemeCallback,
-      );
+      const success = runCircularRevealTransition(origin, direction, applyThemeCallback);
       if (success) {
         return;
       }
@@ -223,6 +218,7 @@ export const useThemeStore = defineStore('theme', () => {
     // State
     mode,
     systemPrefersDark,
+    disableThemeTransitions,
     // Getters
     isDark,
     // Actions

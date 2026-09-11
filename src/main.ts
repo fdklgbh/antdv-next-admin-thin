@@ -1,14 +1,14 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
-import { CurrentUsername } from '@/services/system';
+import { CurrentUsername, IsUbuntu22 } from '@/services/system';
+import { useAuthStore, useMenuPreferencesStore } from '@/stores';
+import { useThemeStore } from '@/stores/theme';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { useAuthStore } from '@/stores';
-import { useMenuPreferencesStore } from '@/stores';
 import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
@@ -48,6 +48,7 @@ async function bootstrap() {
 
   // Register plugins
   app.use(pinia);
+  useThemeStore(pinia).disableThemeTransitions = await IsUbuntu22();
   const authStore = useAuthStore(pinia);
   authStore.initAuth();
   const username = await CurrentUsername();
