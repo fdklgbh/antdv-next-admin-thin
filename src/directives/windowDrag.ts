@@ -1,6 +1,14 @@
 import type { ObjectDirective } from 'vue';
 
+import { ref, watchEffect } from 'vue';
+
 import { windowApi } from '@/platform/window';
+import { useLayoutStore } from '@/stores/layout';
+
+const bindings = new WeakMap<
+  HTMLElement,
+  { update(value: boolean | undefined): void; stop(): void }
+>();
 
 function handleDoubleClick(event: MouseEvent) {
   if (event.button !== 0 || event.defaultPrevented || windowApi.handlesDragDoubleClick()) return;
@@ -18,14 +26,29 @@ function handleDoubleClick(event: MouseEvent) {
 
 export const vWindowDrag: ObjectDirective<HTMLElement, boolean | undefined> = {
   mounted(el, { value }) {
+    const layoutStore = useLayoutStore();
+    const enabled = ref(value !== false);
     el.classList.add('window-drag-region');
-    el.classList.toggle('window-no-drag', value === false);
+    const stop = watchEffect(
+      () => {
+        el.classList.toggle('window-no-drag', layoutStore.isMobile || !enabled.value);
+      },
+      { flush: 'sync' },
+    );
+    bindings.set(el, {
+      update: (nextValue) => {
+        enabled.value = nextValue !== false;
+      },
+      stop,
+    });
     el.addEventListener('dblclick', handleDoubleClick);
   },
   updated(el, { value }) {
-    el.classList.toggle('window-no-drag', value === false);
+    bindings.get(el)?.update(value);
   },
   beforeUnmount(el) {
+    bindings.get(el)?.stop();
+    bindings.delete(el);
     el.removeEventListener('dblclick', handleDoubleClick);
     el.classList.remove('window-drag-region', 'window-no-drag');
   },

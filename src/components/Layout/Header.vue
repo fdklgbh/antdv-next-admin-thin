@@ -1,5 +1,5 @@
 <template>
-  <a-layout-header v-window-drag="!layoutStore.isMobile" class="admin-header">
+  <a-layout-header v-window-drag class="admin-header">
     <div class="header-left">
       <!-- Collapse Button -->
       <a-button

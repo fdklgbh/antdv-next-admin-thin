@@ -1,5 +1,29 @@
 # Antdv Next Admin - Agent 指南
 
+## 桌面集成与维护补充
+
+- 本目录是 Wails 项目的独立前端子模块，桌面联调从项目根目录运行 task dev。
+  单独运行 Vite 不提供原生 runtime 和 Go 服务，不能据此验证桌面行为。
+- v2 的 @wails 别名指向 wailsjs/，runtime 使用 @wails/runtime/runtime。
+- runtime 调用集中在 src/platform/runtime.ts；领域入口与版本适配规则见
+  src/platform/AGENTS.md。Go 业务服务从 src/services/ 的手写入口导入。
+- v-window-drag 内部响应 layoutStore.isMobile，组件默认直接写 v-window-drag。
+  传入 false 额外禁用；保留移动端限制及卸载清理。
+- vite.config.ts 使用 Vite 8 的 rolldownOptions.output.codeSplitting；
+  框架与图表按现有规则分组，其余依赖自动拆分，保留路由懒加载边界。
+- *.tsbuildinfo 是类型检查缓存，不提交。不要仅为消除图标大包警告提高阈值。
+
+## 组件与语言资源维护
+
+- ProTable 请求契约使用 src/types/pro 中的 ProTableRequestParams 和
+  ProTableRequestResult；搜索字段优先通过 search.formItems 独立配置。
+- 修改翻译时同步四种语言的 key 和占位符；删除前检查静态和动态引用。
+- 增删语言时同时检查 src/locales/index.ts 的类型、列表、标签、加载器及 dayjs
+  映射，Layout/LanguageSwitch.vue、Layout/Header.vue 和 App.vue 的菜单与 UI 映射。
+- 保留已存储语言值的有效回退；默认语言与回退语言一起核对，不单独删除 zh-CN。
+- Demo 构建用于浏览器 Mock；当前桌面入口仍调用原生能力，不能仅凭 Demo 构建
+  成功断言静态托管可用。
+
 ## 项目概览
 
 Antdv Next Admin 是一个 Vue 3.5、TypeScript 6、Vite 8 管理后台脚手架，使用
