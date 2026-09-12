@@ -16,6 +16,7 @@ import { computed, h } from 'vue';
 import { useRouter } from 'vue-router';
 
 import { $t } from '@/locales';
+import { browserApi } from '@/platform/browser';
 import { useAuthStore } from '@/stores/auth';
 
 const currentRouter = useRouter();
@@ -27,11 +28,9 @@ const handleMenuClick = ({ key }: { key: string }) => {
       currentRouter.push('/profile');
       break;
     case 'github':
-      window.open('https://github.com/yelog/antdv-next-admin', '_blank');
-      break;
+      return browserApi.openURL('https://github.com/yelog/antdv-next-admin');
     case 'docs':
-      window.open('https://antdv-next-admin-doc.yelog.org', '_blank');
-      break;
+      return browserApi.openURL('https://antdv-next-admin-doc.yelog.org');
   }
 };
 

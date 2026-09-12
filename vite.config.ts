@@ -64,5 +64,25 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: "vue-vendor",
+              test: /[\\/]node_modules[\\/](?:@vue[\\/]|vue[\\/]|vue-router[\\/]|pinia[\\/])/,
+              priority: 20,
+            },
+            {
+              name: "chart-vendor",
+              test: /[\\/]node_modules[\\/](?:echarts|vue-echarts|zrender)[\\/]/,
+              priority: 10,
+              // Keep chart modules separated by the entries that actually use them.
+              entriesAware: true,
+            },
+          ],
+        },
+      },
+    },
   },
 });

@@ -1,7 +1,8 @@
-import { Environment } from '@wails/runtime/runtime';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
+import { vWindowDrag } from '@/directives/windowDrag';
+import { systemApi } from '@/platform/system';
 import { CurrentUsername } from '@/services/system';
 import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 
@@ -18,6 +19,7 @@ import './assets/styles/tailwind.css';
 import './assets/styles/variables.css';
 import './assets/styles/animations.css';
 import './assets/styles/global.css';
+import './assets/styles/window.css';
 
 function restoreGitHubPagesRedirect() {
   const redirect = sessionStorage.getItem('redirect');
@@ -45,6 +47,7 @@ async function bootstrap() {
   restoreGitHubPagesRedirect();
 
   const app = createApp(App);
+  app.directive('window-drag', vWindowDrag);
   const pinia = createPinia();
 
   // Register plugins
@@ -60,7 +63,7 @@ async function bootstrap() {
   await router.isReady();
   app.mount('#app');
 
-  const [{ platform }, username] = await Promise.all([Environment(), CurrentUsername()]);
+  const [{ platform }, username] = await Promise.all([systemApi.environment(), CurrentUsername()]);
   configureThemeRuntimePlatform(platform);
   authStore.setUserInfo({ ...authStore.user, username });
 }

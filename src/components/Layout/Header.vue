@@ -1,5 +1,5 @@
 <template>
-  <a-layout-header class="admin-header">
+  <a-layout-header v-window-drag="!layoutStore.isMobile" class="admin-header">
     <div class="header-left">
       <!-- Collapse Button -->
       <a-button
@@ -332,16 +332,6 @@ onBeforeUnmount(() => {
   height: 50px;
   line-height: 50px;
   border-bottom: 1px solid var(--color-border-secondary);
-  --wails-draggable: drag;
-
-  :deep(button),
-  :deep(a),
-  :deep([role='button']),
-  :deep(input),
-  :deep(textarea),
-  :deep(select) {
-    --wails-draggable: no-drag;
-  }
 
   .header-left {
     display: flex;
