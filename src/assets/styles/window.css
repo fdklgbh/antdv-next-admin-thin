@@ -1,0 +1,17 @@
+.window-drag-region {
+  --wails-draggable: drag;
+}
+
+.window-drag-region
+  :is(
+    button,
+    a,
+    input,
+    textarea,
+    select,
+    [role='button'],
+    [contenteditable]:not([contenteditable='false'])
+  ),
+.window-no-drag {
+  --wails-draggable: no-drag;
+}

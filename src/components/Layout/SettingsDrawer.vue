@@ -1,5 +1,8 @@
 <template>
-  <a-drawer v-model:open="visible" :title="$t('settings.title')" placement="right" :size="320">
+  <a-drawer v-model:open="visible" placement="right" :size="320">
+    <template #title>
+      <div v-window-drag="!layoutStore.isMobile">{{ $t('settings.title') }}</div>
+    </template>
     <div class="settings-drawer">
       <!-- Theme Color -->
       <div class="settings-section">

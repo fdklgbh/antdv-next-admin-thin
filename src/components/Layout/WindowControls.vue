@@ -60,11 +60,7 @@ const minimizeWindow = () => {
 };
 
 const toggleMaximize = async () => {
-  if (isMaximized.value) {
-    await windowApi.restore();
-  } else {
-    await windowApi.maximize();
-  }
+  await windowApi.toggleMaximize();
 
   await syncMaximizedState();
 };

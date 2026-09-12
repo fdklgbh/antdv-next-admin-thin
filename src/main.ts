@@ -1,6 +1,7 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
+import { vWindowDrag } from '@/directives/windowDrag';
 import { CurrentUsername, ShouldDisableThemeTransitions } from '@/services/system';
 import { useAuthStore, useMenuPreferencesStore } from '@/stores';
 import { useThemeStore } from '@/stores/theme';
@@ -17,6 +18,7 @@ import './assets/styles/tailwind.css';
 import './assets/styles/variables.css';
 import './assets/styles/animations.css';
 import './assets/styles/global.css';
+import './assets/styles/window.css';
 
 function restoreGitHubPagesRedirect() {
   const redirect = sessionStorage.getItem('redirect');
@@ -44,6 +46,7 @@ async function bootstrap() {
   restoreGitHubPagesRedirect();
 
   const app = createApp(App);
+  app.directive('window-drag', vWindowDrag);
   const pinia = createPinia();
 
   // Register plugins

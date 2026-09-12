@@ -56,22 +56,23 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
-    rollupOptions: {
+    rolldownOptions: {
       output: {
-        manualChunks(id) {
-          if (
-            id.includes("node_modules/vue/") ||
-            id.includes("node_modules/vue-router/") ||
-            id.includes("node_modules/pinia/")
-          ) {
-            return "vue-vendor";
-          }
-          if (
-            id.includes("node_modules/echarts/") ||
-            id.includes("node_modules/vue-echarts/")
-          ) {
-            return "chart-vendor";
-          }
+        codeSplitting: {
+          groups: [
+            {
+              name: "vue-vendor",
+              test: /[\\/]node_modules[\\/](?:@vue[\\/]|vue[\\/]|vue-router[\\/]|pinia[\\/])/,
+              priority: 20,
+            },
+            {
+              name: "chart-vendor",
+              test: /[\\/]node_modules[\\/](?:echarts|vue-echarts|zrender)[\\/]/,
+              priority: 10,
+              // Keep chart modules separated by the entries that actually use them.
+              entriesAware: true,
+            },
+          ],
         },
       },
     },
