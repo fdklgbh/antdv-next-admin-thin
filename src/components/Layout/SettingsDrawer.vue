@@ -1,7 +1,7 @@
 <template>
   <a-drawer v-model:open="visible" placement="right" :size="320">
     <template #title>
-      <div v-window-drag="!layoutStore.isMobile">{{ $t('settings.title') }}</div>
+      <div v-window-drag>{{ $t('settings.title') }}</div>
     </template>
     <div class="settings-drawer">
       <!-- Theme Color -->
