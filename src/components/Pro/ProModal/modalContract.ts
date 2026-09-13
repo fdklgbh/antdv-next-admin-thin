@@ -1,7 +1,7 @@
 import type { ModalProps } from 'antdv-next';
 
 export const PRO_MODAL_DEFAULTS = {
-  centered: false,
+  centered: true,
   closable: true,
   keyboard: true,
   mask: true,

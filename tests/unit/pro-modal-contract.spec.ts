@@ -9,7 +9,7 @@ describe('ProModal default contract', () => {
     expect(PRO_MODAL_DEFAULTS.keyboard).toBe(true);
   });
 
-  it('uses top-aligned placement unless centered is explicitly enabled', () => {
-    expect(PRO_MODAL_DEFAULTS.centered).toBe(false);
+  it('centers modals vertically by default', () => {
+    expect(PRO_MODAL_DEFAULTS.centered).toBe(true);
   });
 });
