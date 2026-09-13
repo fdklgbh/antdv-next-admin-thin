@@ -6,9 +6,10 @@
     :date-picker="datePickerConfig"
     :range-picker="datePickerConfig"
     :button="buttonConfig"
+    :modal="modalConfig"
     :locale="antdLocale"
   >
-    <a-app>
+    <a-app :message="messageConfig" :notification="notificationConfig">
       <router-view />
     </a-app>
   </a-config-provider>
@@ -63,6 +64,9 @@ const datePickerConfig = computed(
   () => appDefaultSettings.datePicker as unknown as Record<string, unknown>,
 );
 const buttonConfig = computed(() => appDefaultSettings.button);
+const modalConfig = { centered: true };
+const messageConfig = { top: 72 };
+const notificationConfig = { top: 72 };
 const antdLocale = computed(() => {
   return antdLocaleMap[locale.value as keyof typeof antdLocaleMap] ?? zhCN;
 });
@@ -78,8 +82,9 @@ watchEffect(() => {
         {
           locale: currentLocale,
           theme: currentTheme,
+          modal: modalConfig,
         },
-        () => h(AntApp, null, () => children),
+        () => h(AntApp, { message: messageConfig, notification: notificationConfig }, () => children),
       ),
   });
 });

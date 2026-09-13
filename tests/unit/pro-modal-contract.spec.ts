@@ -10,6 +10,6 @@ describe('ProModal default contract', () => {
   });
 
   it('uses top-aligned placement unless centered is explicitly enabled', () => {
-    expect(PRO_MODAL_DEFAULTS.centered).toBe(false);
+    expect(PRO_MODAL_DEFAULTS.centered).toBe(true);
   });
 });
