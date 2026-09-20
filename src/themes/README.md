@@ -49,3 +49,23 @@ Antdv 配置的顺序为：基础 Token → JSON → 调用方显式覆盖。现
 根节点的 `data-theme` 标识当前主题，`data-theme-style` 启用共用材质。仅在实际使用玻璃主题时启用玻璃 CSS；保存玻璃偏好后切换到浅色，不会残留该材质。
 
 根 ConfigProvider 与静态弹窗等 API 复用同一份 Antdv 配置。移动端模糊、减少动态效果和不支持 backdrop-filter 时的可读背景仍由共用 CSS 处理。
+
+页面区域由不参与 Tab 切换动画的 `.page-scroll` 统一执行背景模糊。其内部卡片、表格面板、输入框和按钮保留透明底色与高光，通过继承 `--glass-panel-backdrop: none` / `--glass-control-backdrop: none` 避免重复模糊。不要在这些子组件中重新硬编码 `backdrop-filter`，否则 KeepAlive 页面切换的透明度／位移动画可能引起局部重绘残留。弹出层保留独立的模糊，面板内控件不再叠加模糊。
+
+## 玻璃组件覆盖与维护
+
+以当前安装的 Antdv Next 1.5.4 为准，颜色和状态优先使用 `midnight-glass.json` 的组件 Token；`glass.css` 只补充材质、浮层边缘和必要的状态背景。不要在颜色 Token 中放入工具类名。组件算法可能解析颜色，因此颜色 Token 使用实际颜色，引用 CSS 变量的材质效果放在 `appearance.variables` 与 CSS 中。
+
+| 类别                                                                                                                           | 适配方式                                                                          |
+| ------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| Message、Notification、Tooltip、Tour、Alert                                                                                    | 浮层模糊、可读底色、可见边缘；提示和通知保留状态图标色，Alert 保留语义色          |
+| Modal、Drawer、Popover / Popconfirm / ColorPicker、Dropdown                                                                    | 共用浮层材质，Popover / Tour 箭头与背景一致；Tooltip 自定义颜色仍由组件处理       |
+| Input / TextArea / Password / Search / OTP、InputNumber、Mentions                                                              | 组件 Token 控制透明底色、悬停和激活底色，外层控件模糊；保留无边框、禁用与校验状态 |
+| Select / AutoComplete / TreeSelect / Cascader、DatePicker / TimePicker                                                         | 输入部分与弹层分别适配，选项与日期范围跟随主色                                    |
+| Button / FloatButton / BackTop、Switch、Radio、Checkbox、Segmented、Slider                                                     | 透明背景、边缘或内高光；禁用、焦点、选中及状态色仍由组件管理                      |
+| Table、Card、Collapse、Descriptions、Calendar、Transfer、Tree、Listy                                                           | 面板材质及内部区域 Token；表格固定列使用不透明底色，普通与虚拟表格共用单元格规则  |
+| Tabs、Pagination、Menu、Upload、Tag、Avatar、Image 预览工具栏                                                                  | 容器、选中态或表面高光；菜单危险项和上传错误状态保留语义色                        |
+| Typography、Breadcrumb、Anchor、Form、Steps、Timeline、Progress、Rate、Badge、Spin、Skeleton、Empty、Result、Divider、Splitter | 继承全局 Token；文字、图标、状态标记和进度本身不额外叠加玻璃面板                  |
+| Flex、Space、Grid、Affix、Masonry、Carousel、Watermark 等结构组件                                                              | 继承主题或内容样式，不强加背景；图片像素和 QRCode 不做透明化                      |
+
+材质只在 `data-theme-style="glass"` 下启用。默认浅色／深色不加载这些覆盖。业务页面的内联 `style`、自定义 `styles` 或 `!important` 仍可能覆盖主题，需要在对应页面处理。升级组件库后应核对实际 DOM（如 Message 的 notice、Table 的 cell-fix），并复查浮层、静态 API、固定列、状态和主题切换，不能仅凭选择器清单判断视觉适配完成。

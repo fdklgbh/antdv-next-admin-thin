@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Antdv Next Admin</title>
     <style>
+      html {
+        background: var(--color-bg-layout, #f5f5f5);
+        color-scheme: light;
+      }
+      html.dark {
+        color-scheme: dark;
+      }
       #app-loading {
         position: fixed;
         inset: 0;
@@ -104,6 +111,17 @@
           themeMode === 'dark' ||
             ((!themeMode || themeMode === 'system') &&
               matchMedia('(prefers-color-scheme: dark)').matches),
+        );
+        // Keep startup colors above the stylesheet's light defaults until App
+        // synchronizes the resolved preset, including the saved glass style.
+        var startupIsDark = document.documentElement.classList.contains('dark');
+        document.documentElement.style.setProperty(
+          '--color-bg-layout',
+          startupIsDark ? '#141414' : '#f5f5f5',
+        );
+        document.documentElement.style.setProperty(
+          '--color-text-primary',
+          startupIsDark ? '#ededed' : '#262626',
         );
         // Match the settings store's preset colors without waiting for Vue to load.
         var primaryColors = {

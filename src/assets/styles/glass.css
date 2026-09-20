@@ -2,6 +2,17 @@
 html:root[data-theme-style='glass'] {
   --glass-blur: var(--glass-config-blur);
   --glass-surface: var(--glass-config-surface);
+  --glass-panel-backdrop: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  --glass-control-backdrop: blur(var(--glass-control-blur));
+}
+
+/* Keep the page backdrop outside the animated/KeepAlive subtree. Nested backdrop
+   layers can retain stale tiles after a tab transition until pointer movement repaints them. */
+html:root[data-theme-style='glass'] .page-scroll {
+  --glass-panel-backdrop: none;
+  --glass-control-backdrop: none;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
 }
 
 /* A fixed scene gives the translucent panels light to pick up as content scrolls. */
@@ -28,11 +39,12 @@ html:root[data-theme-style='glass']
     .pro-table-main,
     .ai-panel
   ) {
+  --glass-control-backdrop: none;
   background: var(--glass-surface);
   border-color: var(--color-border-secondary);
   box-shadow: var(--glass-shadow);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: var(--glass-panel-backdrop);
+  backdrop-filter: var(--glass-panel-backdrop);
 }
 
 html:root[data-theme-style='glass'] :is(.card, .ant-card, .pro-stat-card) {
@@ -62,19 +74,26 @@ html:root[data-theme-style='glass'] .admin-sidebar .ant-menu {
 html:root[data-theme-style='glass']
   .admin-sidebar
   .sidebar-menu
-  :is(.ant-menu-item, .ant-menu-submenu-title) {
+  :is(.ant-menu-item, .ant-menu-submenu-title):not(.ant-menu-item-danger):not(
+    .ant-menu-item-disabled
+  ):not(.ant-menu-submenu-disabled > .ant-menu-submenu-title) {
   color: var(--color-text-primary) !important;
 }
 
 html:root[data-theme-style='glass']
   .admin-sidebar
   .sidebar-menu
-  :is(.ant-menu-item, .ant-menu-submenu-title):hover {
+  :is(.ant-menu-item, .ant-menu-submenu-title):not(.ant-menu-item-danger):not(
+    .ant-menu-item-disabled
+  ):not(.ant-menu-submenu-disabled > .ant-menu-submenu-title):hover {
   color: var(--glass-highlight) !important;
   background: var(--glass-neutral-bg) !important;
 }
 
-html:root[data-theme-style='glass'] .admin-sidebar .sidebar-menu .ant-menu-item-selected {
+html:root[data-theme-style='glass']
+  .admin-sidebar
+  .sidebar-menu
+  .ant-menu-item-selected:not(.ant-menu-item-danger):not(.ant-menu-item-disabled) {
   color: var(--glass-highlight) !important;
   background: var(--glass-primary-bg) !important;
 }
@@ -87,13 +106,229 @@ html:root[data-theme-style='glass']
     .ant-dropdown-menu,
     .ant-select-dropdown,
     .ant-picker-panel-container,
-    .ant-popover-container
+    .ant-popover-container,
+    .ant-mentions-dropdown,
+    .ant-table-filter-dropdown,
+    .ant-menu-submenu-popup > .ant-menu,
+    .ant-tour:not(.ant-tour-primary) .ant-tour-section
   ) {
+  --glass-control-backdrop: none;
   background: var(--glass-elevated-bg);
   border: 1px solid var(--color-border-secondary);
   box-shadow: var(--glass-shadow);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+/* Paint the actual surface for both current notices and the older content wrapper.
+   Static notices can outlive a ConfigProvider update, so material/text share root variables. */
+html:root[data-theme-style='glass'] .ant-message-notice:not(:has(.ant-message-notice-content)),
+html:root[data-theme-style='glass'] .ant-message-notice-content,
+html:root[data-theme-style='glass'] .ant-notification-notice,
+html:root[data-theme-style='glass'] .ant-message-stack .ant-message-list-content::before,
+html:root[data-theme-style='glass'] .ant-message-stack .ant-message-list-content::after {
+  --glass-control-backdrop: none;
+  color: var(--color-text-primary);
+  background: var(--glass-elevated-bg);
+  border: 1px solid var(--glass-message-border, var(--color-border));
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+html:root[data-theme-style='glass']
+  :is(
+    .ant-message-notice-title,
+    .ant-notification-notice-title,
+    .ant-notification-notice-description
+  ) {
+  color: var(--color-text-primary);
+}
+
+/* Tooltip colors still come from Antdv, including user-supplied and preset colors. */
+html:root[data-theme-style='glass']
+  .ant-tooltip:not(:has(~ .ant-tooltip-unique-container))
+  .ant-tooltip-container,
+html:root[data-theme-style='glass']
+  :is(.ant-tooltip-unique-container, .ant-tour-primary .ant-tour-section) {
+  box-shadow: var(--glass-shadow);
+  outline: 1px solid var(--color-border);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+html:root[data-theme-style='glass'] .ant-popover,
+html:root[data-theme-style='glass'] .ant-tour:not(.ant-tour-primary) {
+  --ant-tooltip-arrow-background-color: var(--glass-elevated-bg);
+}
+
+/* Semantic feedback keeps its hue while gaining a brighter edge and translucent fill. */
+html:root[data-theme-style='glass'] .ant-alert-success {
+  --glass-status-color: var(--color-success);
+}
+
+html:root[data-theme-style='glass'] .ant-alert-info {
+  --glass-status-color: var(--color-info);
+}
+
+html:root[data-theme-style='glass'] .ant-alert-warning {
+  --glass-status-color: var(--color-warning);
+}
+
+html:root[data-theme-style='glass'] .ant-alert-error {
+  --glass-status-color: var(--color-error);
+}
+
+html:root[data-theme-style='glass'] .ant-alert {
+  background: color-mix(
+    in srgb,
+    var(--glass-status-color) var(--glass-status-fill-weight),
+    transparent
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--glass-status-color) var(--glass-status-border-weight),
+    transparent
+  );
+  box-shadow: var(--glass-control-shadow);
+  -webkit-backdrop-filter: var(--glass-control-backdrop);
+  backdrop-filter: var(--glass-control-backdrop);
+}
+
+/* Blur only the outer form surface; tokens own variants, disabled/error borders and focus rings. */
+html:root[data-theme-style='glass']
+  :is(
+    .ant-input-outlined,
+    .ant-input-filled,
+    .ant-input-affix-wrapper-outlined,
+    .ant-input-affix-wrapper-filled,
+    .ant-input-number-outlined,
+    .ant-input-number-filled,
+    .ant-select-outlined,
+    .ant-select-filled,
+    .ant-picker-outlined,
+    .ant-picker-filled,
+    .ant-mentions-outlined,
+    .ant-mentions-filled,
+    .ant-radio-button-wrapper,
+    .ant-segmented,
+    .ant-color-picker-trigger
+  ) {
+  -webkit-backdrop-filter: var(--glass-control-backdrop);
+  backdrop-filter: var(--glass-control-backdrop);
+}
+
+html:root[data-theme-style='glass'] .ant-input-affix-wrapper > .ant-input {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html:root[data-theme-style='glass']
+  :is(.ant-checkbox, .ant-radio, .ant-segmented, .ant-slider-rail, .ant-slider-track) {
+  box-shadow: var(--glass-control-shadow);
+}
+
+/* Keep the primary hue reactive to the existing color preference. */
+html:root[data-theme-style='glass']
+  :is(
+    .ant-select-item-option-selected:not(.ant-select-item-option-disabled),
+    .ant-cascader-menu-item-active:not(.ant-cascader-menu-item-disabled),
+    .ant-select-tree-node-selected,
+    .ant-tree-node-selected,
+    .ant-transfer-list-content-item-checked:not(.ant-transfer-list-content-item-disabled)
+  ) {
+  background: var(--glass-primary-bg);
+}
+
+html:root[data-theme-style='glass']
+  .ant-menu
+  .ant-menu-item-selected:not(.ant-menu-item-danger):not(.ant-menu-item-disabled) {
+  background: var(--glass-primary-bg);
+}
+
+html:root[data-theme-style='glass']
+  .ant-picker-cell-in-view:is(
+    .ant-picker-cell-in-range,
+    .ant-picker-cell-range-start,
+    .ant-picker-cell-range-end
+  )::before {
+  background: var(--glass-primary-bg);
+}
+
+/* Data panels share one glass layer rather than blurring every row or cell. */
+html:root[data-theme-style='glass']
+  :is(
+    .ant-collapse:not(.ant-collapse-ghost),
+    .ant-descriptions-bordered > .ant-descriptions-view,
+    .ant-transfer-list,
+    .ant-picker-calendar,
+    .ant-listy,
+    .ant-menu-root:not(.sidebar-menu),
+    .ant-upload-wrapper .ant-upload-drag,
+    .ant-upload-picture-card-wrapper .ant-upload-select,
+    .ant-upload-picture-circle-wrapper .ant-upload-select
+  ) {
+  background: var(--glass-surface);
+  -webkit-backdrop-filter: var(--glass-control-backdrop);
+  backdrop-filter: var(--glass-control-backdrop);
+}
+
+html:root[data-theme-style='glass'] .ant-table {
+  background: var(--glass-surface);
+}
+
+/* Fixed cells must hide horizontally scrolling content, including hover/selection. */
+html:root[data-theme-style='glass'] .ant-table .ant-table-row > .ant-table-cell-fix {
+  background: var(--color-bg-container);
+}
+
+html:root[data-theme-style='glass'] .ant-table .ant-table-row-selected > .ant-table-cell {
+  background: var(--glass-primary-bg);
+}
+
+html:root[data-theme-style='glass'] .ant-table .ant-table-row-selected > .ant-table-cell-fix {
+  background: linear-gradient(var(--glass-primary-bg), var(--glass-primary-bg))
+    var(--color-bg-container);
+}
+
+html:root[data-theme-style='glass']
+  .ant-table
+  .ant-table-row
+  > .ant-table-cell-fix.ant-table-cell-row-hover {
+  background: linear-gradient(var(--glass-neutral-bg), var(--glass-neutral-bg))
+    var(--color-bg-container);
+}
+
+html:root[data-theme-style='glass']
+  .ant-table
+  .ant-table-row-selected
+  > .ant-table-cell.ant-table-cell-row-hover {
+  background:
+    linear-gradient(var(--glass-neutral-bg), var(--glass-neutral-bg)),
+    linear-gradient(var(--glass-primary-bg), var(--glass-primary-bg)) var(--color-bg-container);
+}
+
+html:root[data-theme-style='glass']
+  :is(
+    .ant-tabs-card > .ant-tabs-nav .ant-tabs-tab,
+    .ant-pagination-item,
+    .ant-tag,
+    .ant-avatar:not(.ant-avatar-image)
+  ) {
+  box-shadow: var(--glass-control-shadow);
+}
+
+html:root[data-theme-style='glass'] .ant-color-picker-trigger {
+  background: var(--glass-surface);
+}
+
+/* FloatButton/BackTop use Button's material; image pixels, QR codes and status badges stay intact. */
+html:root[data-theme-style='glass'] .ant-image-preview-actions {
+  background: var(--glass-elevated-bg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 /* Button material uses the library's variant variables so danger/preset colors,
@@ -126,8 +361,8 @@ html:root[data-theme-style='glass']
   ):not(:disabled):not(.ant-btn-disabled) {
   --ant-btn-shadow: var(--glass-button-shadow);
   box-shadow: var(--ant-btn-shadow);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: var(--glass-control-backdrop);
+  backdrop-filter: var(--glass-control-backdrop);
 }
 
 /* Neutral buttons are colorless glass. Color variants borrow their semantic hue. */
@@ -242,8 +477,8 @@ html:root[data-theme-style='glass'] .ant-switch {
   box-shadow:
     inset 0 0 0 1px var(--glass-switch-edge),
     var(--glass-switch-shadow);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  -webkit-backdrop-filter: var(--glass-control-backdrop);
+  backdrop-filter: var(--glass-control-backdrop);
   transition:
     background-color var(--glass-motion-duration) var(--glass-motion-easing),
     box-shadow var(--glass-motion-duration) var(--glass-motion-easing);

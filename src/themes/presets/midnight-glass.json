@@ -11,9 +11,147 @@
     "colorBorder": "rgba(255, 255, 255, 0.18)",
     "colorText": "rgba(255, 255, 255, 0.92)",
     "colorTextSecondary": "rgba(255, 255, 255, 0.72)",
-    "colorTextTertiary": "rgba(255, 255, 255, 0.56)"
+    "colorTextTertiary": "rgba(255, 255, 255, 0.56)",
+    "colorTextPlaceholder": "rgba(255, 255, 255, 0.46)",
+    "colorBgContainerDisabled": "rgba(255, 255, 255, 0.04)",
+    "controlItemBgHover": "rgba(255, 255, 255, 0.08)"
   },
   "components": {
+    "Message": {
+      "contentBg": "rgba(22, 34, 53, 0.94)"
+    },
+    "Notification": {
+      "colorBgElevated": "rgba(22, 34, 53, 0.94)"
+    },
+    "Tooltip": {
+      "colorBgSpotlight": "rgba(22, 34, 53, 0.94)"
+    },
+    "Tour": {
+      "colorBgElevated": "rgba(22, 34, 53, 0.94)"
+    },
+    "Popover": {
+      "colorBgElevated": "rgba(22, 34, 53, 0.94)"
+    },
+    "Input": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.06)",
+      "hoverBg": "rgba(255, 255, 255, 0.09)",
+      "activeBg": "rgba(255, 255, 255, 0.09)",
+      "addonBg": "rgba(255, 255, 255, 0.05)"
+    },
+    "InputNumber": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.06)",
+      "hoverBg": "rgba(255, 255, 255, 0.09)",
+      "activeBg": "rgba(255, 255, 255, 0.09)",
+      "addonBg": "rgba(255, 255, 255, 0.05)",
+      "handleBg": "rgba(22, 34, 53, 0.94)",
+      "handleActiveBg": "rgba(255, 255, 255, 0.12)"
+    },
+    "Mentions": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.06)",
+      "hoverBg": "rgba(255, 255, 255, 0.09)",
+      "activeBg": "rgba(255, 255, 255, 0.09)"
+    },
+    "Select": {
+      "selectorBg": "rgba(255, 255, 255, 0.06)",
+      "optionActiveBg": "rgba(255, 255, 255, 0.08)",
+      "multipleItemBg": "rgba(255, 255, 255, 0.1)",
+      "multipleItemBorderColor": "rgba(255, 255, 255, 0.16)"
+    },
+    "DatePicker": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.06)",
+      "hoverBg": "rgba(255, 255, 255, 0.09)",
+      "activeBg": "rgba(255, 255, 255, 0.09)",
+      "cellHoverBg": "rgba(255, 255, 255, 0.1)",
+      "multipleItemBg": "rgba(255, 255, 255, 0.1)"
+    },
+    "Radio": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.08)",
+      "buttonBg": "rgba(255, 255, 255, 0.06)",
+      "buttonCheckedBg": "rgba(255, 255, 255, 0.12)"
+    },
+    "Checkbox": {
+      "colorBgContainer": "rgba(255, 255, 255, 0.08)"
+    },
+    "Segmented": {
+      "trackBg": "rgba(255, 255, 255, 0.05)",
+      "itemHoverBg": "rgba(255, 255, 255, 0.08)",
+      "itemActiveBg": "rgba(255, 255, 255, 0.12)",
+      "itemSelectedBg": "rgba(255, 255, 255, 0.16)"
+    },
+    "Slider": {
+      "railBg": "rgba(255, 255, 255, 0.12)",
+      "railHoverBg": "rgba(255, 255, 255, 0.2)"
+    },
+    "Table": {
+      "headerBg": "#1e2c40",
+      "headerSortActiveBg": "#293b52",
+      "headerSortHoverBg": "#293b52",
+      "fixedHeaderSortActiveBg": "#293b52",
+      "bodySortBg": "rgba(255, 255, 255, 0.04)",
+      "rowHoverBg": "rgba(255, 255, 255, 0.08)",
+      "rowExpandedBg": "rgba(255, 255, 255, 0.04)",
+      "footerBg": "rgba(255, 255, 255, 0.05)",
+      "filterDropdownBg": "rgba(22, 34, 53, 0.94)",
+      "filterDropdownMenuBg": "transparent",
+      "expandIconBg": "rgba(255, 255, 255, 0.08)"
+    },
+    "Collapse": {
+      "headerBg": "rgba(255, 255, 255, 0.05)",
+      "contentBg": "transparent",
+      "borderlessContentBg": "transparent"
+    },
+    "Descriptions": {
+      "labelBg": "rgba(255, 255, 255, 0.05)"
+    },
+    "Calendar": {
+      "fullBg": "transparent",
+      "fullPanelBg": "transparent",
+      "colorBgContainer": "transparent"
+    },
+    "Tree": {
+      "colorBgContainer": "transparent",
+      "nodeHoverBg": "rgba(255, 255, 255, 0.08)"
+    },
+    "TreeSelect": {
+      "nodeHoverBg": "rgba(255, 255, 255, 0.08)"
+    },
+    "Transfer": {
+      "colorBgContainer": "transparent"
+    },
+    "Tabs": {
+      "cardBg": "rgba(255, 255, 255, 0.05)",
+      "colorBgContainer": "rgba(255, 255, 255, 0.12)"
+    },
+    "Pagination": {
+      "itemBg": "rgba(255, 255, 255, 0.05)",
+      "itemActiveBg": "rgba(255, 255, 255, 0.12)",
+      "itemLinkBg": "rgba(255, 255, 255, 0.05)",
+      "itemInputBg": "rgba(255, 255, 255, 0.06)"
+    },
+    "Menu": {
+      "itemBg": "transparent",
+      "subMenuItemBg": "rgba(255, 255, 255, 0.03)",
+      "itemHoverBg": "rgba(255, 255, 255, 0.08)",
+      "popupBg": "rgba(22, 34, 53, 0.94)",
+      "darkItemBg": "transparent",
+      "darkSubMenuItemBg": "rgba(255, 255, 255, 0.03)",
+      "darkItemHoverBg": "rgba(255, 255, 255, 0.08)",
+      "darkPopupBg": "rgba(22, 34, 53, 0.94)"
+    },
+    "Upload": {
+      "colorFillAlter": "rgba(255, 255, 255, 0.05)"
+    },
+    "Tag": {
+      "defaultBg": "rgba(255, 255, 255, 0.08)"
+    },
+    "Avatar": {
+      "colorTextPlaceholder": "rgba(255, 255, 255, 0.12)",
+      "groupBorderColor": "rgba(255, 255, 255, 0.3)"
+    },
+    "Card": {
+      "headerBg": "transparent",
+      "actionsBg": "rgba(255, 255, 255, 0.04)"
+    },
     "Switch": {
       "handleBg": "rgba(255, 255, 255, 0.82)",
       "handleShadow": "0 2px 6px rgba(3, 7, 18, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(2, 6, 16, 0.2)",
@@ -55,6 +193,11 @@
       "--glass-card-radius": "16px",
       "--glass-card-border-hover": "rgba(255, 255, 255, 0.26)",
       "--glass-elevated-bg": "rgba(22, 34, 53, 0.94)",
+      "--glass-message-border": "rgba(255, 255, 255, 0.3)",
+      "--glass-control-shadow": "inset 0 1px 0 rgba(255, 255, 255, 0.12)",
+      "--glass-control-blur": "12px",
+      "--glass-status-fill-weight": "12%",
+      "--glass-status-border-weight": "55%",
       "--glass-highlight": "#ffffff",
       "--glass-motion-duration": "0.5s",
       "--glass-motion-easing": "cubic-bezier(0.16, 1, 0.3, 1)",

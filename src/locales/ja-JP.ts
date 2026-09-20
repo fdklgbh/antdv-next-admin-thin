@@ -72,6 +72,8 @@ export default {
     searchLabel: '{label} を検索',
   },
   codeEditor: {
+    loadFailed:
+      'エディターの言語またはテーマを読み込めませんでした。再試行するかページを再読み込みしてください。',
     format: 'フォーマット',
     minify: '圧縮',
     copy: 'コピー',

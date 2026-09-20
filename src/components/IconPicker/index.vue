@@ -38,7 +38,10 @@
               class="ip-search"
             >
               <template #prefix>
-                <IconView icon="antdv-next:SearchOutlined" color="#999" />
+                <IconView
+                  icon="antdv-next:SearchOutlined"
+                  :style="{ color: 'var(--color-text-tertiary)' }"
+                />
               </template>
             </a-input>
           </div>
@@ -572,7 +575,7 @@ watch([category, keyword], () => {
   transition: color 0.2s;
   border: 0;
   background: transparent;
-  color: #666;
+  color: var(--color-text-secondary);
   cursor: pointer;
 
   &:hover {
@@ -585,7 +588,7 @@ watch([category, keyword], () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  color: #333;
+  color: var(--color-text-primary);
 }
 
 .ip-row1,
@@ -603,7 +606,6 @@ watch([category, keyword], () => {
 .ip-seg {
   padding: 1px;
   border-radius: 6px;
-  background-color: #f5f5f5;
 
   :deep(.ant-segmented-group) {
     align-items: stretch;
@@ -661,7 +663,7 @@ watch([category, keyword], () => {
   /* 第二行：数量 */
   :deep(.ip-seg-line2) {
     margin-top: 0;
-    color: #999;
+    color: var(--color-text-tertiary);
     font-size: 10px;
     white-space: nowrap;
   }
@@ -669,9 +671,9 @@ watch([category, keyword], () => {
 
 /* 网格容器背景 */
 .ip-grid-container {
-  border: 1px solid #f0f0f0;
+  border: 1px solid var(--color-border-secondary);
   border-radius: 8px;
-  background-color: #fafafa;
+  background-color: var(--color-fill-quaternary);
 }
 
 /* 图标网格防遮挡 */
@@ -694,7 +696,7 @@ watch([category, keyword], () => {
 
   &::-webkit-scrollbar-thumb {
     border-radius: 4px;
-    background: #e0e0e0;
+    background: var(--color-border);
   }
 
   &::-webkit-scrollbar-track {
@@ -709,7 +711,7 @@ watch([category, keyword], () => {
   align-items: center;
   justify-content: center;
   height: 280px;
-  color: #999;
+  color: var(--color-text-tertiary);
 }
 
 /* 图标卡片 */
@@ -726,9 +728,10 @@ watch([category, keyword], () => {
   /* 关键：防止底部色条超出圆角 */
   overflow: hidden;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid #eee;
+  border: 1px solid var(--glass-neutral-border, var(--color-border-secondary));
   border-radius: 6px;
-  background: #fff;
+  background: var(--glass-neutral-bg, var(--color-bg-container));
+  color: inherit;
   box-shadow: 0 1px 2px rgb(0 0 0 / 2%);
   cursor: pointer;
 
@@ -769,7 +772,7 @@ watch([category, keyword], () => {
 
   /* 稍微透明一点，不抢眼，但能看清颜色 */
   opacity: 0.7;
-  background-color: var(--hover-color, #ccc);
+  background-color: var(--hover-color, var(--color-border));
 }
 
 /* 底部栏 */
@@ -780,11 +783,11 @@ watch([category, keyword], () => {
 }
 
 .ip-total {
-  color: #888;
+  color: var(--color-text-secondary);
   font-size: 12px;
 
   b {
-    color: #333;
+    color: var(--color-text-primary);
   }
 }
 

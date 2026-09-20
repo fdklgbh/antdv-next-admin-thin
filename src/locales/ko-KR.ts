@@ -72,6 +72,8 @@ export default {
     searchLabel: '{label} 검색',
   },
   codeEditor: {
+    loadFailed:
+      '편집기 언어 또는 테마를 불러오지 못했습니다. 다시 시도하거나 페이지를 새로고침하세요.',
     format: '포맷',
     minify: '압축',
     copy: '복사',

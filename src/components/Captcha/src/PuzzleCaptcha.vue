@@ -302,7 +302,7 @@ defineExpose({ reset });
 .success-mask {
   position: absolute;
   inset: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: color-mix(in srgb, var(--color-bg-container) 80%, transparent);
   display: flex;
   align-items: center;
   justify-content: center;

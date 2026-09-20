@@ -34,6 +34,10 @@ import { useWatermarkStore } from './stores/watermark';
 
 const themeStore = useThemeStore();
 const settingsStore = useSettingsStore();
+// Restore preferences before ConfigProvider and the CSS variable watcher first run.
+themeStore.initTheme();
+settingsStore.initSettings();
+
 const watermarkStore = useWatermarkStore();
 const notificationStore = useNotificationStore();
 const { locale } = useI18n();
@@ -91,9 +95,6 @@ watchEffect(() => {
 notificationStore.initNotifications();
 
 onMounted(() => {
-  // Initialize theme and settings from localStorage
-  themeStore.initTheme();
-  settingsStore.initSettings();
   watermarkStore.initWatermark();
 });
 </script>

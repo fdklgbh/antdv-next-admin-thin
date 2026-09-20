@@ -73,6 +73,7 @@ export default {
   },
 
   codeEditor: {
+    loadFailed: 'Failed to load the editor language or theme. Retry or reload the page.',
     format: 'Format',
     minify: 'Minify',
     copy: 'Copy',

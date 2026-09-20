@@ -73,6 +73,7 @@ export default {
   },
 
   codeEditor: {
+    loadFailed: '编辑器语言或主题加载失败，请重试或刷新页面',
     format: '格式化',
     minify: '压缩',
     copy: '复制',
