@@ -45,7 +45,7 @@ export type DarkThemeStyle = keyof typeof import('@/themes').darkThemePresets;
 export type LightThemeStyle = keyof typeof import('@/themes').lightThemePresets;
 export type LayoutMode = 'vertical' | 'horizontal';
 export type SidebarTheme = 'light' | 'dark';
-export type PrimaryColor = 'blue' | 'green' | 'purple' | 'red' | 'orange' | 'cyan';
+export type PrimaryColor = 'blue' | 'green' | 'purple' | 'red' | 'orange' | 'cyan' | 'gold';
 export type PageAnimation =
   | 'fade'
   | 'slide-left'

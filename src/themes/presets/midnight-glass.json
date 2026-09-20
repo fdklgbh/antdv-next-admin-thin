@@ -184,6 +184,11 @@
     "mobileBlur": 24,
     "surface": "rgba(255, 255, 255, 0.07)",
     "variables": {
+      "--app-loading-background": "radial-gradient(ellipse at 50% 42%, color-mix(in srgb, var(--color-primary) 12%, transparent), transparent 38%), radial-gradient(ellipse at 85% 12%, rgba(124, 156, 196, 0.2), transparent 55%), radial-gradient(ellipse at 5% 88%, rgba(51, 81, 122, 0.28), transparent 55%), var(--color-bg-layout)",
+      "--app-loading-cube-background": "linear-gradient(135deg, rgba(255, 255, 255, 0.32), rgba(255, 255, 255, 0.04)), color-mix(in srgb, var(--color-primary) 24%, transparent)",
+      "--app-loading-cube-border": "1px solid rgba(255, 255, 255, 0.4)",
+      "--app-loading-cube-shadow": "inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(2, 6, 16, 0.3), 0 8px 24px rgba(0, 0, 0, 0.28), 0 0 32px color-mix(in srgb, var(--color-primary) 18%, transparent)",
+      "--app-loading-shadow-blur": "3px",
       "--glass-shadow": "0 16px 40px rgba(3, 7, 18, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(2, 6, 16, 0.3)",
       "--shadow-card": "var(--glass-shadow)",
       "--shadow-card-hover": "0 20px 48px rgba(3, 7, 18, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.28)",

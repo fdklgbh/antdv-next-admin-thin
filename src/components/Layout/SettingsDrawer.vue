@@ -197,6 +197,7 @@ const PRESET_COLORS: Array<{ value: PrimaryColor; hex: string }> = [
   { value: 'red', hex: '#f5222d' },
   { value: 'orange', hex: '#fa8c16' },
   { value: 'cyan', hex: '#13c2c2' },
+  { value: 'gold', hex: '#e4b863' },
 ];
 
 const colorPresets = [

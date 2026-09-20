@@ -38,6 +38,12 @@
 
 普通配色和玻璃变体只需要 JSON 与注册项。新的材质需要先实现对应 CSS，并扩展解析器支持的 `style`。
 
+## 启动加载页
+
+`build/startup-theme.ts` 在开发服务和构建时，从同一份主题注册表提取启动背景、文字颜色和加载动画变量，内联到 HTML。加载页无需等待 Vue 或请求主题 JSON，即可读取保存的明暗模式、对应风格和主色；系统模式跟随系统偏好，无效风格回退到对应模式的默认风格。
+
+加载动作保持一致。默认主题使用主色实心方块；玻璃主题在 `appearance.variables` 中配置 `--app-loading-background`、`--app-loading-cube-background`、`--app-loading-cube-border`、`--app-loading-cube-shadow` 和 `--app-loading-shadow-blur`。这些变量可引用启动阶段就存在的 `--color-bg-layout`、`--color-text-primary` 和 `--color-primary`，不要依赖尚未加载的组件变量。新增内置风格注册后自动纳入加载页，修改配置后重新构建发布。减少动态效果偏好下仍停用动画。
+
 ## 覆盖与同步
 
 Antdv 配置的顺序为：基础 Token → JSON → 调用方显式覆盖。现有主色选择器作为最后一层覆盖 `colorPrimary` 和 `colorLink`，保留原有行为。

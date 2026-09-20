@@ -6,6 +6,7 @@ import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
 import { iconAssets } from './build/icon-assets.ts';
+import { startupTheme } from './build/startup-theme.ts';
 
 import pkg from './package.json' with { type: 'json' }
 
@@ -15,6 +16,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [
+    startupTheme(),
     iconAssets(),
     vue(),
     Components({

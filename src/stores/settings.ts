@@ -31,6 +31,7 @@ const PRIMARY_COLOR_HEX_MAP: Record<PrimaryColor, string> = {
   red: '#f5222d',
   orange: '#fa8c16',
   cyan: '#13c2c2',
+  gold: '#e4b863',
 };
 
 const isPrimaryColor = (color: string): color is PrimaryColor => color in PRIMARY_COLOR_HEX_MAP;
