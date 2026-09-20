@@ -1,7 +1,7 @@
-import type { ApiResponse } from "@/types/api";
-import type { SysFile, SysFileQueryParams } from "@/types/file";
+import type { ApiResponse } from '@/types/api';
+import type { SysFile, SysFileQueryParams } from '@/types/file';
 
-import { request } from "@/utils/request";
+import { request } from '@/utils/request';
 
 export function getFileList(params: SysFileQueryParams): Promise<
   ApiResponse<{
@@ -11,7 +11,7 @@ export function getFileList(params: SysFileQueryParams): Promise<
     pageSize: number;
   }>
 > {
-  return request.get("/file/list", { params });
+  return request.get('/file/list', { params });
 }
 
 export function deleteFile(id: string): Promise<ApiResponse<void>> {

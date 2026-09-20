@@ -1,11 +1,9 @@
 export interface TableSorterItem {
   field?: string;
-  order?: "ascend" | "descend";
+  order?: 'ascend' | 'descend';
 }
 
-export function buildSorterRequestParams(
-  sorter: TableSorterItem | TableSorterItem[] | null,
-) {
+export function buildSorterRequestParams(sorter: TableSorterItem | TableSorterItem[] | null) {
   if (!sorter) {
     return {};
   }

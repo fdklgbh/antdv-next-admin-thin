@@ -130,10 +130,7 @@ export const useThemeStore = defineStore('theme', () => {
     localStorage.setItem('theme-mode', themeMode);
   };
 
-  const updateTheme = (
-    options: ThemeUpdateOptions = {},
-    applyThemeCallback = applyTheme,
-  ) => {
+  const updateTheme = (options: ThemeUpdateOptions = {}, applyThemeCallback = applyTheme) => {
     const { withTransition = false, origin, direction } = options;
     if (!withTransition) {
       applyThemeCallback();
@@ -141,11 +138,7 @@ export const useThemeStore = defineStore('theme', () => {
     }
 
     if (origin && supportsCircularRevealTransition()) {
-      const success = runCircularRevealTransition(
-        origin,
-        direction,
-        applyThemeCallback,
-      );
+      const success = runCircularRevealTransition(origin, direction, applyThemeCallback);
       if (success) {
         return;
       }

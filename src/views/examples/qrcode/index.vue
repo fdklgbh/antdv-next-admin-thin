@@ -110,44 +110,45 @@
 </template>
 
 <script setup lang="ts">
-import { DownloadOutlined } from '@antdv-next/icons'
-import type { QRCodeProps } from 'antdv-next'
-import { message } from 'antdv-next'
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import type { QRCodeProps } from 'antdv-next';
 
-const { t } = useI18n()
+import { DownloadOutlined } from '@antdv-next/icons';
+import { message } from 'antdv-next';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const activeTab = ref('basic')
-const basicContent = ref('https://www.antdv-next.com')
-const basicSize = ref(200)
+const { t } = useI18n();
 
-const styleBgColor = ref('#ffffff')
-const styleFgColor = ref('#000000')
-const styleErrorLevel = ref<QRCodeProps['errorLevel']>('M')
+const activeTab = ref('basic');
+const basicContent = ref('https://www.antdv-next.com');
+const basicSize = ref(200);
+
+const styleBgColor = ref('#ffffff');
+const styleFgColor = ref('#000000');
+const styleErrorLevel = ref<QRCodeProps['errorLevel']>('M');
 const errorLevelOptions = [
   { label: 'L (7%)', value: 'L' },
   { label: 'M (15%)', value: 'M' },
   { label: 'Q (25%)', value: 'Q' },
   { label: 'H (30%)', value: 'H' },
-]
+];
 
-const downloadContent = ref('https://www.antdv-next.com')
-const downloadFileName = ref('antdv-next-qrcode')
+const downloadContent = ref('https://www.antdv-next.com');
+const downloadFileName = ref('antdv-next-qrcode');
 
-const downloadQRRef = ref()
+const downloadQRRef = ref();
 
 const handleDownload = () => {
-  const canvas = downloadQRRef.value?.$el?.querySelector('canvas')
+  const canvas = downloadQRRef.value?.$el?.querySelector('canvas');
   if (canvas) {
-    const url = canvas.toDataURL('image/png')
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${downloadFileName.value}.png`
-    link.click()
-    message.success(t('exampleQRCode.downloadSuccess'))
+    const url = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${downloadFileName.value}.png`;
+    link.click();
+    message.success(t('exampleQRCode.downloadSuccess'));
   }
-}
+};
 </script>
 
 <style scoped lang="scss">

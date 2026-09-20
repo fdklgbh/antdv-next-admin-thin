@@ -9,10 +9,7 @@
       @end="handleDragEnd"
     >
       <template #item="{ element: key }">
-        <div
-          v-if="currentObject && currentObject[key] !== undefined"
-          class="field-node"
-        >
+        <div v-if="currentObject && currentObject[key] !== undefined" class="field-node">
           <div
             class="field-row"
             :class="{
@@ -54,10 +51,7 @@
                 <div class="field-label">
                   {{ api.getFieldLabelByPath(path, key) }}
                 </div>
-                <div
-                  v-if="api.hasLabelMapByPath(path, key)"
-                  class="field-key-hint"
-                >
+                <div v-if="api.hasLabelMapByPath(path, key)" class="field-key-hint">
                   {{ key }}
                 </div>
               </template>
@@ -66,22 +60,14 @@
             <div class="field-input-section">
               <template v-if="api.getFieldTypeByPath(path, key) === 'object'">
                 <div class="object-field-wrapper">
-                  <span class="object-summary">{{
-                    api.getObjectSummaryByPath(path, key)
-                  }}</span>
-                  <a-button
-                    type="link"
-                    size="small"
-                    @click="toggleFieldExpand(key)"
-                  >
-                    {{ isFieldExpanded(key) ? "收起" : "展开" }}
+                  <span class="object-summary">{{ api.getObjectSummaryByPath(path, key) }}</span>
+                  <a-button type="link" size="small" @click="toggleFieldExpand(key)">
+                    {{ isFieldExpanded(key) ? '收起' : '展开' }}
                   </a-button>
                 </div>
               </template>
 
-              <template
-                v-else-if="api.getFieldTypeByPath(path, key) === 'tags'"
-              >
+              <template v-else-if="api.getFieldTypeByPath(path, key) === 'tags'">
                 <a-select
                   v-model:value="currentObject[key]"
                   mode="tags"
@@ -93,9 +79,7 @@
                 />
               </template>
 
-              <template
-                v-else-if="api.getFieldTypeByPath(path, key) === 'boolean'"
-              >
+              <template v-else-if="api.getFieldTypeByPath(path, key) === 'boolean'">
                 <div class="boolean-field-wrapper">
                   <a-switch
                     v-model:checked="currentObject[key]"
@@ -105,18 +89,14 @@
                   <span class="switch-label">
                     {{
                       currentObject[key]
-                        ? api.getFieldConfigByPath(path, key)?.activeLabel ||
-                          "已启用"
-                        : api.getFieldConfigByPath(path, key)?.inactiveLabel ||
-                          "已禁用"
+                        ? api.getFieldConfigByPath(path, key)?.activeLabel || '已启用'
+                        : api.getFieldConfigByPath(path, key)?.inactiveLabel || '已禁用'
                     }}
                   </span>
                 </div>
               </template>
 
-              <template
-                v-else-if="api.getFieldTypeByPath(path, key) === 'number'"
-              >
+              <template v-else-if="api.getFieldTypeByPath(path, key) === 'number'">
                 <a-input-number
                   v-model:value="currentObject[key]"
                   :controls="false"
@@ -129,9 +109,7 @@
                 />
               </template>
 
-              <template
-                v-else-if="api.getFieldTypeByPath(path, key) === 'array'"
-              >
+              <template v-else-if="api.getFieldTypeByPath(path, key) === 'array'">
                 <a-textarea
                   :value="api.getArrayFieldTextByPath(path, key)"
                   size="middle"
@@ -151,9 +129,7 @@
                   :placeholder="api.getFieldLabelByPath(path, key)"
                   :auto-size="{ minRows: 2, maxRows: 4 }"
                   show-count
-                  :maxlength="
-                    api.getFieldConfigByPath(path, key)?.maxLength || 500
-                  "
+                  :maxlength="api.getFieldConfigByPath(path, key)?.maxLength || 500"
                   :disabled="api.isFieldDisabledByPath(path, key)"
                   :readonly="api.isFieldReadonlyByPath(path, key)"
                 />
@@ -174,8 +150,7 @@
             <div
               class="field-actions"
               :class="{
-                'is-visible':
-                  hoveredPathKey === getFieldPathKey(key) || isNewField(key),
+                'is-visible': hoveredPathKey === getFieldPathKey(key) || isNewField(key),
               }"
             >
               <a-select
@@ -228,12 +203,7 @@
       class="add-field-section"
       :style="{ paddingLeft: `${12 + depth * 20}px` }"
     >
-      <a-button
-        type="dashed"
-        size="small"
-        class="add-field-btn"
-        @click="requestAddField"
-      >
+      <a-button type="dashed" size="small" class="add-field-btn" @click="requestAddField">
         <PlusOutlined />
         新增字段
       </a-button>
@@ -248,21 +218,15 @@ import {
   PlusOutlined,
   CaretDownOutlined,
   CaretRightOutlined,
-} from "@antdv-next/icons";
-import { computed, type PropType } from "vue";
-import draggable from "vuedraggable";
+} from '@antdv-next/icons';
+import { computed, type PropType } from 'vue';
+import draggable from 'vuedraggable';
 
 defineOptions({
-  name: "JsonFieldTreeList",
+  name: 'JsonFieldTreeList',
 });
 
-export type FieldType =
-  | "string"
-  | "number"
-  | "boolean"
-  | "tags"
-  | "array"
-  | "object";
+export type FieldType = 'string' | 'number' | 'boolean' | 'tags' | 'array' | 'object';
 
 export interface JsonObject {
   [key: string]: unknown;
@@ -270,7 +234,7 @@ export interface JsonObject {
 
 export interface FieldConfig {
   type?: FieldType;
-  component?: "input" | "textarea";
+  component?: 'input' | 'textarea';
   label?: string;
   min?: number;
   max?: number;
@@ -288,10 +252,7 @@ export interface JsonTreeEditorApi {
   getFieldLabelByPath: (path: string[], key: string) => string;
   hasLabelMapByPath: (path: string[], key: string) => boolean;
   getFieldTypeByPath: (path: string[], key: string) => FieldType;
-  getFieldConfigByPath: (
-    path: string[],
-    key: string,
-  ) => FieldConfig | undefined;
+  getFieldConfigByPath: (path: string[], key: string) => FieldConfig | undefined;
   isLongTextFieldByPath: (path: string[], key: string) => boolean;
   isFieldDisabledByPath: (path: string[], key: string) => boolean;
   isFieldReadonlyByPath: (path: string[], key: string) => boolean;
@@ -356,11 +317,11 @@ const props = defineProps({
   },
   hoveredPathKey: {
     type: String,
-    default: "",
+    default: '',
   },
   draggingPathKey: {
     type: String,
-    default: "",
+    default: '',
   },
   api: {
     type: Object as PropType<JsonTreeEditorApi>,
@@ -373,27 +334,25 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
-  (e: "hover-change", pathKey: string): void;
-  (e: "request-add-field", path: string[]): void;
-  (e: "remove-field", payload: RemoveFieldPayload): void;
-  (e: "drag-start", payload: DragStartPayload): void;
-  (e: "drag-end"): void;
-  (e: "update-field-key", payload: UpdateFieldKeyPayload): void;
-  (e: "update-field-type", payload: UpdateFieldTypePayload): void;
+  (e: 'hover-change', pathKey: string): void;
+  (e: 'request-add-field', path: string[]): void;
+  (e: 'remove-field', payload: RemoveFieldPayload): void;
+  (e: 'drag-start', payload: DragStartPayload): void;
+  (e: 'drag-end'): void;
+  (e: 'update-field-key', payload: UpdateFieldKeyPayload): void;
+  (e: 'update-field-type', payload: UpdateFieldTypePayload): void;
 }>();
 
 const fieldTypeOptions: Array<{ label: string; value: FieldType }> = [
-  { label: "文本", value: "string" },
-  { label: "数字", value: "number" },
-  { label: "布尔", value: "boolean" },
-  { label: "标签", value: "tags" },
-  { label: "数组", value: "array" },
-  { label: "对象", value: "object" },
+  { label: '文本', value: 'string' },
+  { label: '数字', value: 'number' },
+  { label: '布尔', value: 'boolean' },
+  { label: '标签', value: 'tags' },
+  { label: '数组', value: 'array' },
+  { label: '对象', value: 'object' },
 ];
 
-const currentObject = computed<JsonObject | null>(() =>
-  props.api.getObjectByPath(props.path),
-);
+const currentObject = computed<JsonObject | null>(() => props.api.getObjectByPath(props.path));
 
 const fieldOrder = computed<string[]>({
   get: () => props.api.getFieldOrderByPath(props.path),
@@ -413,7 +372,7 @@ function getFieldPathKey(key: string): string {
 }
 
 function isObjectField(key: string): boolean {
-  return props.api.getFieldTypeByPath(props.path, key) === "object";
+  return props.api.getFieldTypeByPath(props.path, key) === 'object';
 }
 
 function isFieldExpanded(key: string): boolean {
@@ -429,35 +388,35 @@ function isNewField(key: string): boolean {
 }
 
 function removeField(key: string) {
-  emit("remove-field", {
+  emit('remove-field', {
     path: [...props.path],
     key,
   });
 }
 
 function requestAddField() {
-  emit("request-add-field", [...props.path]);
+  emit('request-add-field', [...props.path]);
 }
 
 function handleHover(pathKey: string) {
-  emit("hover-change", pathKey);
+  emit('hover-change', pathKey);
 }
 
 function handleDragStart(event: { oldIndex?: number }) {
-  emit("drag-start", {
+  emit('drag-start', {
     path: [...props.path],
     oldIndex: event.oldIndex,
   });
 }
 
 function handleDragEnd() {
-  emit("drag-end");
+  emit('drag-end');
 }
 
 function handleKeyChange(oldKey: string, newKey: string) {
   const trimmedKey = newKey.trim();
   if (trimmedKey && trimmedKey !== oldKey) {
-    emit("update-field-key", {
+    emit('update-field-key', {
       path: [...props.path],
       oldKey,
       newKey: trimmedKey,
@@ -466,7 +425,7 @@ function handleKeyChange(oldKey: string, newKey: string) {
 }
 
 function handleTypeChange(key: string, type: FieldType) {
-  emit("update-field-type", {
+  emit('update-field-type', {
     path: [...props.path],
     key,
     type,

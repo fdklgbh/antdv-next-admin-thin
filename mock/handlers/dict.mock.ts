@@ -1,18 +1,18 @@
-import type { DictType, DictData } from "@/types/dict";
+import type { DictType, DictData } from '@/types/dict';
 
-import { defineMock } from "vite-plugin-mock-dev-server";
+import { defineMock } from 'vite-plugin-mock-dev-server';
 
-import { dictTypes, dictData } from "../data/dict.data";
+import { dictTypes, dictData } from '../data/dict.data';
 
 export default defineMock([
   // 获取所有字典类型
   {
-    url: "/api/dict/types",
-    method: "GET",
+    url: '/api/dict/types',
+    method: 'GET',
     body: () => {
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: dictTypes,
       };
@@ -21,22 +21,18 @@ export default defineMock([
 
   // 获取字典类型列表（分页）
   {
-    url: "/api/dict/type/list",
-    method: "GET",
+    url: '/api/dict/type/list',
+    method: 'GET',
     body: (req) => {
       const { name, code, status, page = 1, pageSize = 10 } = req.query;
 
       let filtered = [...dictTypes];
 
       if (name) {
-        filtered = filtered.filter((item) =>
-          item.name.includes(name as string),
-        );
+        filtered = filtered.filter((item) => item.name.includes(name as string));
       }
       if (code) {
-        filtered = filtered.filter((item) =>
-          item.code.includes(code as string),
-        );
+        filtered = filtered.filter((item) => item.code.includes(code as string));
       }
       if (status) {
         filtered = filtered.filter((item) => item.status === status);
@@ -48,7 +44,7 @@ export default defineMock([
 
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: {
           list,
@@ -62,8 +58,8 @@ export default defineMock([
 
   // 创建字典类型
   {
-    url: "/api/dict/type",
-    method: "POST",
+    url: '/api/dict/type',
+    method: 'POST',
     body: (req) => {
       const newType: DictType = {
         id: String(Date.now()),
@@ -74,7 +70,7 @@ export default defineMock([
       dictTypes.push(newType);
       return {
         code: 200,
-        message: "创建成功",
+        message: '创建成功',
         success: true,
         data: newType,
       };
@@ -83,8 +79,8 @@ export default defineMock([
 
   // 更新字典类型
   {
-    url: "/api/dict/type/:id",
-    method: "PUT",
+    url: '/api/dict/type/:id',
+    method: 'PUT',
     body: (req) => {
       const { id } = req.params;
       const index = dictTypes.findIndex((item) => item.id === id);
@@ -96,14 +92,14 @@ export default defineMock([
         };
         return {
           code: 200,
-          message: "更新成功",
+          message: '更新成功',
           success: true,
           data: dictTypes[index],
         };
       }
       return {
         code: 404,
-        message: "字典类型不存在",
+        message: '字典类型不存在',
         success: false,
       };
     },
@@ -111,8 +107,8 @@ export default defineMock([
 
   // 删除字典类型
   {
-    url: "/api/dict/type/:id",
-    method: "DELETE",
+    url: '/api/dict/type/:id',
+    method: 'DELETE',
     body: (req) => {
       const { id } = req.params;
       const index = dictTypes.findIndex((item) => item.id === id);
@@ -120,13 +116,13 @@ export default defineMock([
         dictTypes.splice(index, 1);
         return {
           code: 200,
-          message: "删除成功",
+          message: '删除成功',
           success: true,
         };
       }
       return {
         code: 404,
-        message: "字典类型不存在",
+        message: '字典类型不存在',
         success: false,
       };
     },
@@ -134,12 +130,12 @@ export default defineMock([
 
   // 获取所有字典数据
   {
-    url: "/api/dict/data/all",
-    method: "GET",
+    url: '/api/dict/data/all',
+    method: 'GET',
     body: () => {
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: dictData,
       };
@@ -148,17 +144,10 @@ export default defineMock([
 
   // 获取字典数据列表（分页） - 必须在 :typeCode 之前，避免被参数路由匹配
   {
-    url: "/api/dict/data/list",
-    method: "GET",
+    url: '/api/dict/data/list',
+    method: 'GET',
     body: (req) => {
-      const {
-        typeCode,
-        label,
-        value,
-        status,
-        page = 1,
-        pageSize = 10,
-      } = req.query;
+      const { typeCode, label, value, status, page = 1, pageSize = 10 } = req.query;
 
       let filtered = [...dictData];
 
@@ -166,14 +155,10 @@ export default defineMock([
         filtered = filtered.filter((item) => item.typeCode === typeCode);
       }
       if (label) {
-        filtered = filtered.filter((item) =>
-          item.label.includes(label as string),
-        );
+        filtered = filtered.filter((item) => item.label.includes(label as string));
       }
       if (value) {
-        filtered = filtered.filter((item) =>
-          item.value.includes(value as string),
-        );
+        filtered = filtered.filter((item) => item.value.includes(value as string));
       }
       if (status) {
         filtered = filtered.filter((item) => item.status === status);
@@ -185,7 +170,7 @@ export default defineMock([
 
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: {
           list,
@@ -199,16 +184,16 @@ export default defineMock([
 
   // 根据类型获取字典数据
   {
-    url: "/api/dict/data/:typeCode",
-    method: "GET",
+    url: '/api/dict/data/:typeCode',
+    method: 'GET',
     body: (req) => {
       const { typeCode } = req.params;
       const filtered = dictData.filter(
-        (item) => item.typeCode === typeCode && item.status === "enabled",
+        (item) => item.typeCode === typeCode && item.status === 'enabled',
       );
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: filtered,
       };
@@ -217,8 +202,8 @@ export default defineMock([
 
   // 创建字典数据
   {
-    url: "/api/dict/data",
-    method: "POST",
+    url: '/api/dict/data',
+    method: 'POST',
     body: (req) => {
       const newData: DictData = {
         id: String(Date.now()),
@@ -229,7 +214,7 @@ export default defineMock([
       dictData.push(newData);
       return {
         code: 200,
-        message: "创建成功",
+        message: '创建成功',
         success: true,
         data: newData,
       };
@@ -238,8 +223,8 @@ export default defineMock([
 
   // 更新字典数据
   {
-    url: "/api/dict/data/:id",
-    method: "PUT",
+    url: '/api/dict/data/:id',
+    method: 'PUT',
     body: (req) => {
       const { id } = req.params;
       const index = dictData.findIndex((item) => item.id === id);
@@ -251,14 +236,14 @@ export default defineMock([
         };
         return {
           code: 200,
-          message: "更新成功",
+          message: '更新成功',
           success: true,
           data: dictData[index],
         };
       }
       return {
         code: 404,
-        message: "字典数据不存在",
+        message: '字典数据不存在',
         success: false,
       };
     },
@@ -266,8 +251,8 @@ export default defineMock([
 
   // 删除字典数据
   {
-    url: "/api/dict/data/:id",
-    method: "DELETE",
+    url: '/api/dict/data/:id',
+    method: 'DELETE',
     body: (req) => {
       const { id } = req.params;
       const index = dictData.findIndex((item) => item.id === id);
@@ -275,13 +260,13 @@ export default defineMock([
         dictData.splice(index, 1);
         return {
           code: 200,
-          message: "删除成功",
+          message: '删除成功',
           success: true,
         };
       }
       return {
         code: 404,
-        message: "字典数据不存在",
+        message: '字典数据不存在',
         success: false,
       };
     },

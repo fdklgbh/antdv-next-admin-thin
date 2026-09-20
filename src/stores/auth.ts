@@ -4,8 +4,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
 import avatarImg from '@/assets/images/avatar-256.png';
-import { ALL_PERMISSION } from '@/constants/permissions';
 import { authConfig } from '@/config/auth';
+import { ALL_PERMISSION } from '@/constants/permissions';
 
 const TOKEN_KEY = 'access_token';
 const USER_KEY = 'user_info';

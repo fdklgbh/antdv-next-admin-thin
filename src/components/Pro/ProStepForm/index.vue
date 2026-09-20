@@ -1,11 +1,6 @@
 <template>
   <div class="pro-step-form">
-    <a-steps
-      :current="currentStep"
-      :items="stepItems"
-      size="small"
-      class="pro-step-form-steps"
-    />
+    <a-steps :current="currentStep" :items="stepItems" size="small" class="pro-step-form-steps" />
 
     <div class="pro-step-form-content">
       <template v-for="(step, index) in steps" :key="index">

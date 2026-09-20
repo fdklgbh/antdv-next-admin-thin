@@ -1,6 +1,6 @@
-import type { DictData } from "@/types/dict";
+import type { DictData } from '@/types/dict';
 
-import { useDictStore } from "@/stores/dict";
+import { useDictStore } from '@/stores/dict';
 
 class DictUtil {
   private getStore() {

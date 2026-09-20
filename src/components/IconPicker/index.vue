@@ -55,7 +55,13 @@
           </div>
 
           <div class="ip-grid-container">
-            <div v-if="pageItems.length === 0" class="ip-empty">
+            <a-alert
+              v-if="offlineLoadFailed"
+              :message="$t('iconLibrary.loadFailed')"
+              type="error"
+              show-icon
+            />
+            <div v-else-if="pageItems.length === 0" class="ip-empty">
               <a-empty description="No icons" />
             </div>
 
@@ -108,11 +114,13 @@
 </template>
 
 <script setup lang="ts">
+import type { LocalIconifyPrefix } from '@/utils/iconify';
+
 import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 
 import IconView from '@/components/Icon/index.vue';
 import { $t } from '@/locales';
-import { loadLocalIconifySet, type IconsJson, type LocalIconifyPrefix } from '@/utils/iconify';
+import { loadIconNames } from '@/utils/iconCatalog';
 
 type Category = 'all' | 'ri' | 'mdi' | 'ion' | 'antdv-next' | 'svg' | 'online';
 
@@ -174,16 +182,11 @@ const riNames = ref<string[]>([]);
 const mdiNames = ref<string[]>([]);
 const ionNames = ref<string[]>([]);
 const antdvIconNames = ref<string[]>([]);
+const offlineLoadFailed = ref(false);
 let antdvIconsLoadPromise: Promise<void> | null = null;
 
-const iconifyNames = (prefix: string, json: IconsJson) => {
-  const names = [...Object.keys(json.icons || {}), ...Object.keys(json.aliases || {})];
-  return names.map((name) => `${prefix}:${name}`);
-};
-
 const loadIconifySet = (prefix: LocalIconifyPrefix) =>
-  loadLocalIconifySet(prefix).then((iconsJson) => {
-    const names = iconifyNames(prefix, iconsJson);
+  loadIconNames(prefix).then((names) => {
     if (prefix === 'ri') {
       riNames.value = names;
     } else if (prefix === 'mdi') {
@@ -194,10 +197,16 @@ const loadIconifySet = (prefix: LocalIconifyPrefix) =>
   });
 
 const loadOfflineIconSets = () => {
-  void loadIconifySet('ri');
-  void loadIconifySet('mdi');
-  void loadIconifySet('ion');
-  void loadAntdvIcons();
+  offlineLoadFailed.value = false;
+  void Promise.all([
+    loadIconifySet('ri'),
+    loadIconifySet('mdi'),
+    loadIconifySet('ion'),
+    loadAntdvIcons(),
+  ]).catch((error: unknown) => {
+    offlineLoadFailed.value = true;
+    console.error('Failed to load icon names:', error);
+  });
 };
 
 const normalizeSvgName = (name: string) => {
@@ -231,11 +240,14 @@ const loadAntdvIcons = async () => {
     return antdvIconsLoadPromise;
   }
 
-  antdvIconsLoadPromise = import('@antdv-next/icons').then((icons) => {
-    antdvIconNames.value = Object.keys(icons)
-      .filter((name) => /(Outlined|Filled|TwoTone)$/.test(name))
-      .map((name) => `antdv-next:${name}`);
-  });
+  antdvIconsLoadPromise = loadIconNames('antdv-next')
+    .then((names) => {
+      antdvIconNames.value = names;
+    })
+    .catch((error: unknown) => {
+      antdvIconsLoadPromise = null;
+      throw error;
+    });
 
   return antdvIconsLoadPromise;
 };
@@ -526,12 +538,7 @@ const onInputChange = () => {
 
 const onCategoryChange = () => {
   page.value = 1;
-  if (category.value === 'ri' || category.value === 'mdi' || category.value === 'ion') {
-    void loadIconifySet(category.value);
-  }
-  if (category.value === 'antdv-next') {
-    void loadAntdvIcons();
-  }
+  if (offlineLoadFailed.value) loadOfflineIconSets();
   focusSearch();
 };
 

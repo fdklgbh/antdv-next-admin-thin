@@ -73,7 +73,9 @@
                   <div v-for="i in 3" :key="i" class="list-item">
                     <div class="list-item-avatar"></div>
                     <div class="list-item-content">
-                      <div class="list-item-title">{{ $t('exampleSegmented.listItemTitle') }} {{ i }}</div>
+                      <div class="list-item-title">
+                        {{ $t('exampleSegmented.listItemTitle') }} {{ i }}
+                      </div>
                       <div class="list-item-desc">{{ $t('exampleSegmented.listItemDesc') }}</div>
                     </div>
                   </div>
@@ -81,7 +83,9 @@
                 <div v-else class="card-view">
                   <div v-for="i in 3" :key="i" class="card-item">
                     <div class="card-item-cover"></div>
-                    <div class="card-item-title">{{ $t('exampleSegmented.cardItemTitle') }} {{ i }}</div>
+                    <div class="card-item-title">
+                      {{ $t('exampleSegmented.cardItemTitle') }} {{ i }}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -91,7 +95,9 @@
           <div class="demo-section">
             <h4>{{ $t('exampleSegmented.filterSwitch') }}</h4>
             <a-segmented v-model:value="filterValue" :options="filterOptions" />
-            <p class="value-preview">{{ $t('exampleSegmented.filterResult') }}: {{ filterValue }}</p>
+            <p class="value-preview">
+              {{ $t('exampleSegmented.filterResult') }}: {{ filterValue }}
+            </p>
           </div>
         </a-tab-pane>
       </a-tabs>
@@ -107,59 +113,58 @@ import {
   DesktopOutlined,
   MobileOutlined,
   UnorderedListOutlined,
-} from '@antdv-next/icons'
-import { h, ref } from 'vue'
+} from '@antdv-next/icons';
+import { h, ref } from 'vue';
 
-const activeTab = ref('basic')
+const activeTab = ref('basic');
 
-const basicValue = ref('daily')
+const basicValue = ref('daily');
 const basicOptions = [
   { label: 'Daily', value: 'daily' },
   { label: 'Weekly', value: 'weekly' },
   { label: 'Monthly', value: 'monthly' },
   { label: 'Yearly', value: 'yearly' },
-]
+];
 
-const sizeValue = ref('daily')
+const sizeValue = ref('daily');
 
-const iconValue = ref('list')
+const iconValue = ref('list');
 const iconOptions = [
   { value: 'list', icon: () => h(UnorderedListOutlined) },
   { value: 'grid', icon: () => h(AppstoreOutlined) },
-]
+];
 
-const mixValue = ref('mobile')
+const mixValue = ref('mobile');
 const mixOptions = [
   { value: 'mobile', label: 'Mobile', icon: () => h(MobileOutlined) },
   { value: 'desktop', label: 'Desktop', icon: () => h(DesktopOutlined) },
   { value: 'cloud', label: 'Cloud', icon: () => h(CloudOutlined) },
-]
+];
 
-const blockValue = ref('map')
+const blockValue = ref('map');
 
-const disabledValue = ref('daily')
+const disabledValue = ref('daily');
 
-const partialValue = ref('waiting')
+const partialValue = ref('waiting');
 const partialDisabledOptions = [
   { label: 'Waiting', value: 'waiting' },
   { label: 'Processing', value: 'processing', disabled: true },
   { label: 'Done', value: 'done', disabled: true },
-]
+];
 
-const viewMode = ref('list')
+const viewMode = ref('list');
 const viewOptions = [
   { value: 'list', icon: () => h(BarsOutlined) },
   { value: 'card', icon: () => h(AppstoreOutlined) },
-]
+];
 
-const filterValue = ref('all')
+const filterValue = ref('all');
 const filterOptions = [
   { label: 'All', value: 'all' },
   { label: 'Active', value: 'active' },
   { label: 'Pending', value: 'pending' },
   { label: 'Closed', value: 'closed' },
-]
-
+];
 </script>
 
 <style scoped lang="scss">

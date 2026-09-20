@@ -104,9 +104,7 @@ import ProStatCard from '@/components/Pro/ProStatCard/index.vue';
 import { $t, getLocale } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
 
-const ProChart = defineAsyncComponent(
-  () => import('@/components/Pro/ProChart/index.vue'),
-);
+const ProChart = defineAsyncComponent(() => import('@/components/Pro/ProChart/index.vue'));
 
 const authStore = useAuthStore();
 

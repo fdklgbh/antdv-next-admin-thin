@@ -158,11 +158,11 @@
 </template>
 
 <script setup lang="ts">
+import type { ProTableColumn } from '@/types/pro';
+
 import { DeleteOutlined, PlusOutlined } from '@antdv-next/icons';
 import { message } from 'antdv-next';
 import { computed, ref } from 'vue';
-
-import type { ProTableColumn } from '@/types/pro';
 
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { $t } from '@/locales';

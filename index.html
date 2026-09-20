@@ -1,13 +1,135 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Antdv Next Admin</title>
+    <style>
+      #app-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        background: var(--color-bg-layout, #f5f5f5);
+        color: var(--color-text-primary, #262626);
+        font:
+          14px/1.6 system-ui,
+          sans-serif;
+      }
+      .dark #app-loading {
+        background: var(--color-bg-layout, #141414);
+        color: var(--color-text-primary, #ededed);
+      }
+      /* From Uiverse.io by alexruix */
+      #app-loading .loader {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 24px;
+        position: relative;
+      }
+      #app-loading .loader::before {
+        content: '';
+        width: 48px;
+        height: 5px;
+        background: var(--color-primary, #1890ff);
+        opacity: 0.31;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        border-radius: 50%;
+        animation: shadow324 0.5s linear infinite;
+      }
+      #app-loading .loader::after {
+        content: '';
+        width: 100%;
+        height: 100%;
+        background: var(--color-primary, #1890ff);
+        position: absolute;
+        top: 0;
+        left: 0;
+        border-radius: 4px;
+        animation: jump7456 0.5s linear infinite;
+      }
+      #app-loading[data-error] .loader {
+        display: none;
+      }
+      #app-loading a {
+        color: var(--color-primary, #1890ff);
+      }
+      @keyframes jump7456 {
+        15% {
+          border-bottom-right-radius: 3px;
+        }
+        25% {
+          transform: translateY(9px) rotate(22.5deg);
+        }
+        50% {
+          transform: translateY(18px) scale(1, 0.9) rotate(45deg);
+          border-bottom-right-radius: 40px;
+        }
+        75% {
+          transform: translateY(9px) rotate(67.5deg);
+        }
+        100% {
+          transform: translateY(0) rotate(90deg);
+        }
+      }
+      @keyframes shadow324 {
+        0%,
+        100% {
+          transform: scale(1, 1);
+        }
+        50% {
+          transform: scale(1.2, 1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #app-loading .loader::before,
+        #app-loading .loader::after {
+          animation: none;
+        }
+      }
+    </style>
+    <script>
+      // Apply the saved appearance before the module graph starts loading.
+      try {
+        var themeMode = localStorage.getItem('theme-mode');
+        document.documentElement.classList.toggle(
+          'dark',
+          themeMode === 'dark' ||
+            ((!themeMode || themeMode === 'system') &&
+              matchMedia('(prefers-color-scheme: dark)').matches),
+        );
+        // Match the settings store's preset colors without waiting for Vue to load.
+        var primaryColors = {
+          blue: '#1890ff',
+          green: '#52c41a',
+          purple: '#722ed1',
+          red: '#f5222d',
+          orange: '#fa8c16',
+          cyan: '#13c2c2',
+        };
+        var savedPrimaryColor = localStorage.getItem('app-primary-color');
+        var savedCustomPrimaryColor = localStorage.getItem('app-custom-primary-color');
+        var startupPrimaryColor =
+          savedCustomPrimaryColor && CSS.supports('color', savedCustomPrimaryColor)
+            ? savedCustomPrimaryColor
+            : Object.hasOwn(primaryColors, savedPrimaryColor)
+              ? primaryColors[savedPrimaryColor]
+              : primaryColors.blue;
+        document.documentElement.style.setProperty('--color-primary', startupPrimaryColor);
+      } catch {
+        // A stored preference is optional when browser storage is unavailable.
+      }
+    </script>
     <!-- GitHub Pages SPA 路由重定向处理 -->
     <script>
-      (function() {
+      (function () {
         var redirect = sessionStorage.redirect;
         delete sessionStorage.redirect;
         if (redirect && redirect !== location.href) {
@@ -17,7 +139,54 @@
     </script>
   </head>
   <body>
+    <div id="app-loading" role="status" aria-live="polite" aria-busy="true">
+      <!-- From Uiverse.io by alexruix -->
+      <div class="loader" aria-hidden="true"></div>
+      <span id="app-loading-message">正在加载，请稍候…</span>
+      <a id="app-loading-retry" href="" hidden>重新加载</a>
+    </div>
     <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
+    <script>
+      // This feedback must work before Vue, the locale bundle or a route loads.
+      var startupMessages = {
+        'zh-CN': ['正在加载，请稍候…', '页面加载失败，请重新加载。', '重新加载'],
+        'en-US': ['Loading, please wait…', 'Unable to load the page. Please reload.', 'Reload'],
+        'ja-JP': [
+          '読み込み中です…',
+          'ページを読み込めませんでした。再読み込みしてください。',
+          '再読み込み',
+        ],
+        'ko-KR': [
+          '불러오는 중…',
+          '페이지를 불러오지 못했습니다. 다시 불러오세요.',
+          '다시 불러오기',
+        ],
+      };
+      var startupLocale = 'zh-CN';
+      try {
+        var savedLocale = localStorage.getItem('app-locale');
+        if (Object.hasOwn(startupMessages, savedLocale)) startupLocale = savedLocale;
+      } catch {
+        // Keep the default language if preferences cannot be read.
+      }
+      document.getElementById('app-loading-message').textContent =
+        startupMessages[startupLocale][0];
+      document.getElementById('app-loading-retry').textContent = startupMessages[startupLocale][2];
+    </script>
+    <script type="module">
+      import('/src/main.ts')
+        .then(({ bootstrap }) => bootstrap())
+        .catch((error) => {
+          console.error('Failed to start application:', error);
+          const loading = document.getElementById('app-loading');
+          if (loading) {
+            loading.setAttribute('data-error', '');
+            loading.setAttribute('aria-busy', 'false');
+            document.getElementById('app-loading-message').textContent =
+              startupMessages[startupLocale][1];
+            document.getElementById('app-loading-retry').hidden = false;
+          }
+        });
+    </script>
   </body>
 </html>

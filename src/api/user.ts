@@ -1,15 +1,13 @@
-import type { ApiResponse, PageParams, PageResult } from "@/types/api";
-import type { User } from "@/types/auth";
+import type { ApiResponse, PageParams, PageResult } from '@/types/api';
+import type { User } from '@/types/auth';
 
-import { request } from "@/utils/request";
+import { request } from '@/utils/request';
 
 /**
  * Get user list
  */
-export function getUserList(
-  params: PageParams,
-): Promise<ApiResponse<PageResult<User>>> {
-  return request.get("/users", { params });
+export function getUserList(params: PageParams): Promise<ApiResponse<PageResult<User>>> {
+  return request.get('/users', { params });
 }
 
 /**
@@ -23,16 +21,13 @@ export function getUserById(id: string): Promise<ApiResponse<User>> {
  * Create user
  */
 export function createUser(data: Partial<User>): Promise<ApiResponse<User>> {
-  return request.post("/users", data);
+  return request.post('/users', data);
 }
 
 /**
  * Update user
  */
-export function updateUser(
-  id: string,
-  data: Partial<User>,
-): Promise<ApiResponse<User>> {
+export function updateUser(id: string, data: Partial<User>): Promise<ApiResponse<User>> {
   return request.put(`/users/${id}`, data);
 }
 
@@ -51,8 +46,6 @@ export interface ChangePasswordParams {
   newPassword: string;
 }
 
-export function changePassword(
-  params: ChangePasswordParams,
-): Promise<ApiResponse<null>> {
-  return request.post("/users/change-password", params);
+export function changePassword(params: ChangePasswordParams): Promise<ApiResponse<null>> {
+  return request.post('/users/change-password', params);
 }

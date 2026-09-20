@@ -1,50 +1,33 @@
-import { addCollection } from "@iconify/vue";
+import { addCollection, iconLoaded } from '@iconify/vue';
 
-export type LocalIconifyPrefix = "ri" | "mdi" | "ion";
+export type LocalIconifyPrefix = 'ri' | 'mdi' | 'ion';
 
-export interface IconsJson {
-  prefix: string;
-  icons: Record<string, unknown>;
-  aliases?: Record<string, unknown>;
-  [key: string]: unknown;
+const localPrefixes = new Set<string>(['ri', 'mdi', 'ion']);
+const loadPromises = new Map<string, Promise<void>>();
+
+export const isLocalIconifyPrefix = (prefix: string): prefix is LocalIconifyPrefix =>
+  localPrefixes.has(prefix);
+
+export async function loadLocalIconifyIcon(
+  prefix: LocalIconifyPrefix,
+  name: string,
+): Promise<boolean> {
+  if (iconLoaded(`${prefix}:${name}`)) return true;
+  const { default: loaders } = await import('virtual:iconify-loaders');
+  const group = loaders[prefix].find((entry) => name <= entry.last);
+  if (!group) return false;
+  const key = `${prefix}:${group.last}`;
+  let promise = loadPromises.get(key);
+  if (!promise) {
+    promise = (async () => {
+      const { default: collection } = await group.load();
+      if (!addCollection(collection)) throw new Error(`Invalid icon collection: ${key}`);
+    })().catch((error: unknown) => {
+      loadPromises.delete(key);
+      throw error;
+    });
+    loadPromises.set(key, promise);
+  }
+  await promise;
+  return iconLoaded(`${prefix}:${name}`);
 }
-
-const localPrefixes = new Set<string>(["ri", "mdi", "ion"]);
-const localIconifyLoadPromises = new Map<LocalIconifyPrefix, Promise<IconsJson>>();
-
-export const isLocalIconifyPrefix = (
-  prefix: string,
-): prefix is LocalIconifyPrefix => localPrefixes.has(prefix);
-
-const resolveIconsJson = (module: unknown): IconsJson => {
-  if (module && typeof module === "object" && "default" in module) {
-    return (module as { default: IconsJson }).default;
-  }
-  return module as IconsJson;
-};
-
-export const loadLocalIconifySet = (prefix: LocalIconifyPrefix) => {
-  const cached = localIconifyLoadPromises.get(prefix);
-  if (cached) {
-    return cached;
-  }
-
-  const promise = (async () => {
-    let module: unknown;
-
-    if (prefix === "ri") {
-      module = await import("@iconify-json/ri/icons.json");
-    } else if (prefix === "mdi") {
-      module = await import("@iconify-json/mdi/icons.json");
-    } else {
-      module = await import("@iconify-json/ion/icons.json");
-    }
-
-    const iconsJson = resolveIconsJson(module);
-    addCollection(iconsJson as unknown as Parameters<typeof addCollection>[0]);
-    return iconsJson;
-  })();
-
-  localIconifyLoadPromises.set(prefix, promise);
-  return promise;
-};

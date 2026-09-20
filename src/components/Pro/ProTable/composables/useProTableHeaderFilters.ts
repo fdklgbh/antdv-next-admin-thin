@@ -3,7 +3,7 @@ import type {
   ProTableColumn,
   ProTableHeaderFilter,
   ProTableHeaderFilterConfig,
-} from "@/types/pro";
+} from '@/types/pro';
 
 export type TableFilterValue = (string | number | boolean)[] | null;
 
@@ -17,34 +17,28 @@ export function normalizeHeaderFilterMode(
   mode: HeaderFilterMode | undefined,
   defaultMode: HeaderFilterMode | undefined,
 ): HeaderFilterMode {
-  return mode ?? defaultMode ?? "server";
+  return mode ?? defaultMode ?? 'server';
 }
 
 export function isClientHeaderFilterMode(mode: HeaderFilterMode) {
-  return mode === "client" || mode === "hybrid";
+  return mode === 'client' || mode === 'hybrid';
 }
 
 export function isServerHeaderFilterMode(mode: HeaderFilterMode) {
-  return mode === "server" || mode === "hybrid";
+  return mode === 'server' || mode === 'hybrid';
 }
 
-export function normalizeSelectedFilterValues(
-  value: unknown,
-): (string | number | boolean)[] {
+export function normalizeSelectedFilterValues(value: unknown): (string | number | boolean)[] {
   if (Array.isArray(value)) {
     return value.filter(
       (item): item is string | number | boolean =>
-        item !== undefined && item !== null && item !== "",
+        item !== undefined && item !== null && item !== '',
     );
   }
-  if (value === undefined || value === null || value === "") {
+  if (value === undefined || value === null || value === '') {
     return [];
   }
-  if (
-    typeof value === "string" ||
-    typeof value === "number" ||
-    typeof value === "boolean"
-  ) {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
     return [value];
   }
   return [];
@@ -52,7 +46,7 @@ export function normalizeSelectedFilterValues(
 
 export function normalizeTableFilters(filters: Record<string, unknown> | undefined) {
   const normalized: Record<string, TableFilterValue> = {};
-  if (!filters || typeof filters !== "object") {
+  if (!filters || typeof filters !== 'object') {
     return normalized;
   }
 
@@ -72,10 +66,7 @@ export function splitKeywordTerms(keyword: string) {
     .filter(Boolean);
 }
 
-export function getColumnCellValue(
-  record: Record<string, unknown>,
-  column: ProTableColumn,
-) {
+export function getColumnCellValue(record: Record<string, unknown>, column: ProTableColumn) {
   return record?.[String(column.dataIndex)];
 }
 
@@ -85,16 +76,16 @@ export function applyKeywordClientFilter(
   column: ProTableColumn,
   headerFilter: ProTableHeaderFilter,
 ) {
-  if (typeof headerFilter.clientFilter === "function") {
+  if (typeof headerFilter.clientFilter === 'function') {
     return headerFilter.clientFilter(value, record, column);
   }
 
-  const keyword = String(value ?? "").trim();
+  const keyword = String(value ?? '').trim();
   if (!keyword) {
     return true;
   }
 
-  const rawText = String(getColumnCellValue(record, column) ?? "");
+  const rawText = String(getColumnCellValue(record, column) ?? '');
   const caseSensitive = Boolean(headerFilter.caseSensitive);
   const normalizedText = caseSensitive ? rawText : rawText.toLowerCase();
   const terms = splitKeywordTerms(keyword).map((item) =>
@@ -119,7 +110,7 @@ export function applySelectClientFilter(
   column: ProTableColumn,
   headerFilter: ProTableHeaderFilter,
 ) {
-  if (typeof headerFilter.clientFilter === "function") {
+  if (typeof headerFilter.clientFilter === 'function') {
     return headerFilter.clientFilter(value, record, column);
   }
 
@@ -128,7 +119,7 @@ export function applySelectClientFilter(
     return cellValue.map((item) => String(item)).includes(String(value));
   }
 
-  return String(cellValue ?? "") === String(value ?? "");
+  return String(cellValue ?? '') === String(value ?? '');
 }
 
 export function buildHeaderFilterRequestParams(options: {
@@ -136,16 +127,14 @@ export function buildHeaderFilterRequestParams(options: {
   entries: Map<string, HeaderFilterEntry>;
   config?: ProTableHeaderFilterConfig;
 }) {
-  const payloadMode = options.config?.requestPayload ?? "flat";
-  const nestedKey = options.config?.nestedKey || "filters";
+  const payloadMode = options.config?.requestPayload ?? 'flat';
+  const nestedKey = options.config?.nestedKey || 'filters';
   const defaultMode = options.config?.defaultMode;
   const flatParams: Record<string, unknown> = {};
   const nestedParams: Record<string, unknown> = {};
 
   Object.keys(options.filters).forEach((tableFilterKey) => {
-    const selectedValues = normalizeSelectedFilterValues(
-      options.filters[tableFilterKey],
-    );
+    const selectedValues = normalizeSelectedFilterValues(options.filters[tableFilterKey]);
     if (selectedValues.length === 0) {
       return;
     }
@@ -164,29 +153,26 @@ export function buildHeaderFilterRequestParams(options: {
     const isMultiple = Boolean(entry.headerFilter.multiple);
     let requestValue: unknown;
 
-    if (entry.headerFilter.type === "keyword") {
-      requestValue = String(selectedValues[0] ?? "");
+    if (entry.headerFilter.type === 'keyword') {
+      requestValue = String(selectedValues[0] ?? '');
     } else {
       requestValue = isMultiple ? selectedValues : selectedValues[0];
     }
 
-    if (typeof entry.headerFilter.transformRequestValue === "function") {
-      requestValue = entry.headerFilter.transformRequestValue(
-        requestValue,
-        selectedValues,
-      );
+    if (typeof entry.headerFilter.transformRequestValue === 'function') {
+      requestValue = entry.headerFilter.transformRequestValue(requestValue, selectedValues);
     }
 
     if (
       requestValue === undefined ||
       requestValue === null ||
-      requestValue === "" ||
+      requestValue === '' ||
       (Array.isArray(requestValue) && requestValue.length === 0)
     ) {
       return;
     }
 
-    if (payloadMode === "nested") {
+    if (payloadMode === 'nested') {
       nestedParams[paramKey] = requestValue;
       return;
     }
@@ -194,7 +180,7 @@ export function buildHeaderFilterRequestParams(options: {
     flatParams[paramKey] = requestValue;
   });
 
-  if (payloadMode === "nested") {
+  if (payloadMode === 'nested') {
     if (Object.keys(nestedParams).length === 0) {
       return {};
     }

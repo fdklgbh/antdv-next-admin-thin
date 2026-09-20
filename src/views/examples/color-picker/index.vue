@@ -37,7 +37,9 @@
           <div class="demo-section">
             <h4>{{ $t('exampleColorPicker.presetColors') }}</h4>
             <a-color-picker v-model:value="presetColor" :presets="presetColors" />
-            <p class="value-preview">{{ $t('exampleColorPicker.currentColor') }}: {{ presetColor }}</p>
+            <p class="value-preview">
+              {{ $t('exampleColorPicker.currentColor') }}: {{ presetColor }}
+            </p>
           </div>
         </a-tab-pane>
 
@@ -68,13 +70,17 @@
           <div class="demo-section">
             <h4>{{ $t('exampleColorPicker.withAlpha') }}</h4>
             <a-color-picker v-model:value="alphaColor" show-alpha />
-            <p class="value-preview">{{ $t('exampleColorPicker.currentColor') }}: {{ alphaColor }}</p>
+            <p class="value-preview">
+              {{ $t('exampleColorPicker.currentColor') }}: {{ alphaColor }}
+            </p>
           </div>
 
           <div class="demo-section">
             <h4>{{ $t('exampleColorPicker.withoutAlpha') }}</h4>
             <a-color-picker v-model:value="noAlphaColor" />
-            <p class="value-preview">{{ $t('exampleColorPicker.currentColor') }}: {{ noAlphaColor }}</p>
+            <p class="value-preview">
+              {{ $t('exampleColorPicker.currentColor') }}: {{ noAlphaColor }}
+            </p>
           </div>
         </a-tab-pane>
 
@@ -141,18 +147,18 @@
 </template>
 
 <script setup lang="ts">
-import { CheckOutlined, PlusOutlined } from '@antdv-next/icons'
-import { message } from 'antdv-next'
-import { reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { CheckOutlined, PlusOutlined } from '@antdv-next/icons';
+import { message } from 'antdv-next';
+import { reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const activeTab = ref('basic')
-const basicColor = ref('#1677ff')
-const sizeColor = ref('#1677ff')
+const activeTab = ref('basic');
+const basicColor = ref('#1677ff');
+const sizeColor = ref('#1677ff');
 
-const presetColor = ref('#1677ff')
+const presetColor = ref('#1677ff');
 const presetColors = [
   {
     label: 'Recommended',
@@ -183,19 +189,19 @@ const presetColors = [
       '#000000',
     ],
   },
-]
+];
 
-const hexColor = ref('#1677ff')
-const rgbColor = ref('rgb(22, 119, 255)')
-const hslColor = ref('hsl(210, 100%, 54%)')
+const hexColor = ref('#1677ff');
+const rgbColor = ref('rgb(22, 119, 255)');
+const hslColor = ref('hsl(210, 100%, 54%)');
 
-const alphaColor = ref('rgba(22, 119, 255, 0.6)')
-const noAlphaColor = ref('#1677ff')
+const alphaColor = ref('rgba(22, 119, 255, 0.6)');
+const noAlphaColor = ref('#1677ff');
 
-const disabledColor = ref('#1677ff')
+const disabledColor = ref('#1677ff');
 
-const selectedTheme = ref('#1677ff')
-const customTheme = ref('#1677ff')
+const selectedTheme = ref('#1677ff');
+const customTheme = ref('#1677ff');
 const themeColors = [
   { name: 'Blue', value: '#1677ff' },
   { name: 'Green', value: '#52c41a' },
@@ -203,31 +209,31 @@ const themeColors = [
   { name: 'Red', value: '#f5222d' },
   { name: 'Orange', value: '#fa8c16' },
   { name: 'Cyan', value: '#13c2c2' },
-]
+];
 
 const tags = ref([
   { label: 'Vue', color: '#42b883' },
   { label: 'React', color: '#61dafb' },
   { label: 'Angular', color: '#dd0031' },
-])
+]);
 
-const showTagModal = ref(false)
+const showTagModal = ref(false);
 const newTag = reactive({
   label: '',
   color: '#1677ff',
-})
+});
 
 const handleAddTag = () => {
   if (!newTag.label) {
-    message.warning(t('exampleColorPicker.tagNameRequired'))
-    return
+    message.warning(t('exampleColorPicker.tagNameRequired'));
+    return;
   }
-  tags.value.push({ label: newTag.label, color: newTag.color })
-  newTag.label = ''
-  newTag.color = '#1677ff'
-  showTagModal.value = false
-  message.success(t('exampleColorPicker.addTagSuccess'))
-}
+  tags.value.push({ label: newTag.label, color: newTag.color });
+  newTag.label = '';
+  newTag.color = '#1677ff';
+  showTagModal.value = false;
+  message.success(t('exampleColorPicker.addTagSuccess'));
+};
 </script>
 
 <style scoped lang="scss">
@@ -310,7 +316,9 @@ const handleAddTag = () => {
   }
 
   &.active {
-    box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--color-primary);
+    box-shadow:
+      0 0 0 2px #fff,
+      0 0 0 4px var(--color-primary);
   }
 }
 

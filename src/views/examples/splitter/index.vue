@@ -128,24 +128,12 @@
               <a-splitter-panel :size="220" :min="180">
                 <div class="panel-content panel-file-tree">
                   <div class="file-tree">
-                    <div class="file-item folder">
-                      <FolderOutlined /> src
-                    </div>
-                    <div class="file-item">
-                      <FileOutlined /> main.ts
-                    </div>
-                    <div class="file-item">
-                      <FileOutlined /> App.vue
-                    </div>
-                    <div class="file-item folder">
-                      <FolderOutlined /> components
-                    </div>
-                    <div class="file-item">
-                      <FileOutlined /> Header.vue
-                    </div>
-                    <div class="file-item">
-                      <FileOutlined /> Footer.vue
-                    </div>
+                    <div class="file-item folder"><FolderOutlined /> src</div>
+                    <div class="file-item"><FileOutlined /> main.ts</div>
+                    <div class="file-item"><FileOutlined /> App.vue</div>
+                    <div class="file-item folder"><FolderOutlined /> components</div>
+                    <div class="file-item"><FileOutlined /> Header.vue</div>
+                    <div class="file-item"><FileOutlined /> Footer.vue</div>
                   </div>
                 </div>
               </a-splitter-panel>
@@ -153,7 +141,9 @@
                 <a-splitter orientation="vertical">
                   <a-splitter-panel>
                     <div class="panel-content panel-code">
-                      <pre class="code-preview"><code>import {{ '{' }} createApp {{ '}' }} from 'vue'
+                      <pre
+                        class="code-preview"
+                      ><code>import {{ '{' }} createApp {{ '}' }} from 'vue'
 import App from './App.vue'
 import router from './router'
 
@@ -178,18 +168,18 @@ app.mount('#app')</code></pre>
 </template>
 
 <script setup lang="ts">
-import { FileOutlined, FolderOutlined } from '@antdv-next/icons'
-import { computed, ref } from 'vue'
+import { FileOutlined, FolderOutlined } from '@antdv-next/icons';
+import { computed, ref } from 'vue';
 
-const activeTab = ref('basic')
-const configMinSize = ref(100)
-const configMaxSize = ref(400)
-const configDefaultSize = ref(200)
-const configResizable = ref(true)
-const configCurrentSize = computed(() => Math.round(configDefaultSize.value))
+const activeTab = ref('basic');
+const configMinSize = ref(100);
+const configMaxSize = ref(400);
+const configDefaultSize = ref(200);
+const configResizable = ref(true);
+const configCurrentSize = computed(() => Math.round(configDefaultSize.value));
 
 function handleConfigResize(sizes: number[]) {
-  configDefaultSize.value = Math.round(sizes[0] ?? configDefaultSize.value)
+  configDefaultSize.value = Math.round(sizes[0] ?? configDefaultSize.value);
 }
 </script>
 

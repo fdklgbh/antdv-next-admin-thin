@@ -30,11 +30,7 @@
             style="width: 240px"
             :placeholder="$t('examples.scaffold.virtualTable.searchPlaceholder')"
           />
-          <a-select
-            v-model:value="statusFilter"
-            :options="statusOptions"
-            style="width: 150px"
-          />
+          <a-select v-model:value="statusFilter" :options="statusOptions" style="width: 150px" />
         </a-space>
       </div>
 
@@ -75,10 +71,10 @@
 </template>
 
 <script setup lang="ts">
+import type { ProTableColumn } from '@/types/pro';
+
 import { message } from 'antdv-next';
 import { computed, onMounted, ref } from 'vue';
-
-import type { ProTableColumn } from '@/types/pro';
 
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { $t } from '@/locales';

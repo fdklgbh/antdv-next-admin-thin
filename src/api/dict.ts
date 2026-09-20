@@ -1,18 +1,13 @@
-import type { ApiResponse } from "@/types/api";
-import type {
-  DictType,
-  DictData,
-  DictQueryParams,
-  DictTypeQueryParams,
-} from "@/types/dict";
+import type { ApiResponse } from '@/types/api';
+import type { DictType, DictData, DictQueryParams, DictTypeQueryParams } from '@/types/dict';
 
-import { request } from "@/utils/request";
+import { request } from '@/utils/request';
 
 /**
  * 获取所有字典类型
  */
 export function getDictTypes(): Promise<ApiResponse<DictType[]>> {
-  return request.get("/dict/types");
+  return request.get('/dict/types');
 }
 
 /**
@@ -26,16 +21,14 @@ export function getDictTypeList(params: DictTypeQueryParams): Promise<
     pageSize: number;
   }>
 > {
-  return request.get("/dict/type/list", { params });
+  return request.get('/dict/type/list', { params });
 }
 
 /**
  * 创建字典类型
  */
-export function createDictType(
-  data: Partial<DictType>,
-): Promise<ApiResponse<DictType>> {
-  return request.post("/dict/type", data);
+export function createDictType(data: Partial<DictType>): Promise<ApiResponse<DictType>> {
+  return request.post('/dict/type', data);
 }
 
 /**
@@ -59,15 +52,13 @@ export function deleteDictType(id: string): Promise<ApiResponse<void>> {
  * 获取所有字典数据
  */
 export function getAllDictData(): Promise<ApiResponse<DictData[]>> {
-  return request.get("/dict/data/all");
+  return request.get('/dict/data/all');
 }
 
 /**
  * 根据类型获取字典数据
  */
-export function getDictDataByType(
-  typeCode: string,
-): Promise<ApiResponse<DictData[]>> {
+export function getDictDataByType(typeCode: string): Promise<ApiResponse<DictData[]>> {
   return request.get(`/dict/data/${typeCode}`);
 }
 
@@ -82,16 +73,14 @@ export function getDictDataList(params: DictQueryParams): Promise<
     pageSize: number;
   }>
 > {
-  return request.get("/dict/data/list", { params });
+  return request.get('/dict/data/list', { params });
 }
 
 /**
  * 创建字典数据
  */
-export function createDictData(
-  data: Partial<DictData>,
-): Promise<ApiResponse<DictData>> {
-  return request.post("/dict/data", data);
+export function createDictData(data: Partial<DictData>): Promise<ApiResponse<DictData>> {
+  return request.post('/dict/data', data);
 }
 
 /**

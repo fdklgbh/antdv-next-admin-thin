@@ -31,7 +31,8 @@ import type { Component, StyleValue } from 'vue';
 import { Icon as IconifyIcon } from '@iconify/vue';
 import { computed, ref, shallowRef, watch } from 'vue';
 
-import { isLocalIconifyPrefix, loadLocalIconifySet } from '@/utils/iconify';
+import { loadAntdvIcon } from '@/utils/antdvIcon';
+import { isLocalIconifyPrefix, loadLocalIconifyIcon } from '@/utils/iconify';
 import { parseIconName } from '@/utils/iconName';
 
 type NormalizedIconKind = 'iconify' | 'antdv-next' | 'svg';
@@ -86,14 +87,22 @@ const localIconifyReady = ref(true);
 
 watch(
   [resolvedKind, antdvKey],
-  async ([kind, key]) => {
+  async ([kind, key], _previous, onCleanup) => {
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+    });
+    antdvComp.value = undefined;
     if (kind !== 'antdv-next') {
-      antdvComp.value = undefined;
       return;
     }
 
-    const icons = (await import('@antdv-next/icons')) as Record<string, Component>;
-    antdvComp.value = icons[key];
+    try {
+      const component = await loadAntdvIcon(key);
+      if (!cancelled) antdvComp.value = component;
+    } catch (error) {
+      console.error(`Failed to load icon: ${key}`, error);
+    }
   },
   {
     immediate: true,
@@ -120,17 +129,24 @@ const canRenderIconify = computed(() => {
 });
 
 watch(
-  [resolvedKind, iconifyPrefix],
-  async ([kind, prefix]) => {
+  [resolvedKind, iconifyIcon],
+  async ([kind, icon], _previous, onCleanup) => {
+    let cancelled = false;
+    onCleanup(() => {
+      cancelled = true;
+    });
+    const prefix = iconifyPrefix.value;
     if (kind !== 'iconify' || !isLocalIconifyPrefix(prefix)) {
       localIconifyReady.value = true;
       return;
     }
 
     localIconifyReady.value = false;
-    await loadLocalIconifySet(prefix);
-    if (resolvedKind.value === 'iconify' && iconifyPrefix.value === prefix) {
-      localIconifyReady.value = true;
+    try {
+      const ready = await loadLocalIconifyIcon(prefix, icon.slice(prefix.length + 1));
+      if (!cancelled) localIconifyReady.value = ready;
+    } catch (error) {
+      console.error(`Failed to load icon: ${icon}`, error);
     }
   },
   {

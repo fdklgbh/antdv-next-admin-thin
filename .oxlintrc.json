@@ -15,6 +15,27 @@
   },
   "overrides": [
     {
+      "files": ["src/vite-env.d.ts", "src/views/about/index.vue", "vite.config.ts"],
+      "rules": {
+        "no-underscore-dangle": ["warn", { "allow": ["__APP_VERSION__"] }]
+      }
+    },
+    {
+      "files": ["src/utils/request.ts"],
+      "rules": {
+        "no-underscore-dangle": ["warn", { "allow": ["_retry"] }]
+      }
+    },
+    {
+      "files": ["src/components/Pro/ProTable/index.vue"],
+      "rules": {
+        "no-underscore-dangle": [
+          "warn",
+          { "allow": ["__proHeaderFilter", "__proHeaderFilterKey"] }
+        ]
+      }
+    },
+    {
       "files": ["mock/**/*"],
       "rules": {
         "no-console": "off"

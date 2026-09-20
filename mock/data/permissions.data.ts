@@ -1,11 +1,6 @@
 import type { Permission } from '@/types/auth';
 
-const localizedName = (
-  zhCN: string,
-  enUS: string,
-  jaJP: string,
-  koKR: string,
-) => ({
+const localizedName = (zhCN: string, enUS: string, jaJP: string, koKR: string) => ({
   'zh-CN': zhCN,
   'en-US': enUS,
   'ja-JP': jaJP,

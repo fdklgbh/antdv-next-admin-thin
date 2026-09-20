@@ -1,51 +1,51 @@
-import type { Permission, Role, User } from "@/types/auth";
-import type { SysConfig } from "@/types/config";
-import type { DictData } from "@/types/dict";
-import type { SysFile } from "@/types/file";
-import type { LoginLog, OperationLog } from "@/types/log";
-import type { AxiosInstance } from "axios";
+import type { Permission, Role, User } from '@/types/auth';
+import type { SysConfig } from '@/types/config';
+import type { DictData } from '@/types/dict';
+import type { SysFile } from '@/types/file';
+import type { LoginLog, OperationLog } from '@/types/log';
+import type { AxiosInstance } from 'axios';
 
-import AxiosMockAdapter from "axios-mock-adapter";
+import AxiosMockAdapter from 'axios-mock-adapter';
 
-import avatarImg from "@/assets/images/avatar-256.png";
+import avatarImg from '@/assets/images/avatar-256.png';
 
+import { sysConfigs } from '../../mock/data/config.data';
 import {
   mockActivities,
   mockChartData,
   mockSalesTrend,
   mockStats,
   mockUserDistribution,
-} from "../../mock/data/dashboard.data";
-import { sysConfigs } from "../../mock/data/config.data";
-import { dictTypes, dictData } from "../../mock/data/dict.data";
-import { sysFiles } from "../../mock/data/file.data";
-import { operationLogs, loginLogs } from "../../mock/data/log.data";
-import { mockPermissions } from "../../mock/data/permissions.data";
-import { mockRoles } from "../../mock/data/roles.data";
+} from '../../mock/data/dashboard.data';
+import { dictTypes, dictData } from '../../mock/data/dict.data';
+import { sysFiles } from '../../mock/data/file.data';
+import { operationLogs, loginLogs } from '../../mock/data/log.data';
+import { mockPermissions } from '../../mock/data/permissions.data';
+import { mockRoles } from '../../mock/data/roles.data';
 
-const SUCCESS_MESSAGE = "success";
-const DEMO_CREATED_AT = "2023-01-01T00:00:00.000Z";
-const DEMO_UPDATED_AT = "2023-01-01T00:00:00.000Z";
+const SUCCESS_MESSAGE = 'success';
+const DEMO_CREATED_AT = '2023-01-01T00:00:00.000Z';
+const DEMO_UPDATED_AT = '2023-01-01T00:00:00.000Z';
 
 const adminUser: User = {
-  id: "1",
-  username: "admin",
-  email: "admin@example.com",
-  realName: "Administrator",
+  id: '1',
+  username: 'admin',
+  email: 'admin@example.com',
+  realName: 'Administrator',
   avatar: avatarImg,
-  phone: "13800138000",
-  gender: "male",
-  birthDate: "1990-01-01",
-  bio: "System Administrator",
-  status: "active",
+  phone: '13800138000',
+  gender: 'male',
+  birthDate: '1990-01-01',
+  bio: 'System Administrator',
+  status: 'active',
   createdAt: DEMO_CREATED_AT,
   updatedAt: DEMO_UPDATED_AT,
   roles: [
     {
-      id: "1",
-      name: "Administrator",
-      code: "admin",
-      description: "System Administrator",
+      id: '1',
+      name: 'Administrator',
+      code: 'admin',
+      description: 'System Administrator',
       permissions: [],
       createdAt: DEMO_CREATED_AT,
       updatedAt: DEMO_UPDATED_AT,
@@ -53,36 +53,36 @@ const adminUser: User = {
   ],
   permissions: [
     {
-      id: "1",
-      name: "All Permissions",
-      code: "*",
-      description: "Has all permissions",
-      resource: "*",
-      action: "*",
-      type: "api",
+      id: '1',
+      name: 'All Permissions',
+      code: '*',
+      description: 'Has all permissions',
+      resource: '*',
+      action: '*',
+      type: 'api',
     },
   ],
 };
 
 const regularUser: User = {
-  id: "2",
-  username: "user",
-  email: "user@example.com",
-  realName: "Regular User",
+  id: '2',
+  username: 'user',
+  email: 'user@example.com',
+  realName: 'Regular User',
   avatar: avatarImg,
-  phone: "13800138001",
-  gender: "female",
-  birthDate: "1995-05-15",
-  bio: "Regular User",
-  status: "active",
+  phone: '13800138001',
+  gender: 'female',
+  birthDate: '1995-05-15',
+  bio: 'Regular User',
+  status: 'active',
   createdAt: DEMO_CREATED_AT,
   updatedAt: DEMO_UPDATED_AT,
   roles: [
     {
-      id: "2",
-      name: "User",
-      code: "user",
-      description: "Regular User",
+      id: '2',
+      name: 'User',
+      code: 'user',
+      description: 'Regular User',
       permissions: [],
       createdAt: DEMO_CREATED_AT,
       updatedAt: DEMO_UPDATED_AT,
@@ -90,13 +90,13 @@ const regularUser: User = {
   ],
   permissions: [
     {
-      id: "2",
-      name: "View Dashboard",
-      code: "dashboard.view",
-      description: "Can view dashboard",
-      resource: "dashboard",
-      action: "view",
-      type: "menu",
+      id: '2',
+      name: 'View Dashboard',
+      code: 'dashboard.view',
+      description: 'Can view dashboard',
+      resource: 'dashboard',
+      action: 'view',
+      type: 'menu',
     },
   ],
 };
@@ -105,32 +105,32 @@ const demoUsers: User[] = [
   adminUser,
   regularUser,
   {
-    id: "3",
-    username: "manager",
-    email: "manager@example.com",
-    realName: "Demo Manager",
+    id: '3',
+    username: 'manager',
+    email: 'manager@example.com',
+    realName: 'Demo Manager',
     avatar: avatarImg,
-    phone: "13800138002",
-    gender: "male",
-    birthDate: "1992-08-12",
-    bio: "Demo Manager",
-    status: "active",
+    phone: '13800138002',
+    gender: 'male',
+    birthDate: '1992-08-12',
+    bio: 'Demo Manager',
+    status: 'active',
     createdAt: DEMO_CREATED_AT,
     updatedAt: DEMO_UPDATED_AT,
     roles: [mockRoles[1]],
     permissions: [],
   },
   {
-    id: "4",
-    username: "guest",
-    email: "guest@example.com",
-    realName: "Demo Guest",
+    id: '4',
+    username: 'guest',
+    email: 'guest@example.com',
+    realName: 'Demo Guest',
     avatar: avatarImg,
-    phone: "13800138003",
-    gender: "female",
-    birthDate: "1998-03-20",
-    bio: "Demo Guest",
-    status: "inactive",
+    phone: '13800138003',
+    gender: 'female',
+    birthDate: '1998-03-20',
+    bio: 'Demo Guest',
+    status: 'inactive',
     createdAt: DEMO_CREATED_AT,
     updatedAt: DEMO_UPDATED_AT,
     roles: [mockRoles[3]],
@@ -157,24 +157,24 @@ function createMockRefreshToken(userId: string): string {
 
 function resolveMockUserIdFromToken(token?: string): string | null {
   if (!token) return null;
-  const parts = token.split("-");
-  const tokenIndex = parts.indexOf("token");
-  const refreshIndex = parts.indexOf("refresh");
+  const parts = token.split('-');
+  const tokenIndex = parts.indexOf('token');
+  const refreshIndex = parts.indexOf('refresh');
   const userIdIndex = tokenIndex !== -1 ? tokenIndex + 1 : refreshIndex + 2;
   const userId = parts[userIdIndex];
-  return userId === "1" || userId === "2" ? userId : null;
+  return userId === '1' || userId === '2' ? userId : null;
 }
 
 function getAuthorizationToken(headers: unknown): string | undefined {
-  if (!headers || typeof headers !== "object") return undefined;
+  if (!headers || typeof headers !== 'object') return undefined;
 
   const record = headers as Record<string, string | undefined>;
   const value = record.Authorization || record.authorization;
-  return value?.replace("Bearer ", "");
+  return value?.replace('Bearer ', '');
 }
 
 function parseJsonBody<T>(data: unknown, fallback: T): T {
-  if (typeof data !== "string") return fallback;
+  if (typeof data !== 'string') return fallback;
 
   try {
     return JSON.parse(data) as T;
@@ -188,16 +188,16 @@ function cloneData<T>(data: T): T {
 }
 
 function getQueryParam(configUrl: string | undefined, key: string): string {
-  const url = new URL(configUrl || "", "https://mock.local");
-  return url.searchParams.get(key) || "";
+  const url = new URL(configUrl || '', 'https://mock.local');
+  return url.searchParams.get(key) || '';
 }
 
 function getConfigList(url: string | undefined) {
-  const name = getQueryParam(url, "name");
-  const key = getQueryParam(url, "key");
-  const group = getQueryParam(url, "group");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 20);
+  const name = getQueryParam(url, 'name');
+  const key = getQueryParam(url, 'key');
+  const group = getQueryParam(url, 'group');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 20);
 
   let filtered = cloneData<SysConfig[]>(sysConfigs);
 
@@ -223,11 +223,11 @@ function getConfigList(url: string | undefined) {
 }
 
 function getDictTypeList(url: string | undefined) {
-  const name = getQueryParam(url, "name");
-  const code = getQueryParam(url, "code");
-  const status = getQueryParam(url, "status");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const name = getQueryParam(url, 'name');
+  const code = getQueryParam(url, 'code');
+  const status = getQueryParam(url, 'status');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData(dictTypes);
 
@@ -246,12 +246,12 @@ function getDictTypeList(url: string | undefined) {
 }
 
 function getDictDataList(url: string | undefined) {
-  const typeCode = getQueryParam(url, "typeCode");
-  const label = getQueryParam(url, "label");
-  const value = getQueryParam(url, "value");
-  const status = getQueryParam(url, "status");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const typeCode = getQueryParam(url, 'typeCode');
+  const label = getQueryParam(url, 'label');
+  const value = getQueryParam(url, 'value');
+  const status = getQueryParam(url, 'status');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData<DictData[]>(dictData);
 
@@ -271,11 +271,11 @@ function getDictDataList(url: string | undefined) {
 }
 
 function getFileList(url: string | undefined) {
-  const name = getQueryParam(url, "name");
-  const ext = getQueryParam(url, "ext");
-  const storage = getQueryParam(url, "storage");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 20);
+  const name = getQueryParam(url, 'name');
+  const ext = getQueryParam(url, 'ext');
+  const storage = getQueryParam(url, 'storage');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 20);
 
   let filtered = cloneData<SysFile[]>(sysFiles);
 
@@ -294,14 +294,14 @@ function getFileList(url: string | undefined) {
 }
 
 function getOperationLogList(url: string | undefined) {
-  const username = getQueryParam(url, "username");
-  const module = getQueryParam(url, "module");
-  const action = getQueryParam(url, "action");
-  const status = getQueryParam(url, "status");
-  const startTime = getQueryParam(url, "startTime");
-  const endTime = getQueryParam(url, "endTime");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const username = getQueryParam(url, 'username');
+  const module = getQueryParam(url, 'module');
+  const action = getQueryParam(url, 'action');
+  const status = getQueryParam(url, 'status');
+  const startTime = getQueryParam(url, 'startTime');
+  const endTime = getQueryParam(url, 'endTime');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData<OperationLog[]>(operationLogs);
 
@@ -323,13 +323,13 @@ function getOperationLogList(url: string | undefined) {
 }
 
 function getLoginLogList(url: string | undefined) {
-  const username = getQueryParam(url, "username");
-  const ip = getQueryParam(url, "ip");
-  const status = getQueryParam(url, "status");
-  const startTime = getQueryParam(url, "startTime");
-  const endTime = getQueryParam(url, "endTime");
-  const page = Number(getQueryParam(url, "page") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const username = getQueryParam(url, 'username');
+  const ip = getQueryParam(url, 'ip');
+  const status = getQueryParam(url, 'status');
+  const startTime = getQueryParam(url, 'startTime');
+  const endTime = getQueryParam(url, 'endTime');
+  const page = Number(getQueryParam(url, 'page') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData<LoginLog[]>(loginLogs);
 
@@ -360,12 +360,12 @@ function findPermissionById(list: Permission[], id: string): Permission | null {
 }
 
 function getPaginatedUsers(url: string | undefined) {
-  const username = getQueryParam(url, "username").toLowerCase();
-  const email = getQueryParam(url, "email").toLowerCase();
-  const status = getQueryParam(url, "status");
-  const gender = getQueryParam(url, "gender");
-  const current = Number(getQueryParam(url, "current") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const username = getQueryParam(url, 'username').toLowerCase();
+  const email = getQueryParam(url, 'email').toLowerCase();
+  const status = getQueryParam(url, 'status');
+  const gender = getQueryParam(url, 'gender');
+  const current = Number(getQueryParam(url, 'current') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData<User[]>(demoUsers);
 
@@ -379,7 +379,10 @@ function getPaginatedUsers(url: string | undefined) {
     filtered = filtered.filter((item) => item.status === status);
   }
   if (gender) {
-    const genderValues = gender.split(",").map((item) => item.trim()).filter(Boolean);
+    const genderValues = gender
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
     filtered = filtered.filter((item) => genderValues.includes(String(item.gender)));
   }
 
@@ -394,10 +397,10 @@ function getPaginatedUsers(url: string | undefined) {
 }
 
 function getPaginatedRoles(url: string | undefined) {
-  const name = getQueryParam(url, "name").toLowerCase();
-  const code = getQueryParam(url, "code").toLowerCase();
-  const current = Number(getQueryParam(url, "current") || 1);
-  const pageSize = Number(getQueryParam(url, "pageSize") || 10);
+  const name = getQueryParam(url, 'name').toLowerCase();
+  const code = getQueryParam(url, 'code').toLowerCase();
+  const current = Number(getQueryParam(url, 'current') || 1);
+  const pageSize = Number(getQueryParam(url, 'pageSize') || 10);
 
   let filtered = cloneData<Role[]>(mockRoles);
 
@@ -420,21 +423,21 @@ function getPaginatedRoles(url: string | undefined) {
 
 function getPageParams(url: string | undefined) {
   return {
-    current: Number(getQueryParam(url, "current") || getQueryParam(url, "page") || 1),
-    pageSize: Number(getQueryParam(url, "pageSize") || 10),
+    current: Number(getQueryParam(url, 'current') || getQueryParam(url, 'page') || 1),
+    pageSize: Number(getQueryParam(url, 'pageSize') || 10),
   };
 }
 
 function fallbackDemoResponse(config: { data?: unknown; method?: string; url?: string }) {
-  const method = config.method?.toLowerCase() || "get";
-  const url = config.url || "";
+  const method = config.method?.toLowerCase() || 'get';
+  const url = config.url || '';
 
-  if (method === "get" && /\/list(?:\?.*)?$|[?&](current|page|pageSize)=/.test(url)) {
+  if (method === 'get' && /\/list(?:\?.*)?$|[?&](current|page|pageSize)=/.test(url)) {
     const { current, pageSize } = getPageParams(url);
     return successResponse({ list: [], total: 0, current, pageSize });
   }
 
-  if (method === "post" || method === "put" || method === "patch") {
+  if (method === 'post' || method === 'put' || method === 'patch') {
     return successResponse(parseJsonBody(config.data, null));
   }
 
@@ -453,14 +456,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
 
   mock.onPost(/\/api\/auth\/login$|\/auth\/login$/).reply((config) => {
-    const body = parseJsonBody<{ password?: string; username?: string }>(
-      config.data,
-      {},
-    );
+    const body = parseJsonBody<{ password?: string; username?: string }>(config.data, {});
     const user =
-      body.username === "admin" && body.password === "123456"
+      body.username === 'admin' && body.password === '123456'
         ? adminUser
-        : body.username === "user" && body.password === "123456"
+        : body.username === 'user' && body.password === '123456'
           ? regularUser
           : null;
 
@@ -469,7 +469,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
         200,
         {
           code: 401,
-          message: "Invalid username or password",
+          message: 'Invalid username or password',
           success: false,
           data: null,
         },
@@ -491,13 +491,10 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     const token = getAuthorizationToken(config.headers);
     const userId = resolveMockUserIdFromToken(token);
     if (!userId) {
-      return [
-        200,
-        { code: 401, message: "Unauthorized", success: false, data: null },
-      ];
+      return [200, { code: 401, message: 'Unauthorized', success: false, data: null }];
     }
 
-    return [200, successResponse(userId === "1" ? adminUser : regularUser)];
+    return [200, successResponse(userId === '1' ? adminUser : regularUser)];
   });
 
   mock.onPost(/\/api\/auth\/refresh$|\/auth\/refresh$/).reply(() => {
@@ -507,7 +504,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
         200,
         {
           code: 401,
-          message: "Invalid refresh token",
+          message: 'Invalid refresh token',
           success: false,
           data: null,
         },
@@ -542,7 +539,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
   mock.onPut(/\/api\/dict\/type\/[^/]+$|\/dict\/type\/[^/]+$/).reply((config) => {
     const body = parseJsonBody(config.data, {});
-    const id = config.url?.split("/dict/type/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/dict/type/')[1]?.split('?')[0] || '';
     return [200, successResponse({ id, ...body })];
   });
   mock.onDelete(/\/api\/dict\/type\/[^/]+$|\/dict\/type\/[^/]+$/).reply(200, successResponse(null));
@@ -554,8 +551,8 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .onGet(/\/api\/dict\/data\/list(?:\?.*)?$|\/dict\/data\/list(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getDictDataList(config.url))]);
   mock.onGet(/\/api\/dict\/data\/[^/]+$|\/dict\/data\/[^/]+$/).reply((config) => {
-    const typeCode = config.url?.split("/dict/data/")[1]?.split("?")[0] || "";
-    const list = dictData.filter((item) => item.typeCode === typeCode && item.status === "enabled");
+    const typeCode = config.url?.split('/dict/data/')[1]?.split('?')[0] || '';
+    const list = dictData.filter((item) => item.typeCode === typeCode && item.status === 'enabled');
     return [200, successResponse(cloneData(list))];
   });
   mock.onPost(/\/api\/dict\/data$|\/dict\/data$/).reply((config) => {
@@ -564,14 +561,12 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
   mock.onPut(/\/api\/dict\/data\/[^/]+$|\/dict\/data\/[^/]+$/).reply((config) => {
     const body = parseJsonBody(config.data, {});
-    const id = config.url?.split("/dict/data/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/dict/data/')[1]?.split('?')[0] || '';
     return [200, successResponse({ id, ...body })];
   });
   mock.onDelete(/\/api\/dict\/data\/[^/]+$|\/dict\/data\/[^/]+$/).reply(200, successResponse(null));
 
-  mock
-    .onGet(/\/api\/dashboard\/stats$|\/dashboard\/stats$/)
-    .reply(200, successResponse(mockStats));
+  mock.onGet(/\/api\/dashboard\/stats$|\/dashboard\/stats$/).reply(200, successResponse(mockStats));
   mock
     .onGet(/\/api\/dashboard\/sales-trend$|\/dashboard\/sales-trend$/)
     .reply(200, successResponse(mockSalesTrend));
@@ -595,11 +590,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .onGet(/\/api\/permissions\/user$|\/permissions\/user$/)
     .reply(200, successResponse(cloneData<Permission[]>(adminUser.permissions)));
   mock.onGet(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
-    const id = config.url?.split("/permissions/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/permissions/')[1]?.split('?')[0] || '';
     const item = findPermissionById(mockPermissions, id);
 
     if (!item) {
-      return [200, { code: 404, message: "Permission not found", success: false, data: null }];
+      return [200, { code: 404, message: 'Permission not found', success: false, data: null }];
     }
 
     return [200, successResponse(cloneData(item))];
@@ -610,10 +605,12 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
   mock.onPut(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
     const body = parseJsonBody(config.data, {});
-    const id = config.url?.split("/permissions/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/permissions/')[1]?.split('?')[0] || '';
     return [200, successResponse({ id, ...body })];
   });
-  mock.onDelete(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply(200, successResponse(null));
+  mock
+    .onDelete(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/)
+    .reply(200, successResponse(null));
 
   mock
     .onGet(/\/api\/file\/list(?:\?.*)?$|\/file\/list(?:\?.*)?$/)
@@ -626,7 +623,9 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   mock
     .onGet(/\/api\/log\/login\/list(?:\?.*)?$|\/log\/login\/list(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getLoginLogList(config.url))]);
-  mock.onDelete(/\/api\/log\/operation\/clear$|\/log\/operation\/clear$/).reply(200, successResponse(null));
+  mock
+    .onDelete(/\/api\/log\/operation\/clear$|\/log\/operation\/clear$/)
+    .reply(200, successResponse(null));
   mock.onDelete(/\/api\/log\/login\/clear$|\/log\/login\/clear$/).reply(200, successResponse(null));
 
   mock
@@ -634,11 +633,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .reply((config) => [200, successResponse(getPaginatedUsers(config.url))]);
 
   mock.onGet(/\/api\/users\/[^/]+$|\/users\/[^/]+$/).reply((config) => {
-    const id = config.url?.split("/users/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/users/')[1]?.split('?')[0] || '';
     const item = demoUsers.find((user) => user.id === id);
 
     if (!item) {
-      return [200, { code: 404, message: "User not found", success: false, data: null }];
+      return [200, { code: 404, message: 'User not found', success: false, data: null }];
     }
 
     return [200, successResponse(cloneData(item))];
@@ -653,8 +652,8 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
         ...body,
         id: String(Date.now()),
         username: body.username || `user_${Date.now()}`,
-        email: body.email || "user@example.com",
-        realName: body.realName || "Demo User",
+        email: body.email || 'user@example.com',
+        realName: body.realName || 'Demo User',
         avatar: body.avatar || avatarImg,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -664,24 +663,26 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock.onPut(/\/api\/users\/[^/]+$|\/users\/[^/]+$/).reply((config) => {
     const body = parseJsonBody<Partial<User>>(config.data, {});
-    const id = config.url?.split("/users/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/users/')[1]?.split('?')[0] || '';
     const item = demoUsers.find((user) => user.id === id) || regularUser;
     return [200, successResponse({ ...item, ...body, updatedAt: new Date().toISOString() })];
   });
 
   mock.onDelete(/\/api\/users\/[^/]+$|\/users\/[^/]+$/).reply(200, successResponse(null));
-  mock.onPost(/\/api\/users\/change-password$|\/users\/change-password$/).reply(200, successResponse(null));
+  mock
+    .onPost(/\/api\/users\/change-password$|\/users\/change-password$/)
+    .reply(200, successResponse(null));
 
   mock
     .onGet(/\/api\/roles(?:\?.*)?$|\/roles(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getPaginatedRoles(config.url))]);
 
   mock.onGet(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
-    const id = config.url?.split("/roles/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/roles/')[1]?.split('?')[0] || '';
     const item = mockRoles.find((role) => role.id === id);
 
     if (!item) {
-      return [200, { code: 404, message: "Role not found", success: false, data: null }];
+      return [200, { code: 404, message: 'Role not found', success: false, data: null }];
     }
 
     return [200, successResponse(cloneData(item))];
@@ -693,9 +694,9 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       200,
       successResponse({
         id: String(Date.now()),
-        name: body.name || "Custom Role",
+        name: body.name || 'Custom Role',
         code: body.code || `role_${Date.now()}`,
-        description: body.description || "",
+        description: body.description || '',
         permissions: body.permissions || [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -705,7 +706,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock.onPut(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
     const body = parseJsonBody<Partial<Role>>(config.data, {});
-    const id = config.url?.split("/roles/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/roles/')[1]?.split('?')[0] || '';
     const item = mockRoles.find((role) => role.id === id) || mockRoles[0];
     return [200, successResponse({ ...item, ...body, updatedAt: new Date().toISOString() })];
   });
@@ -717,11 +718,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .reply((config) => [200, successResponse(getConfigList(config.url))]);
 
   mock.onGet(/\/api\/config\/key\/[^/]+$|\/config\/key\/[^/]+$/).reply((config) => {
-    const key = config.url?.split("/config/key/")[1]?.split("?")[0] || "";
+    const key = config.url?.split('/config/key/')[1]?.split('?')[0] || '';
     const item = sysConfigs.find((configItem) => configItem.key === key);
 
     if (!item) {
-      return [200, { code: 404, message: "Config not found", success: false }];
+      return [200, { code: 404, message: 'Config not found', success: false }];
     }
 
     return [200, successResponse(cloneData(item))];
@@ -731,16 +732,16 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     const body = parseJsonBody<Partial<SysConfig>>(config.data, {});
     const newConfig: SysConfig = {
       id: String(Date.now()),
-      name: body.name || "Custom Config",
+      name: body.name || 'Custom Config',
       key: body.key || `custom.${Date.now()}`,
-      value: body.value || "",
-      valueType: body.valueType || "string",
-      group: body.group || "basic",
-      description: body.description || "",
+      value: body.value || '',
+      valueType: body.valueType || 'string',
+      group: body.group || 'basic',
+      description: body.description || '',
       builtIn: false,
       sort: body.sort || 100,
-      createTime: new Date().toISOString().replace("T", " ").slice(0, 19),
-      updateTime: new Date().toISOString().replace("T", " ").slice(0, 19),
+      createTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      updateTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
     };
 
     return [200, successResponse(newConfig)];
@@ -748,11 +749,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock.onPut(/\/api\/config\/[^/]+$|\/config\/[^/]+$/).reply((config) => {
     const body = parseJsonBody<Partial<SysConfig>>(config.data, {});
-    const id = config.url?.split("/config/")[1]?.split("?")[0] || "";
+    const id = config.url?.split('/config/')[1]?.split('?')[0] || '';
     const item = sysConfigs.find((configItem) => configItem.id === id);
 
     if (!item) {
-      return [200, { code: 404, message: "Config not found", success: false }];
+      return [200, { code: 404, message: 'Config not found', success: false }];
     }
 
     return [
@@ -760,7 +761,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       successResponse({
         ...item,
         ...body,
-        updateTime: new Date().toISOString().replace("T", " ").slice(0, 19),
+        updateTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
       }),
     ];
   });

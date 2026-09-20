@@ -1203,22 +1203,24 @@ const densityMenuProps = computed(() => ({
 // Methods
 const initializeColumnStates = () => {
   const previousFilters = { ...tableFilters.value };
-  const states = props.columns.filter((column) => !column.hideInTable).map((column, index) => {
-    const key = resolveColumnKey(column, index);
-    const checked = !column.hideInTable;
-    return {
-      key,
-      title: String(column.title ?? column.dataIndex ?? key),
-      checked,
-      fixed: column.fixed,
-      defaultChecked: checked,
-      defaultFixed: column.fixed,
-      column: {
-        ...column,
-        key: column.key || key,
-      },
-    } as ColumnState;
-  });
+  const states = props.columns
+    .filter((column) => !column.hideInTable)
+    .map((column, index) => {
+      const key = resolveColumnKey(column, index);
+      const checked = !column.hideInTable;
+      return {
+        key,
+        title: String(column.title ?? column.dataIndex ?? key),
+        checked,
+        fixed: column.fixed,
+        defaultChecked: checked,
+        defaultFixed: column.fixed,
+        column: {
+          ...column,
+          key: column.key || key,
+        },
+      } as ColumnState;
+    });
 
   columnStates.value = states;
   defaultColumnStates.value = states.map(cloneColumnState);

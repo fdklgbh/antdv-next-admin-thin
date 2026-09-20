@@ -1,7 +1,7 @@
-import type { ApiResponse } from "@/types/api";
-import type { SysConfig, SysConfigQueryParams } from "@/types/config";
+import type { ApiResponse } from '@/types/api';
+import type { SysConfig, SysConfigQueryParams } from '@/types/config';
 
-import { request } from "@/utils/request";
+import { request } from '@/utils/request';
 
 export function getConfigList(params: SysConfigQueryParams): Promise<
   ApiResponse<{
@@ -11,19 +11,15 @@ export function getConfigList(params: SysConfigQueryParams): Promise<
     pageSize: number;
   }>
 > {
-  return request.get("/config/list", { params });
+  return request.get('/config/list', { params });
 }
 
-export function getConfigByKey(
-  key: string,
-): Promise<ApiResponse<SysConfig>> {
+export function getConfigByKey(key: string): Promise<ApiResponse<SysConfig>> {
   return request.get(`/config/key/${key}`);
 }
 
-export function createConfig(
-  data: Partial<SysConfig>,
-): Promise<ApiResponse<SysConfig>> {
-  return request.post("/config", data);
+export function createConfig(data: Partial<SysConfig>): Promise<ApiResponse<SysConfig>> {
+  return request.post('/config', data);
 }
 
 export function updateConfig(

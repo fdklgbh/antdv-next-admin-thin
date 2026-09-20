@@ -1,19 +1,17 @@
-import type { ApiResponse } from "@/types/api";
+import type { ApiResponse } from '@/types/api';
 import type {
   OperationLog,
   LoginLog,
   OperationLogQueryParams,
   LoginLogQueryParams,
-} from "@/types/log";
+} from '@/types/log';
 
-import { request } from "@/utils/request";
+import { request } from '@/utils/request';
 
 /**
  * 获取操作日志列表
  */
-export function getOperationLogList(
-  params: OperationLogQueryParams,
-): Promise<
+export function getOperationLogList(params: OperationLogQueryParams): Promise<
   ApiResponse<{
     list: OperationLog[];
     total: number;
@@ -21,7 +19,7 @@ export function getOperationLogList(
     pageSize: number;
   }>
 > {
-  return request.get("/log/operation/list", { params });
+  return request.get('/log/operation/list', { params });
 }
 
 /**
@@ -35,19 +33,19 @@ export function getLoginLogList(params: LoginLogQueryParams): Promise<
     pageSize: number;
   }>
 > {
-  return request.get("/log/login/list", { params });
+  return request.get('/log/login/list', { params });
 }
 
 /**
  * 清空操作日志
  */
 export function clearOperationLog(): Promise<ApiResponse<void>> {
-  return request.delete("/log/operation/clear");
+  return request.delete('/log/operation/clear');
 }
 
 /**
  * 清空登录日志
  */
 export function clearLoginLog(): Promise<ApiResponse<void>> {
-  return request.delete("/log/login/clear");
+  return request.delete('/log/login/clear');
 }

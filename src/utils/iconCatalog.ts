@@ -1,6 +1,4 @@
-import type { LocalIconifyPrefix, IconsJson } from '@/utils/iconify';
-
-import { loadLocalIconifySet } from '@/utils/iconify';
+import type { LocalIconifyPrefix } from '@/utils/iconify';
 
 export type SupportedIconLibrary = LocalIconifyPrefix | 'antdv-next';
 
@@ -9,46 +7,18 @@ export interface IconCatalogItem {
   library: SupportedIconLibrary;
 }
 
-const ICONIFY_LIBRARIES: readonly LocalIconifyPrefix[] = ['ri', 'mdi', 'ion'];
-const ANTDV_ICON_SUFFIX = /(Outlined|Filled|TwoTone)$/;
-
-function getIconifyItems(prefix: LocalIconifyPrefix, iconsJson: IconsJson): IconCatalogItem[] {
-  const names = [...Object.keys(iconsJson.icons || {}), ...Object.keys(iconsJson.aliases || {})];
-
-  return Array.from(new Set(names))
-    .toSorted((first, second) => first.localeCompare(second))
-    .map((name) => ({
-      name: `${prefix}:${name}`,
-      library: prefix,
-    }));
+export async function loadIconNames(library: SupportedIconLibrary): Promise<string[]> {
+  const { default: catalog } = await import('virtual:icon-catalog');
+  return catalog[library].map((name) => `${library}:${name}`);
 }
 
-async function loadAntdvItems(): Promise<IconCatalogItem[]> {
-  const icons = await import('@antdv-next/icons');
-
-  return Object.keys(icons)
-    .filter((name) => ANTDV_ICON_SUFFIX.test(name))
-    .toSorted((first, second) => first.localeCompare(second))
-    .map((name) => ({
-      name: `antdv-next:${name}`,
-      library: 'antdv-next' as const,
-    }));
-}
-
-let iconCatalogPromise: Promise<IconCatalogItem[]> | null = null;
-
-export function loadSupportedIconCatalog(): Promise<IconCatalogItem[]> {
-  if (iconCatalogPromise) {
-    return iconCatalogPromise;
-  }
-
-  iconCatalogPromise = Promise.all([
-    ...ICONIFY_LIBRARIES.map(async (prefix) => {
-      const iconsJson = await loadLocalIconifySet(prefix);
-      return getIconifyItems(prefix, iconsJson);
+export async function loadSupportedIconCatalog(): Promise<IconCatalogItem[]> {
+  const libraries: SupportedIconLibrary[] = ['ri', 'mdi', 'ion', 'antdv-next'];
+  const groups = await Promise.all(
+    libraries.map(async (library) => {
+      const names = await loadIconNames(library);
+      return names.toSorted((a, b) => a.localeCompare(b)).map((name) => ({ name, library }));
     }),
-    loadAntdvItems(),
-  ]).then((groups) => groups.flat());
-
-  return iconCatalogPromise;
+  );
+  return groups.flat();
 }

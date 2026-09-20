@@ -533,12 +533,11 @@ const handleCreateChild = (record: Permission) => {
 
 const handleEdit = (record: Permission) => {
   const initialValues: PermissionFormValues = {
-    name:
-      useI18nName.value
-        ? typeof record.name === 'string'
-          ? createLocalizedName(record.name)
-          : record.name
-        : resolveLocalizedText(record.name, getLocale()),
+    name: useI18nName.value
+      ? typeof record.name === 'string'
+        ? createLocalizedName(record.name)
+        : record.name
+      : resolveLocalizedText(record.name, getLocale()),
     code: record.code,
     type: record.type,
     description: record.description || '',

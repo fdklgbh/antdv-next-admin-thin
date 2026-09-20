@@ -1,11 +1,11 @@
-import { defineMock } from "vite-plugin-mock-dev-server";
+import { defineMock } from 'vite-plugin-mock-dev-server';
 
-import { operationLogs, loginLogs } from "../data/log.data";
+import { operationLogs, loginLogs } from '../data/log.data';
 
 export default defineMock([
   {
-    url: "/api/log/operation/list",
-    method: "GET",
+    url: '/api/log/operation/list',
+    method: 'GET',
     body: (req) => {
       const {
         username,
@@ -21,9 +21,7 @@ export default defineMock([
       let filtered = [...operationLogs];
 
       if (username) {
-        filtered = filtered.filter((item) =>
-          item.username.includes(username as string),
-        );
+        filtered = filtered.filter((item) => item.username.includes(username as string));
       }
       if (module) {
         filtered = filtered.filter((item) => item.module === module);
@@ -35,14 +33,10 @@ export default defineMock([
         filtered = filtered.filter((item) => item.status === status);
       }
       if (startTime) {
-        filtered = filtered.filter(
-          (item) => item.createTime >= (startTime as string),
-        );
+        filtered = filtered.filter((item) => item.createTime >= (startTime as string));
       }
       if (endTime) {
-        filtered = filtered.filter(
-          (item) => item.createTime <= (endTime as string),
-        );
+        filtered = filtered.filter((item) => item.createTime <= (endTime as string));
       }
 
       const start = (Number(page) - 1) * Number(pageSize);
@@ -51,7 +45,7 @@ export default defineMock([
 
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: {
           list,
@@ -64,25 +58,15 @@ export default defineMock([
   },
 
   {
-    url: "/api/log/login/list",
-    method: "GET",
+    url: '/api/log/login/list',
+    method: 'GET',
     body: (req) => {
-      const {
-        username,
-        ip,
-        status,
-        startTime,
-        endTime,
-        page = 1,
-        pageSize = 10,
-      } = req.query;
+      const { username, ip, status, startTime, endTime, page = 1, pageSize = 10 } = req.query;
 
       let filtered = [...loginLogs];
 
       if (username) {
-        filtered = filtered.filter((item) =>
-          item.username.includes(username as string),
-        );
+        filtered = filtered.filter((item) => item.username.includes(username as string));
       }
       if (ip) {
         filtered = filtered.filter((item) => item.ip.includes(ip as string));
@@ -91,14 +75,10 @@ export default defineMock([
         filtered = filtered.filter((item) => item.status === status);
       }
       if (startTime) {
-        filtered = filtered.filter(
-          (item) => item.createTime >= (startTime as string),
-        );
+        filtered = filtered.filter((item) => item.createTime >= (startTime as string));
       }
       if (endTime) {
-        filtered = filtered.filter(
-          (item) => item.createTime <= (endTime as string),
-        );
+        filtered = filtered.filter((item) => item.createTime <= (endTime as string));
       }
 
       const start = (Number(page) - 1) * Number(pageSize);
@@ -107,7 +87,7 @@ export default defineMock([
 
       return {
         code: 200,
-        message: "success",
+        message: 'success',
         success: true,
         data: {
           list,
@@ -120,20 +100,20 @@ export default defineMock([
   },
 
   {
-    url: "/api/log/operation/clear",
-    method: "DELETE",
+    url: '/api/log/operation/clear',
+    method: 'DELETE',
     body: () => {
       operationLogs.length = 0;
-      return { code: 200, message: "success", success: true };
+      return { code: 200, message: 'success', success: true };
     },
   },
 
   {
-    url: "/api/log/login/clear",
-    method: "DELETE",
+    url: '/api/log/login/clear',
+    method: 'DELETE',
     body: () => {
       loginLogs.length = 0;
-      return { code: 200, message: "success", success: true };
+      return { code: 200, message: 'success', success: true };
     },
   },
 ]);

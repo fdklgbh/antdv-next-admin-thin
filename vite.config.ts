@@ -5,6 +5,7 @@ import { fileURLToPath, URL } from "node:url";
 import Components from "unplugin-vue-components/vite";
 import { defineConfig } from "vite";
 import { mockDevServerPlugin } from "vite-plugin-mock-dev-server";
+import { iconAssets } from './build/icon-assets.ts';
 
 import pkg from './package.json' with { type: 'json' }
 
@@ -14,6 +15,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version),
   },
   plugins: [
+    iconAssets(),
     vue(),
     Components({
       dts: false,
@@ -40,9 +42,15 @@ export default defineConfig({
     },
   },
   resolve: {
+    // CodeMirror extensions must share the same runtime classes across wrappers and languages.
+    dedupe: ["vue", "@codemirror/state", "@codemirror/view", "@codemirror/language"],
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
+  },
+  optimizeDeps: {
+    // The virtual icon loader shares this entry in dev; discover it before navigation.
+    include: ["@antdv-next/icons"],
   },
   server: {
     port: 3000,
@@ -55,24 +63,5 @@ export default defineConfig({
     assetsDir: "assets",
     sourcemap: false,
     chunkSizeWarningLimit: 1500,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (
-            id.includes("node_modules/vue/") ||
-            id.includes("node_modules/vue-router/") ||
-            id.includes("node_modules/pinia/")
-          ) {
-            return "vue-vendor";
-          }
-          if (
-            id.includes("node_modules/echarts/") ||
-            id.includes("node_modules/vue-echarts/")
-          ) {
-            return "chart-vendor";
-          }
-        },
-      },
-    },
   },
 });

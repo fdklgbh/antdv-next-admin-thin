@@ -17,18 +17,12 @@
 
       <div class="demo-area">
         <a-space :size="16">
-          <a-button ref="btn1">
-            <SearchOutlined /> {{ $t('exampleTour.searchButton') }}
-          </a-button>
-          <a-button ref="btn2">
-            <PlusOutlined /> {{ $t('exampleTour.createButton') }}
-          </a-button>
+          <a-button ref="btn1"> <SearchOutlined /> {{ $t('exampleTour.searchButton') }} </a-button>
+          <a-button ref="btn2"> <PlusOutlined /> {{ $t('exampleTour.createButton') }} </a-button>
           <a-button ref="btn3">
             <SettingOutlined /> {{ $t('exampleTour.settingsButton') }}
           </a-button>
-          <a-button ref="btn4">
-            <ExportOutlined /> {{ $t('exampleTour.exportButton') }}
-          </a-button>
+          <a-button ref="btn4"> <ExportOutlined /> {{ $t('exampleTour.exportButton') }} </a-button>
         </a-space>
       </div>
 
@@ -85,42 +79,37 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ExportOutlined,
-  PlusOutlined,
-  SearchOutlined,
-  SettingOutlined,
-} from '@antdv-next/icons'
-import { h, reactive, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { ExportOutlined, PlusOutlined, SearchOutlined, SettingOutlined } from '@antdv-next/icons';
+import { h, reactive, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const btn1 = ref()
-const btn2 = ref()
-const btn3 = ref()
-const btn4 = ref()
+const btn1 = ref();
+const btn2 = ref();
+const btn3 = ref();
+const btn4 = ref();
 
-const basicOpen = ref(false)
-const basicCurrent = ref(0)
+const basicOpen = ref(false);
+const basicCurrent = ref(0);
 
-const customOpen = ref(false)
-const customCurrent = ref(0)
+const customOpen = ref(false);
+const customCurrent = ref(0);
 
 const tourConfig = reactive({
   mask: true,
   arrow: true,
   scrollIntoView: true,
   type: 'default' as 'default' | 'primary',
-})
+});
 
 const indicatorTypeOptions = [
   { label: 'default', value: 'default' },
   { label: 'primary', value: 'primary' },
-]
+];
 
 function renderIndicators(current: number, total: number) {
-  return h('span', { class: 'custom-indicator' }, `${current + 1} / ${total}`)
+  return h('span', { class: 'custom-indicator' }, `${current + 1} / ${total}`);
 }
 
 const basicSteps = [
@@ -144,7 +133,7 @@ const basicSteps = [
     description: t('exampleTour.step4Desc'),
     target: () => btn4.value?.$el,
   },
-]
+];
 
 const customSteps = [
   {
@@ -171,17 +160,17 @@ const customSteps = [
     target: () => btn4.value?.$el,
     placement: 'top' as const,
   },
-]
+];
 
 const startBasicTour = () => {
-  basicCurrent.value = 0
-  basicOpen.value = true
-}
+  basicCurrent.value = 0;
+  basicOpen.value = true;
+};
 
 const startCustomTour = () => {
-  customCurrent.value = 0
-  customOpen.value = true
-}
+  customCurrent.value = 0;
+  customOpen.value = true;
+};
 </script>
 
 <style scoped lang="scss">

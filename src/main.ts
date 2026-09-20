@@ -1,12 +1,13 @@
 import { createPinia } from 'pinia';
-import { createApp } from 'vue';
+import { createApp, nextTick } from 'vue';
+
+import { useMenuPreferencesStore } from '@/stores/menuPreferences';
 
 import App from './App.vue';
 import { registerDefaultComponentProps } from './components/Global/defaultComponentProps';
 import { setupDirectives } from './directives';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { useMenuPreferencesStore } from '@/stores';
 import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
@@ -32,7 +33,7 @@ function restoreGitHubPagesRedirect() {
   }
 }
 
-async function bootstrap() {
+export async function bootstrap() {
   await localeReady;
 
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
@@ -56,7 +57,10 @@ async function bootstrap() {
   // Register custom directives
   setupDirectives(app);
 
+  // Keep the HTML loading screen until the initial route and its dependencies
+  // are ready; mounting an empty RouterView would otherwise expose a blank page.
+  await router.isReady();
   app.mount('#app');
+  await nextTick();
+  document.getElementById('app-loading')?.remove();
 }
-
-void bootstrap();

@@ -28,34 +28,34 @@
 </template>
 
 <script setup lang="ts">
-import type { Component } from "vue";
-import type { ProStatCardTone } from "@/types/pro";
+import type { ProStatCardTone } from '@/types/pro';
+import type { Component } from 'vue';
 
-import { computed } from "vue";
-import { RiseOutlined, FallOutlined } from "@antdv-next/icons";
+import { RiseOutlined, FallOutlined } from '@antdv-next/icons';
+import { computed } from 'vue';
 
 const props = withDefaults(
   defineProps<{
     label: string;
     value: string | number;
     trend?: string;
-    trendDirection?: "up" | "down";
+    trendDirection?: 'up' | 'down';
     icon?: Component;
     tone?: ProStatCardTone;
   }>(),
   {
-    trendDirection: "up",
-    tone: "blue",
+    trendDirection: 'up',
+    tone: 'blue',
   },
 );
 
 const accentColors: Record<ProStatCardTone, string> = {
-  blue: "rgba(24, 119, 255, 0.12)",
-  green: "rgba(82, 196, 26, 0.12)",
-  orange: "rgba(250, 140, 22, 0.12)",
-  purple: "rgba(114, 46, 209, 0.12)",
-  red: "rgba(245, 34, 45, 0.12)",
-  cyan: "rgba(19, 194, 194, 0.12)",
+  blue: 'rgba(24, 119, 255, 0.12)',
+  green: 'rgba(82, 196, 26, 0.12)',
+  orange: 'rgba(250, 140, 22, 0.12)',
+  purple: 'rgba(114, 46, 209, 0.12)',
+  red: 'rgba(245, 34, 45, 0.12)',
+  cyan: 'rgba(19, 194, 194, 0.12)',
 };
 
 const accentColor = computed(() => accentColors[props.tone]);
