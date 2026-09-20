@@ -216,6 +216,14 @@ export default {
   settings: {
     title: 'Preferences',
     themeColor: 'Theme Color',
+    themeMode: 'Theme mode',
+    lightTheme: 'Light theme',
+    darkTheme: 'Dark theme',
+    themeStyle: 'Theme style',
+    themeStyleHint:
+      'Styles are saved separately for light and dark themes and applied immediately.',
+    darkThemeDefault: 'Default',
+    darkThemeGlass: 'Nocturne Glass',
     sidebarTheme: 'Sidebar Theme',
     light: 'Light',
     dark: 'Dark',
@@ -906,7 +914,8 @@ export default {
   iconLibrary: {
     kicker: 'ICON CATALOG',
     title: 'Icon Library',
-    description: 'Browse the icon sets bundled with this project, filter by library, and copy names.',
+    description:
+      'Browse the icon sets bundled with this project, filter by library, and copy names.',
     totalLabel: 'Total supported icons',
     totalUnit: 'icons',
     categoryLabel: 'Icon library categories',
@@ -1054,7 +1063,6 @@ export default {
     passwordPattern: 'Password must be at least 8 characters and include letters and numbers',
     confirmPassword: 'The two passwords do not match',
   },
-
 
   config: {
     title: 'System Config',

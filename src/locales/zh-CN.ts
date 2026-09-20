@@ -215,6 +215,13 @@ export default {
   settings: {
     title: '偏好设置',
     themeColor: '主题色',
+    themeMode: '主题模式',
+    lightTheme: '浅色主题',
+    darkTheme: '深色主题',
+    themeStyle: '主题风格',
+    themeStyleHint: '浅色与深色的风格分别保存，切换后立即生效。',
+    darkThemeDefault: '默认',
+    darkThemeGlass: '夜航玻璃',
     sidebarTheme: '左侧菜单栏样式',
     light: '浅色',
     dark: '深色',
@@ -1036,7 +1043,6 @@ export default {
     passwordPattern: '密码至少8位，包含字母和数字',
     confirmPassword: '两次输入的密码不一致',
   },
-
 
   config: {
     title: '系统配置',

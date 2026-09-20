@@ -15,6 +15,7 @@ import './assets/styles/tailwind.css';
 import './assets/styles/variables.css';
 import './assets/styles/animations.css';
 import './assets/styles/global.css';
+import './assets/styles/glass.css';
 
 function restoreGitHubPagesRedirect() {
   const redirect = sessionStorage.getItem('redirect');

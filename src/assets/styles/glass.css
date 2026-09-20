@@ -1,0 +1,355 @@
+/* Shared glass material. Values come from the selected JSON preset. */
+html:root[data-theme-style='glass'] {
+  --glass-blur: var(--glass-config-blur);
+  --glass-surface: var(--glass-config-surface);
+}
+
+/* A fixed scene gives the translucent panels light to pick up as content scrolls. */
+html:root[data-theme-style='glass'] .admin-layout {
+  background: var(--glass-scene);
+}
+
+html:root[data-theme-style='glass']
+  .admin-layout
+  :is(.ant-layout, .horizontal-content, .page-content) {
+  background: transparent;
+}
+
+html:root[data-theme-style='glass']
+  :is(
+    .admin-header,
+    .horizontal-header,
+    .admin-sidebar,
+    .tab-bar,
+    .card,
+    .ant-card,
+    .pro-stat-card,
+    .pro-table-search,
+    .pro-table-main,
+    .ai-panel
+  ) {
+  background: var(--glass-surface);
+  border-color: var(--color-border-secondary);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+html:root[data-theme-style='glass'] :is(.card, .ant-card, .pro-stat-card) {
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--glass-card-radius);
+  transition:
+    border-color var(--glass-motion-duration) var(--glass-motion-easing),
+    box-shadow var(--glass-motion-duration) var(--glass-motion-easing);
+}
+
+html:root[data-theme-style='glass'] :is(.card, .ant-card, .pro-stat-card):hover {
+  border-color: var(--glass-card-border-hover);
+}
+
+/* Avoid double glass layers inside the horizontal header and sidebar. */
+html:root[data-theme-style='glass'] .horizontal-header .admin-header {
+  background: transparent;
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html:root[data-theme-style='glass'] .admin-sidebar .ant-menu {
+  background: transparent;
+}
+
+html:root[data-theme-style='glass']
+  .admin-sidebar
+  .sidebar-menu
+  :is(.ant-menu-item, .ant-menu-submenu-title) {
+  color: var(--color-text-primary) !important;
+}
+
+html:root[data-theme-style='glass']
+  .admin-sidebar
+  .sidebar-menu
+  :is(.ant-menu-item, .ant-menu-submenu-title):hover {
+  color: var(--glass-highlight) !important;
+  background: var(--glass-neutral-bg) !important;
+}
+
+html:root[data-theme-style='glass'] .admin-sidebar .sidebar-menu .ant-menu-item-selected {
+  color: var(--glass-highlight) !important;
+  background: var(--glass-primary-bg) !important;
+}
+
+/* Elevated surfaces stay dark enough to read over busy tables and charts. */
+html:root[data-theme-style='glass']
+  :is(
+    .ant-drawer-section,
+    .ant-modal-container,
+    .ant-dropdown-menu,
+    .ant-select-dropdown,
+    .ant-picker-panel-container,
+    .ant-popover-container
+  ) {
+  background: var(--glass-elevated-bg);
+  border: 1px solid var(--color-border-secondary);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+/* Button material uses the library's variant variables so danger/preset colors,
+   dashed borders, ghost buttons and disabled states keep their semantics. */
+html:root[data-theme-style='glass'] .ant-btn {
+  transition:
+    color var(--glass-motion-duration) var(--glass-motion-easing),
+    background-color var(--glass-motion-duration) var(--glass-motion-easing),
+    border-color var(--glass-motion-duration) var(--glass-motion-easing),
+    box-shadow var(--glass-motion-duration) var(--glass-motion-easing),
+    transform var(--glass-motion-duration) var(--glass-motion-easing);
+}
+
+html:root[data-theme-style='glass'] .ant-btn:not(:disabled):not(.ant-btn-disabled):focus-visible {
+  outline: 2px solid
+    color-mix(
+      in srgb,
+      var(--ant-btn-color-base) var(--glass-button-border-weight),
+      var(--glass-highlight)
+    );
+  outline-offset: 3px;
+}
+
+html:root[data-theme-style='glass']
+  .ant-btn:where(
+    .ant-btn-variant-solid,
+    .ant-btn-variant-outlined,
+    .ant-btn-variant-dashed,
+    .ant-btn-variant-filled
+  ):not(:disabled):not(.ant-btn-disabled) {
+  --ant-btn-shadow: var(--glass-button-shadow);
+  box-shadow: var(--ant-btn-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+}
+
+/* Neutral buttons are colorless glass. Color variants borrow their semantic hue. */
+html:root[data-theme-style='glass']
+  .ant-btn:where(.ant-btn-variant-solid, .ant-btn-variant-filled):not(.ant-btn-background-ghost) {
+  --ant-btn-bg-color: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-fill-weight),
+    transparent
+  );
+  --ant-btn-bg-color-hover: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-fill-hover-weight),
+    transparent
+  );
+  --ant-btn-bg-color-active: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-fill-active-weight),
+    transparent
+  );
+  --ant-btn-border-color: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-border-weight),
+    transparent
+  );
+  --ant-btn-border-color-hover: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-border-hover-weight),
+    transparent
+  );
+  --ant-btn-border-color-active: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-border-active-weight),
+    transparent
+  );
+  --ant-btn-text-color: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-border-weight),
+    var(--glass-highlight)
+  );
+  --ant-btn-text-color-hover: color-mix(
+    in srgb,
+    var(--ant-btn-color-base) var(--glass-button-text-hover-weight),
+    var(--glass-highlight)
+  );
+  --ant-btn-text-color-active: var(--ant-btn-text-color);
+}
+
+html:root[data-theme-style='glass']
+  .ant-btn.ant-btn-color-default:where(.ant-btn-variant-solid, .ant-btn-variant-filled):not(
+    .ant-btn-background-ghost
+  ) {
+  --ant-btn-bg-color: var(--glass-neutral-bg);
+  --ant-btn-bg-color-hover: var(--glass-neutral-bg-hover);
+  --ant-btn-bg-color-active: var(--glass-neutral-bg-active);
+  --ant-btn-border-color: var(--glass-neutral-border);
+  --ant-btn-border-color-hover: var(--glass-neutral-border-hover);
+  --ant-btn-border-color-active: var(--glass-neutral-border-active);
+  --ant-btn-text-color: var(--glass-neutral-text);
+  --ant-btn-text-color-hover: var(--glass-neutral-text-hover);
+  --ant-btn-text-color-active: var(--glass-neutral-text-active);
+}
+
+html:root[data-theme-style='glass']
+  .ant-btn:where(.ant-btn-variant-outlined, .ant-btn-variant-dashed):not(
+    .ant-btn-background-ghost
+  ) {
+  --ant-btn-bg-color-container: var(--glass-neutral-bg);
+  --ant-btn-bg-color-hover: var(--glass-neutral-bg-hover);
+  --ant-btn-bg-color-active: var(--glass-neutral-bg-active);
+}
+
+/* Keep loading and disabled controls still; compact groups must stay joined. */
+html:root[data-theme-style='glass']
+  .ant-btn:where(
+    .ant-btn-variant-solid,
+    .ant-btn-variant-outlined,
+    .ant-btn-variant-dashed,
+    .ant-btn-variant-filled
+  ):not(:disabled):not(.ant-btn-disabled):not(.ant-btn-loading):hover {
+  box-shadow: var(--glass-button-shadow-hover);
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  html:root[data-theme-style='glass']
+    .ant-btn:where(
+      .ant-btn-variant-solid,
+      .ant-btn-variant-outlined,
+      .ant-btn-variant-dashed,
+      .ant-btn-variant-filled
+    ):not(:disabled):not(.ant-btn-disabled):not(.ant-btn-loading):not(.ant-btn-compact-item):not(
+      .ant-btn-compact-vertical-item
+    ) {
+    &:hover {
+      transform: translateY(var(--glass-button-lift));
+    }
+
+    &:active {
+      transform: translateY(0) scale(var(--glass-button-active-scale));
+    }
+  }
+}
+
+/* Inset edges preserve the built-in handle geometry at both switch sizes. */
+html:root[data-theme-style='glass'] .ant-switch {
+  --glass-switch-edge: var(--glass-switch-edge-default);
+  --glass-switch-bg: var(--glass-switch-bg-default);
+  --glass-switch-hover: var(--glass-switch-bg-hover);
+  --glass-switch-active: var(--glass-switch-bg-active);
+  --glass-switch-hover-edge: var(--glass-switch-edge-hover);
+  background: var(--glass-switch-bg);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-switch-edge),
+    var(--glass-switch-shadow);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  transition:
+    background-color var(--glass-motion-duration) var(--glass-motion-easing),
+    box-shadow var(--glass-motion-duration) var(--glass-motion-easing);
+}
+
+html:root[data-theme-style='glass'] .ant-switch-checked {
+  --glass-switch-edge: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-edge-weight),
+    transparent
+  );
+  --glass-switch-bg: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-fill-weight),
+    transparent
+  );
+  --glass-switch-hover: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-fill-hover-weight),
+    transparent
+  );
+  --glass-switch-active: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-fill-active-weight),
+    transparent
+  );
+  --glass-switch-hover-edge: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-edge-hover-weight),
+    transparent
+  );
+}
+
+html:root[data-theme-style='glass']
+  .ant-switch:not(:disabled):not(.ant-switch-disabled):not(.ant-switch-loading) {
+  &:hover {
+    background: var(--glass-switch-hover);
+    box-shadow:
+      inset 0 0 0 1px var(--glass-switch-hover-edge),
+      var(--glass-switch-shadow-hover);
+  }
+
+  &:active {
+    background: var(--glass-switch-active);
+  }
+
+  &:focus-visible {
+    outline: 2px solid
+      color-mix(
+        in srgb,
+        var(--color-primary) var(--glass-switch-focus-weight),
+        var(--glass-highlight)
+      );
+    outline-offset: 3px;
+  }
+}
+
+html:root[data-theme-style='glass']
+  .ant-switch
+  :is(
+    .ant-switch-handle,
+    .ant-switch-inner,
+    .ant-switch-inner-checked,
+    .ant-switch-inner-unchecked
+  ),
+html:root[data-theme-style='glass'] .ant-switch .ant-switch-handle::before {
+  transition-timing-function: var(--glass-motion-easing);
+}
+
+html:root[data-theme-style='glass'] .ant-switch-checked .ant-switch-handle::before {
+  background-color: color-mix(
+    in srgb,
+    var(--color-primary) var(--glass-switch-handle-weight),
+    var(--glass-highlight)
+  );
+}
+
+html:root[data-theme-style='glass'] .ant-switch .ant-switch-loading-icon {
+  color: var(--color-bg-layout);
+}
+
+html:root[data-theme-style='glass']
+  .ant-switch:where(:disabled, .ant-switch-disabled, .ant-switch-loading) {
+  box-shadow: inset 0 0 0 1px var(--glass-switch-edge);
+}
+
+@media (max-width: 768px) {
+  html:root[data-theme-style='glass'] {
+    --glass-blur: var(--glass-config-mobile-blur);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:root[data-theme-style='glass'] :is(.card, .ant-card, .pro-stat-card, .ant-btn) {
+    transition: none;
+  }
+
+  html:root[data-theme-style='glass'] .ant-switch,
+  html:root[data-theme-style='glass'] .ant-switch *,
+  html:root[data-theme-style='glass'] .ant-switch .ant-switch-handle::before {
+    transition: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  html:root[data-theme-style='glass'] {
+    --glass-surface: var(--color-bg-container);
+  }
+}

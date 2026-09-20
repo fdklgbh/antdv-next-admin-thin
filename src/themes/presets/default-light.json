@@ -1,0 +1,19 @@
+{
+  "id": "default-light",
+  "name": "默认浅色",
+  "version": 1,
+  "algorithm": "light",
+  "token": {
+    "colorBgLayout": "#f5f7fa",
+    "colorBgContainer": "#ffffff",
+    "colorBgElevated": "#ffffff",
+    "colorBorderSecondary": "#f0f0f0"
+  },
+  "appearance": {
+    "style": "default",
+    "variables": {
+      "--shadow-card": "0 6px 24px rgba(15, 23, 42, 0.06)",
+      "--shadow-card-hover": "0 10px 32px rgba(15, 23, 42, 0.12)"
+    }
+  }
+}

@@ -1,6 +1,33 @@
 <template>
   <a-drawer v-model:open="visible" :title="$t('settings.title')" placement="right" :size="320">
     <div class="settings-drawer">
+      <div class="settings-section">
+        <h4 id="theme-mode-label">{{ $t('settings.themeMode') }}</h4>
+        <a-radio-group
+          :value="themeStore.isDark ? 'dark' : 'light'"
+          class="theme-mode-group"
+          aria-labelledby="theme-mode-label"
+          @update:value="handleThemeModeChange"
+        >
+          <a-radio-button value="light">{{ $t('settings.lightTheme') }}</a-radio-button>
+          <a-radio-button value="dark">{{ $t('settings.darkTheme') }}</a-radio-button>
+        </a-radio-group>
+        <label for="theme-style-select" class="sr-only">{{ $t('settings.themeStyle') }}</label>
+        <div class="theme-style-select">
+          <a-select
+            id="theme-style-select"
+            :key="themeStore.isDark ? 'dark' : 'light'"
+            :value="selectedThemeStyle"
+            :options="themeStyleOptions"
+            :allowClear="false"
+            :aria-label="$t('settings.themeStyle')"
+            style="width: 100%"
+            @update:value="handleThemeStyleChange"
+          />
+        </div>
+        <div class="hint">{{ $t('settings.themeStyleHint') }}</div>
+      </div>
+
       <!-- Theme Color -->
       <div class="settings-section">
         <h4>{{ $t('settings.themeColor') }}</h4>
@@ -128,12 +155,40 @@ import { computed, ref, watch } from 'vue';
 import { $t } from '@/locales';
 import { useLayoutStore } from '@/stores/layout';
 import { useSettingsStore } from '@/stores/settings';
+import { useThemeStore } from '@/stores/theme';
+import { darkThemePresets, lightThemePresets, isDarkThemeStyle, isLightThemeStyle } from '@/themes';
 
 const visible = defineModel<boolean>('open', { default: false });
 const settingsStore = useSettingsStore();
+const themeStore = useThemeStore();
 const layoutStore = useLayoutStore();
 const { modal } = App.useApp();
 const customColor = ref(settingsStore.customPrimaryColor || '#1890ff');
+
+const selectedThemeStyle = computed(() =>
+  themeStore.isDark ? settingsStore.darkThemeStyle : settingsStore.lightThemeStyle,
+);
+const themeStyleOptions = computed(() =>
+  Object.entries(themeStore.isDark ? darkThemePresets : lightThemePresets).map(
+    ([value, entry]) => ({
+      value,
+      label: entry.labelKey ? $t(entry.labelKey) : entry.preset.name,
+    }),
+  ),
+);
+
+function handleThemeModeChange(value: unknown): void {
+  if (value === 'light' || value === 'dark') themeStore.setTheme(value);
+}
+
+function handleThemeStyleChange(value: unknown): void {
+  if (typeof value !== 'string') return;
+  if (themeStore.isDark && isDarkThemeStyle(value)) {
+    settingsStore.setDarkThemeStyle(value);
+  } else if (!themeStore.isDark && isLightThemeStyle(value)) {
+    settingsStore.setLightThemeStyle(value);
+  }
+}
 
 const PRESET_COLORS: Array<{ value: PrimaryColor; hex: string }> = [
   { value: 'blue', hex: '#1890ff' },
@@ -233,6 +288,27 @@ const handleLanguageSwitchChange = (checked: boolean) => {
       margin-bottom: var(--spacing-sm);
       font-weight: var(--font-weight-medium);
       color: var(--color-text-primary);
+    }
+
+    .theme-mode-group {
+      display: flex;
+
+      :deep(.ant-radio-button-wrapper) {
+        flex: 1;
+        text-align: center;
+      }
+    }
+
+    .theme-style-select {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      width: 100%;
+      margin-top: 12px;
+
+      :deep(.ant-select) {
+        width: 100%;
+        min-width: 0;
+      }
     }
 
     .color-picker {

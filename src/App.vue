@@ -23,7 +23,8 @@ import zhCN from 'antdv-next/dist/locale/zh_CN';
 import { computed, h, onMounted, watchEffect } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { createAntdvThemeConfig } from '@/config/antd-theme';
+import { createAppThemeConfig } from '@/config/antd-theme';
+import { syncThemeCssVariables } from '@/themes/sync-css-vars';
 
 import { appDefaultSettings } from './settings';
 import { useNotificationStore } from './stores/notification';
@@ -44,11 +45,18 @@ const antdLocaleMap = {
   'ko-KR': koKR,
 };
 
-const antdThemeConfig = computed(() => {
-  return createAntdvThemeConfig({
+const appThemeConfig = computed(() => {
+  return createAppThemeConfig({
     isDark: themeStore.isDark,
     primaryColor: settingsStore.primaryColorHex,
+    darkThemeStyle: settingsStore.darkThemeStyle,
+    lightThemeStyle: settingsStore.lightThemeStyle,
   });
+});
+const antdThemeConfig = computed(() => appThemeConfig.value.antd);
+
+watchEffect(() => {
+  syncThemeCssVariables(appThemeConfig.value);
 });
 
 const inputConfig = computed(() => appDefaultSettings.input);

@@ -20,18 +20,13 @@ export interface Tab {
   favorite?: boolean;
 }
 
-export type NotificationCategory =
-  | "system"
-  | "message"
-  | "security"
-  | "task"
-  | "error";
+export type NotificationCategory = 'system' | 'message' | 'security' | 'task' | 'error';
 
 export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: "success" | "error" | "warning" | "info";
+  type: 'success' | 'error' | 'warning' | 'info';
   category?: NotificationCategory;
   timestamp: number;
   read: boolean;
@@ -45,22 +40,18 @@ export interface BreadcrumbItem {
   icon?: string;
 }
 
-export type ThemeMode = "light" | "dark" | "system";
-export type LayoutMode = "vertical" | "horizontal";
-export type SidebarTheme = "light" | "dark";
-export type PrimaryColor =
-  | "blue"
-  | "green"
-  | "purple"
-  | "red"
-  | "orange"
-  | "cyan";
+export type ThemeMode = 'light' | 'dark' | 'system';
+export type DarkThemeStyle = keyof typeof import('@/themes').darkThemePresets;
+export type LightThemeStyle = keyof typeof import('@/themes').lightThemePresets;
+export type LayoutMode = 'vertical' | 'horizontal';
+export type SidebarTheme = 'light' | 'dark';
+export type PrimaryColor = 'blue' | 'green' | 'purple' | 'red' | 'orange' | 'cyan';
 export type PageAnimation =
-  | "fade"
-  | "slide-left"
-  | "slide-right"
-  | "slide-up"
-  | "slide-down"
-  | "zoom"
-  | "zoom-big"
-  | "none";
+  | 'fade'
+  | 'slide-left'
+  | 'slide-right'
+  | 'slide-up'
+  | 'slide-down'
+  | 'zoom'
+  | 'zoom-big'
+  | 'none';

@@ -27,9 +27,11 @@
 ### 因为 refresh  token 修改，所以无法像原版那样，在线体验
 ## 快速开始
 
+项目仅支持 pnpm，依赖版本以 `pnpm-lock.yaml` 为准。
+
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 开发服务默认运行在 `http://localhost:3000`。
@@ -37,21 +39,21 @@ npm run dev
 常用验证命令:
 
 ```bash
-npm run lint             # oxlint src mock
-npm run format:check     # oxfmt --check src mock
-npm run type-check       # vue-tsc --noEmit
-npm run test:unit:run    # Vitest one-shot
-npm run build            # 仅生产构建
-npm run build:demo       # 在线 Demo 构建，启用浏览器端 Mock
-npm run build:check      # 类型检查 + 生产构建
-npm run build:demo:check # 类型检查 + 在线 Demo 构建
-npm run preview          # 预览生产构建
+pnpm run lint             # oxlint src mock
+pnpm run format:check     # oxfmt --check src mock
+pnpm run type-check       # vue-tsc --noEmit
+pnpm run test:unit:run    # Vitest one-shot
+pnpm run build            # 仅生产构建
+pnpm run build:demo       # 在线 Demo 构建，启用浏览器端 Mock
+pnpm run build:check      # 类型检查 + 生产构建
+pnpm run build:demo:check # 类型检查 + 在线 Demo 构建
+pnpm run preview          # 预览生产构建
 ```
 
 发布或提交前建议执行:
 
 ```bash
-npm run lint && npm run format:check && npm run type-check && npm run test:unit:run && npm run build:check
+pnpm run lint && pnpm run format:check && pnpm run type-check && pnpm run test:unit:run && pnpm run build:check
 ```
 
 ## 技术栈
@@ -246,7 +248,7 @@ VITE_DEMO_MODE=true
 VITE_API_BASE_URL=/api
 ```
 
-真实生产发布使用 `npm run build`；在线 Demo 发布使用 `npm run build:demo`。不要将 `.env.demo` 作为真实项目的生产配置。
+真实生产发布使用 `pnpm run build`；在线 Demo 发布使用 `pnpm run build:demo`。不要将 `.env.demo` 作为真实项目的生产配置。
 
 接口响应建议遵循:
 
@@ -291,8 +293,8 @@ src/types/[entity].ts
 单元测试使用 Vitest，配置在 `vitest.config.ts`:
 
 ```bash
-npm run test:unit       # watch mode
-npm run test:unit:run   # one-shot
+pnpm run test:unit       # watch mode
+pnpm run test:unit:run   # one-shot
 ```
 
 当前单测覆盖路由权限过滤、ProTable 请求、搜索、表头过滤和关键词搜索等逻辑。

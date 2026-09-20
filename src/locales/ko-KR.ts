@@ -211,6 +211,13 @@ export default {
   settings: {
     title: '환경설정',
     themeColor: '테마 색상',
+    themeMode: '테마 모드',
+    lightTheme: '라이트 테마',
+    darkTheme: '다크 테마',
+    themeStyle: '테마 스타일',
+    themeStyleHint: '라이트 및 다크 스타일은 각각 저장되며 즉시 적용됩니다.',
+    darkThemeDefault: '기본',
+    darkThemeGlass: '나이트 글라스',
     sidebarTheme: '사이드바 테마',
     light: '빛',
     dark: '어두운',
@@ -740,7 +747,8 @@ export default {
   iconLibrary: {
     kicker: 'ICON CATALOG',
     title: '아이콘 라이브러리',
-    description: '프로젝트에 포함된 아이콘 세트를 라이브러리별로 탐색하고 이름을 복사할 수 있습니다.',
+    description:
+      '프로젝트에 포함된 아이콘 세트를 라이브러리별로 탐색하고 이름을 복사할 수 있습니다.',
     totalLabel: '지원되는 아이콘 수',
     totalUnit: '개 아이콘',
     categoryLabel: '아이콘 라이브러리 카테고리',

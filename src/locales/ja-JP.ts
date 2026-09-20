@@ -211,6 +211,13 @@ export default {
   settings: {
     title: '設定',
     themeColor: 'テーマカラー',
+    themeMode: 'テーマモード',
+    lightTheme: 'ライトテーマ',
+    darkTheme: 'ダークテーマ',
+    themeStyle: 'テーマスタイル',
+    themeStyleHint: 'ライトとダークのスタイルは個別に保存され、すぐに適用されます。',
+    darkThemeDefault: 'デフォルト',
+    darkThemeGlass: '夜のガラス',
     sidebarTheme: 'サイドバーのテーマ',
     light: 'ライト',
     dark: '暗い',
@@ -743,7 +750,8 @@ export default {
   iconLibrary: {
     kicker: 'ICON CATALOG',
     title: 'アイコンライブラリ',
-    description: 'プロジェクトに組み込まれたアイコンセットを、ライブラリ別に検索して名前をコピーできます。',
+    description:
+      'プロジェクトに組み込まれたアイコンセットを、ライブラリ別に検索して名前をコピーできます。',
     totalLabel: '対応アイコン総数',
     totalUnit: '個のアイコン',
     categoryLabel: 'アイコンライブラリのカテゴリ',

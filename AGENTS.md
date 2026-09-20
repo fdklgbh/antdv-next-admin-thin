@@ -31,30 +31,30 @@ tests/
 
 ### Essential Commands
 ```bash
-npm install              # Install all dependencies
-npm run dev              # Start dev server at http://localhost:3000 (with mock APIs)
-npm run build            # Production build → dist/
-npm run build:check      # vue-tsc type check + production build
-npm run build:demo       # Demo build for static hosting (browser-side mock)
-npm run preview          # Preview production build locally
-npm run type-check       # Run vue-tsc --noEmit (NO auto-fix)
+pnpm install              # Install all dependencies
+pnpm run dev              # Start dev server at http://localhost:3000 (with mock APIs)
+pnpm run build            # Production build → dist/
+pnpm run build:check      # vue-tsc type check + production build
+pnpm run build:demo       # Demo build for static hosting (browser-side mock)
+pnpm run preview          # Preview production build locally
+pnpm run type-check       # Run vue-tsc --noEmit (NO auto-fix)
 
 # Testing (Vitest)
-npm run test:unit        # Run unit tests in watch mode
-npm run test:unit:run    # Run unit tests once
+pnpm run test:unit        # Run unit tests in watch mode
+pnpm run test:unit:run    # Run unit tests once
 
 # Linting & Formatting
-npm run lint             # Lint with oxlint
-npm run lint:fix         # Auto-fix lint issues
-npm run format           # Format with oxfmt
-npm run format:check     # Check formatting
+pnpm run lint             # Lint with oxlint
+pnpm run lint:fix         # Auto-fix lint issues
+pnpm run format           # Format with oxfmt
+pnpm run format:check     # Check formatting
 ```
 
 ### Pre-commit Requirements
 **BEFORE any commit or PR:**
-1. Run `npm run type-check` - must exit 0 with no errors
-2. Run `npm run lint` - must exit 0 with no errors
-3. Run `npm run build` - must complete successfully
+1. Run `pnpm run type-check` - must exit 0 with no errors
+2. Run `pnpm run lint` - must exit 0 with no errors
+3. Run `pnpm run build` - must complete successfully
 4. For RBAC/auth changes: manually verify login with `admin/123456` and `user/123456`
 
 ### Testing
@@ -231,7 +231,7 @@ if (canAll(['user.edit', 'user.approve'])) {
 
 ## Common Pitfalls to Avoid
 
-1. **Oxlint** lints `src/` and `mock/` — run `npm run lint` before committing. Oxfmt handles import sorting automatically.
+1. **Oxlint** lints `src/` and `mock/` — run `pnpm run lint` before committing. Oxfmt handles import sorting automatically.
 2. **Don't suppress TypeScript errors** - fix the root cause instead
 3. **Test files are templates** - don't try to run them without installing test frameworks
 4. **Mock users**: `admin/123456` has full permissions, `user/123456` has limited permissions
@@ -255,8 +255,8 @@ docs(readme): update installation instructions
 
 ## Pull Request Checklist
 
-- [ ] `npm run type-check` passes
-- [ ] `npm run build` succeeds
+- [ ] `pnpm run type-check` passes
+- [ ] `pnpm run build` succeeds
 - [ ] Manually tested login flow (if auth-related)
 - [ ] Manually verified permissions (if RBAC-related)
 - [ ] Screenshots/GIFs included (for UI changes)

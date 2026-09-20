@@ -18,35 +18,35 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Environment Requirements
 
 - Node.js >= 18
-- npm >= 9
+- pnpm >= 10
 
 ## Common Commands
 
 ```bash
 # Development
-npm run dev              # Start dev server on http://localhost:3000
+pnpm run dev              # Start dev server on http://localhost:3000
 
 # Building
-npm run build            # Production build
-npm run build:check      # Type check before build
-npm run build:demo       # Demo build (static hosting w/ browser-side mock)
-npm run build:demo:check # Type check + demo build
-npm run preview          # Preview production build
+pnpm run build            # Production build
+pnpm run build:check      # Type check before build
+pnpm run build:demo       # Demo build (static hosting w/ browser-side mock)
+pnpm run build:demo:check # Type check + demo build
+pnpm run preview          # Preview production build
 
 # Type Checking
-npm run type-check       # TypeScript type checking (vue-tsc --noEmit)
+pnpm run type-check       # TypeScript type checking (vue-tsc --noEmit)
 
 # Testing (Vitest)
-npm run test:unit        # Run unit tests in watch mode
-npm run test:unit:run    # Run unit tests once
+pnpm run test:unit        # Run unit tests in watch mode
+pnpm run test:unit:run    # Run unit tests once
 
 # Linting (oxlint)
-npm run lint             # Lint src/ and mock/
-npm run lint:fix         # Auto-fix lint issues
+pnpm run lint             # Lint src/ and mock/
+pnpm run lint:fix         # Auto-fix lint issues
 
 # Formatting (oxfmt)
-npm run format           # Format src/ and mock/
-npm run format:check     # Check formatting without writing
+pnpm run format           # Format src/ and mock/
+pnpm run format:check     # Check formatting without writing
 ```
 
 **Vitest config** (`vitest.config.ts`): `environment: 'node'`, `globals: false` (must import `describe`/`it`/`expect` from vitest). Test files: `tests/unit/**/*.spec.ts`. No jsdom/happy-dom — tests run in a Node environment.
@@ -55,7 +55,7 @@ npm run format:check     # Check formatting without writing
 
 **Oxfmt config** (`.oxfmtrc.json`): 100 char print width, 2-space tabs, single quotes, semicolons, trailing commas, sorted imports (type-imports first, then builtin/external, then internal, then parent/sibling/index).
 
-Before committing, run `npm run type-check && npm run lint && npm run build` to verify.
+Before committing, run `pnpm run type-check && pnpm run lint && pnpm run build` to verify.
 
 ## Architecture
 

@@ -1,0 +1,19 @@
+{
+  "id": "default-dark",
+  "name": "默认深色",
+  "version": 1,
+  "algorithm": "dark",
+  "token": {
+    "colorBgLayout": "#141414",
+    "colorBgContainer": "#1f1f1f",
+    "colorBgElevated": "#262626",
+    "colorBorderSecondary": "#303030"
+  },
+  "appearance": {
+    "style": "default",
+    "variables": {
+      "--shadow-card": "0 8px 28px rgba(0, 0, 0, 0.28)",
+      "--shadow-card-hover": "0 14px 36px rgba(0, 0, 0, 0.4)"
+    }
+  }
+}
