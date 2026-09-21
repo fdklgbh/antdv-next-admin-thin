@@ -1,9 +1,5 @@
 <template>
-  <a-result
-    status="404"
-    :title="$t('exampleException.404title')"
-    :sub-title="$t('exampleException.404description')"
-  >
+  <a-result status="404" title="404" :sub-title="$t('error.pageNotFound')">
     <template #extra>
       <a-button type="primary" @click="router.push('/')">
         {{ $t('error.backHome') }}
