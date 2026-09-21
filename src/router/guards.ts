@@ -8,6 +8,7 @@ import { usePermissionStore } from '@/stores/permission';
 import { useTabsStore } from '@/stores/tabs';
 import { resolveLocaleText } from '@/utils/i18n';
 import { normalizeMenuHistoryItems } from '@/utils/menuPreferences';
+import { clearSessionState } from '@/utils/session';
 
 import { shouldRecoverDynamicRoute } from './routeRecovery';
 import { basicRoutes, notFoundRoute, staticRoutes } from './routes';
@@ -36,7 +37,7 @@ async function ensureDynamicRoutes(
   if (permissionStore.isRoutesGenerated && !options.replaceExisting) return;
 
   if (!authStore.user) {
-    authStore.initAuth();
+    if (!(await authStore.restoreSession())) throw new Error('No authenticated session');
   }
 
   const accessRoutes = await permissionStore.generateRoutes(
@@ -187,6 +188,22 @@ export function setupRouterGuards(router: Router) {
     // Set page title
     setDocumentTitle(to);
 
+    const requiresAuth = to.meta.requiresAuth !== false;
+    // Resolve the refresh cookie before restoring cached permissions or dynamic routes.
+    const shouldRestoreSession =
+      requiresAuth || (to.name === 'NotFoundCatchAll' && authStore.canAttemptRefresh);
+    if (shouldRestoreSession) {
+      try {
+        if (!(await authStore.restoreSession())) {
+          return { path: '/login', query: { redirect: to.fullPath } };
+        }
+      } catch (error) {
+        console.error('Failed to restore session:', error);
+        clearSessionState(router);
+        return { path: '/login', query: { redirect: to.fullPath } };
+      }
+    }
+
     // A dynamic route may initially match the catch-all on a fresh page load.
     // Restore permission routes first, then resolve the unchanged target again.
     if (
@@ -199,7 +216,7 @@ export function setupRouterGuards(router: Router) {
       try {
         await ensureDynamicRoutes(router, authStore, permissionStore, dictStore);
         initTabsIfNeeded(tabsStore, permissionStore);
-        return { path: to.fullPath, replace: true };
+        return { path: to.path, query: to.query, hash: to.hash, replace: true };
       } catch (error) {
         console.error('Failed to recover dynamic route:', error);
         return '/403';
@@ -207,8 +224,6 @@ export function setupRouterGuards(router: Router) {
     }
 
     // Check if route requires authentication
-    const requiresAuth = to.meta.requiresAuth !== false;
-
     if (requiresAuth) {
       // Check if user is logged in
       if (!authStore.token) {

@@ -263,7 +263,7 @@ export default {
     title: '用户登录',
     username: '用户名',
     password: '密码',
-    remember: '记住密码',
+    remember: '记住登录状态',
     login: '登录',
     forgotPassword: '忘记密码',
     noAccount: '还没有账号？',

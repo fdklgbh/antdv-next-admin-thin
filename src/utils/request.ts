@@ -1,7 +1,7 @@
 import { message } from 'antdv-next';
 import {
   create as createAxiosInstance,
-  type AxiosError,
+  AxiosError,
   type AxiosInstance,
   type AxiosRequestConfig,
   type AxiosResponse,
@@ -23,8 +23,6 @@ type RetriableRequestConfig = InternalAxiosRequestConfig &
   RequestConfig & {
     _retry?: boolean;
   };
-
-let refreshPromise: Promise<string> | null = null;
 
 export const service: AxiosInstance = createAxiosInstance({
   baseURL: import.meta.env.VITE_API_BASE_URL,
@@ -54,15 +52,40 @@ service.interceptors.request.use(
   },
 );
 
+// Normalize business-level 401 responses before the shared error interceptor.
+service.interceptors.response.use((response: AxiosResponse) => {
+  if (response.data?.code === 401) {
+    throw new AxiosError(
+      response.data.message || 'Unauthorized',
+      AxiosError.ERR_BAD_REQUEST,
+      response.config,
+      response.request,
+      response,
+    );
+  }
+  return response;
+});
+
+function expireSession(config: RequestConfig): void {
+  const currentRoute = router.currentRoute?.value;
+  clearSessionState(router);
+  if (!config.skipErrorMessage) message.error('登录已过期，请重新登录');
+  if (!config.skipRedirect) {
+    void router.push(
+      currentRoute && currentRoute.path !== '/login'
+        ? { path: '/login', query: { redirect: currentRoute.fullPath } }
+        : '/login',
+    );
+  }
+}
+
 service.interceptors.response.use(
   (response: AxiosResponse) => {
     const res = response.data;
     const requestConfig = response.config as RequestConfig;
 
     if (res.code !== undefined && res.code !== 200) {
-      if (res.code === 401) {
-        return Promise.reject(new Error(res.message || 'Unauthorized'));
-      } else if (res.code === 403) {
+      if (res.code === 403) {
         console.error('No permission:', res.message);
         if (!requestConfig.skipErrorMessage) {
           message.error(res.message || '没有访问权限');
@@ -80,23 +103,28 @@ service.interceptors.response.use(
     const originalRequest = error.config as RetriableRequestConfig | undefined;
 
     if (
-      error.response?.status === 401 &&
-      originalRequest &&
-      !originalRequest._retry &&
-      !originalRequest.skipAuthRefresh
+      (error.response?.status === 401 ||
+        (error.response?.data as { code?: number } | undefined)?.code === 401) &&
+      originalRequest
     ) {
+      // Login failures and the refresh endpoint must never recursively renew a session.
+      if (originalRequest.skipAuth || originalRequest.skipAuthRefresh) {
+        return Promise.reject(error);
+      }
+      if (originalRequest._retry) {
+        expireSession(originalRequest);
+        return Promise.reject(error);
+      }
       originalRequest._retry = true;
 
       try {
-        if (!refreshPromise) {
-          const authStore = useAuthStore();
-
-          refreshPromise = authStore.refreshToken().finally(() => {
-            refreshPromise = null;
-          });
-        }
-
-        const newToken = await refreshPromise;
+        const authStore = useAuthStore();
+        // A concurrent request may already have replaced the token used by this request.
+        const currentToken = authStore.token;
+        const newToken =
+          currentToken && originalRequest.headers.Authorization !== `Bearer ${currentToken}`
+            ? currentToken
+            : await authStore.refreshToken();
 
         if (originalRequest.headers) {
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
@@ -104,13 +132,7 @@ service.interceptors.response.use(
 
         return service(originalRequest);
       } catch (refreshError) {
-        clearSessionState(router);
-        if (!originalRequest.skipErrorMessage) {
-          message.error('登录已过期，请重新登录');
-        }
-        if (!originalRequest.skipRedirect) {
-          router.push('/login');
-        }
+        expireSession(originalRequest);
         return Promise.reject(refreshError);
       }
     }

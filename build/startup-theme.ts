@@ -1,7 +1,7 @@
-import type { ThemePreset } from '../src/themes/types';
+import type { ThemePreset } from '../src/themes/types.ts';
 import type { Plugin } from 'vite';
 
-import { darkThemePresets, lightThemePresets } from '../src/themes/index';
+import { darkThemePresets, lightThemePresets } from '../src/themes/index.ts';
 
 /** Inline only the loading screen's theme data, before any application modules load. */
 export function startupTheme(): Plugin {

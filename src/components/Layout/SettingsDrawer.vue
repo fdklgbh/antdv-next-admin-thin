@@ -111,7 +111,7 @@
       </div>
 
       <!-- AI Chat Split Panel -->
-      <div class="settings-section">
+      <div v-if="appDefaultSettings.preferences.showAiCollab" class="settings-section">
         <h4>{{ $t('settings.aiCollab') }}</h4>
         <a-switch
           :checked="layoutStore.aiEntryVisible"
@@ -126,7 +126,7 @@
       </div>
 
       <!-- Language Switch -->
-      <div class="settings-section">
+      <div v-if="appDefaultSettings.preferences.showLanguageSwitch" class="settings-section">
         <h4>{{ $t('settings.languageSwitch') }}</h4>
         <a-switch
           :checked="settingsStore.showLanguageSwitch"
@@ -153,6 +153,7 @@ import { App } from 'antdv-next';
 import { computed, ref, watch } from 'vue';
 
 import { $t } from '@/locales';
+import { appDefaultSettings } from '@/settings';
 import { useLayoutStore } from '@/stores/layout';
 import { useSettingsStore } from '@/stores/settings';
 import { useThemeStore } from '@/stores/theme';

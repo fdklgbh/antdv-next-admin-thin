@@ -180,7 +180,7 @@
 import { CheckCircleOutlined, LockOutlined, UserOutlined } from '@antdv-next/icons';
 import { message } from 'antdv-next';
 import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 import logoImg from '@/assets/images/logo.png';
 import { SliderCaptcha } from '@/components/Captcha';
@@ -192,6 +192,7 @@ import { useSettingsStore } from '@/stores/settings';
 import { clearSessionState } from '@/utils/session';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
 
@@ -201,7 +202,7 @@ const captchaRef = ref<InstanceType<typeof SliderCaptcha>>();
 const formState = reactive({
   username: 'admin',
   password: '123456',
-  remember: false,
+  remember: authStore.rememberSession,
 });
 
 const capabilityStats = [
@@ -239,12 +240,24 @@ const selectDemoAccount = (username: string) => {
 };
 
 const handleSubmit = async () => {
+  if (!captchaVerified.value || loading.value) return;
   loading.value = true;
   try {
+    const redirect = route.query.redirect;
+    // Accept only internal paths and avoid returning to the login page itself.
+    const target =
+      typeof redirect === 'string' &&
+      redirect.startsWith('/') &&
+      !redirect.startsWith('//') &&
+      !redirect.includes('\\') &&
+      [...redirect].every((character) => character.charCodeAt(0) >= 32) &&
+      !/^\/login\/?(?:[?#]|$)/i.test(redirect)
+        ? redirect
+        : '/';
     clearSessionState(router);
-    await authStore.login(formState.username, formState.password);
+    await authStore.login(formState.username, formState.password, formState.remember);
     message.success($t('login.loginSuccess'));
-    router.push('/');
+    await router.replace(target);
   } catch (error: unknown) {
     message.error(
       (error instanceof Error ? error.message : String(error)) || $t('login.loginFailed'),

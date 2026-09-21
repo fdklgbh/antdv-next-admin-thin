@@ -259,7 +259,7 @@ export default {
     title: '사용자 로그인',
     username: '사용자 이름',
     password: '비밀번호',
-    remember: '나를 기억해',
+    remember: '로그인 상태 유지',
     login: '로그인',
     forgotPassword: '비밀번호를 잊으셨나요?',
     noAccount: '계정이 없나요?',

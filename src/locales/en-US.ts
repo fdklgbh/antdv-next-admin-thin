@@ -265,7 +265,7 @@ export default {
     title: 'User Login',
     username: 'Username',
     password: 'Password',
-    remember: 'Remember me',
+    remember: 'Keep me signed in',
     login: 'Login',
     forgotPassword: 'Forgot password',
     noAccount: "Don't have an account?",

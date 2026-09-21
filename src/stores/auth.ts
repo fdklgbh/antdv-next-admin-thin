@@ -11,6 +11,7 @@ const TOKEN_KEY = 'access_token';
 const USER_KEY = 'user_info';
 const TOKEN_EXPIRES_KEY = 'token_expires_at';
 const USER_DATA_VERSION_KEY = 'user_data_version';
+const REMEMBER_LOGIN_KEY = 'remember_login';
 
 /**
  * Increment this version when the user data schema changes
@@ -42,8 +43,8 @@ const LEGACY_AVATAR_PATTERNS = [
 
 const DEFAULT_TOKEN_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
-function readSessionHint(): boolean {
-  const value = localStorage.getItem(authConfig.sessionHintKey);
+function readSessionHint(storage: Storage): boolean {
+  const value = storage.getItem(authConfig.sessionHintKey);
   return value === '1' || value === 'true';
 }
 
@@ -83,23 +84,35 @@ function normalizeUserInfo(userInfo: User): User {
 }
 
 export const useAuthStore = defineStore('auth', () => {
-  const token = ref<string | null>(localStorage.getItem(TOKEN_KEY));
-  const hasSessionHint = ref(readSessionHint());
+  const savedRemember = localStorage.getItem(REMEMBER_LOGIN_KEY);
+  // Existing persistent sessions keep their storage until the next explicit login.
+  const rememberSession = ref(
+    savedRemember === 'true' || (savedRemember === null && !!localStorage.getItem(TOKEN_KEY)),
+  );
+  const sessionStorageBackend = (): Storage =>
+    rememberSession.value ? localStorage : sessionStorage;
+  const token = ref<string | null>(sessionStorageBackend().getItem(TOKEN_KEY));
+  const hasSessionHint = ref(readSessionHint(sessionStorageBackend()));
   const tokenExpiresAt = ref<number | null>(null);
   const user = ref<User | null>(null);
   const roles = ref<Role[]>([]);
   const permissions = ref<Permission[]>([]);
 
-  const savedExpires = localStorage.getItem(TOKEN_EXPIRES_KEY);
+  let refreshPromise: Promise<string> | null = null;
+  let restorePromise: Promise<boolean> | null = null;
+  let sessionRevision = 0;
+
+  const savedExpires = sessionStorageBackend().getItem(TOKEN_EXPIRES_KEY);
   if (savedExpires) {
     tokenExpiresAt.value = parseInt(savedExpires, 10);
   }
 
-  const isTokenExpired = computed(() => {
+  const tokenHasExpired = (): boolean => {
     if (!token.value) return true;
     if (!tokenExpiresAt.value) return false;
     return Date.now() >= tokenExpiresAt.value;
-  });
+  };
+  const isTokenExpired = computed(tokenHasExpired);
 
   const isLoggedIn = computed(() => !!token.value && !!user.value && !isTokenExpired.value);
   const canAttemptRefresh = computed(() => Boolean(token.value || hasSessionHint.value));
@@ -110,16 +123,16 @@ export const useAuthStore = defineStore('auth', () => {
     hasSessionHint.value = value;
 
     if (hasSessionHint.value) {
-      localStorage.setItem(authConfig.sessionHintKey, '1');
+      sessionStorageBackend().setItem(authConfig.sessionHintKey, '1');
     } else {
-      localStorage.removeItem(authConfig.sessionHintKey);
+      sessionStorageBackend().removeItem(authConfig.sessionHintKey);
     }
   };
 
   const setToken = (newToken: string | null, expiresIn?: number) => {
     token.value = newToken;
     if (newToken) {
-      localStorage.setItem(TOKEN_KEY, newToken);
+      sessionStorageBackend().setItem(TOKEN_KEY, newToken);
 
       let expiresAt: number;
       if (expiresIn !== undefined && expiresIn > 0) {
@@ -133,11 +146,11 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
       tokenExpiresAt.value = expiresAt;
-      localStorage.setItem(TOKEN_EXPIRES_KEY, expiresAt.toString());
+      sessionStorageBackend().setItem(TOKEN_EXPIRES_KEY, expiresAt.toString());
     } else {
-      localStorage.removeItem(TOKEN_KEY);
+      sessionStorageBackend().removeItem(TOKEN_KEY);
       tokenExpiresAt.value = null;
-      localStorage.removeItem(TOKEN_EXPIRES_KEY);
+      sessionStorageBackend().removeItem(TOKEN_EXPIRES_KEY);
     }
   };
 
@@ -147,30 +160,42 @@ export const useAuthStore = defineStore('auth', () => {
     if (normalizedUserInfo) {
       roles.value = normalizedUserInfo.roles || [];
       permissions.value = normalizedUserInfo.permissions || [];
-      localStorage.setItem(USER_KEY, JSON.stringify(normalizedUserInfo));
-      localStorage.setItem(USER_DATA_VERSION_KEY, String(CURRENT_USER_DATA_VERSION));
+      sessionStorageBackend().setItem(USER_KEY, JSON.stringify(normalizedUserInfo));
+      sessionStorageBackend().setItem(USER_DATA_VERSION_KEY, String(CURRENT_USER_DATA_VERSION));
     } else {
       roles.value = [];
       permissions.value = [];
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(USER_DATA_VERSION_KEY);
+      sessionStorageBackend().removeItem(USER_KEY);
+      sessionStorageBackend().removeItem(USER_DATA_VERSION_KEY);
     }
   };
 
   const clearLocalSession = () => {
+    sessionRevision += 1;
     setToken(null);
     setUserInfo(null);
     setSessionHint(false);
+    for (const storage of [localStorage, sessionStorage]) {
+      for (const key of [
+        TOKEN_KEY,
+        TOKEN_EXPIRES_KEY,
+        USER_KEY,
+        USER_DATA_VERSION_KEY,
+        authConfig.sessionHintKey,
+      ]) {
+        storage.removeItem(key);
+      }
+    }
   };
 
-  const login = async (username: string, password: string): Promise<void> => {
+  const login = async (username: string, password: string, remember = false): Promise<void> => {
     const { login: loginApi, getUserInfo } = await import('@/api/auth');
 
-    if (token.value || user.value) {
-      clearLocalSession();
-    }
+    clearLocalSession();
+    rememberSession.value = remember;
+    localStorage.setItem(REMEMBER_LOGIN_KEY, String(remember));
 
-    const loginResult = await loginApi({ username, password });
+    const loginResult = await loginApi({ username, password, remember });
     setToken(loginResult.data.token, loginResult.data.expiresIn);
     setSessionHint(true);
 
@@ -190,17 +215,21 @@ export const useAuthStore = defineStore('auth', () => {
     }
   };
 
-  const refreshToken = async (): Promise<string> => {
-    const { refreshToken: refreshTokenApi } = await import('@/api/auth');
-
-    if (!canAttemptRefresh.value) {
-      throw new Error('No refresh session available');
-    }
-
-    const result = await refreshTokenApi();
-    setToken(result.data.token, result.data.expiresIn);
-    setSessionHint(true);
-    return result.data.token;
+  const refreshToken = (): Promise<string> => {
+    if (refreshPromise) return refreshPromise;
+    const revision = sessionRevision;
+    refreshPromise = (async () => {
+      if (!canAttemptRefresh.value) throw new Error('No refresh session available');
+      const { refreshToken: refreshTokenApi } = await import('@/api/auth');
+      const result = await refreshTokenApi();
+      if (revision !== sessionRevision) throw new Error('Session changed during refresh');
+      setToken(result.data.token, result.data.expiresIn);
+      setSessionHint(true);
+      return result.data.token;
+    })().finally(() => {
+      refreshPromise = null;
+    });
+    return refreshPromise;
   };
 
   const hasRole = (role: string): boolean => {
@@ -230,19 +259,17 @@ export const useAuthStore = defineStore('auth', () => {
   };
 
   const initAuth = () => {
-    if (isTokenExpired.value && token.value) {
-      clearLocalSession();
-      return;
-    }
+    // An expired token may still have a valid refresh cookie. Restore it first.
+    if (tokenHasExpired()) return;
 
     // Discard cached user data written by an older version of the app
-    const cachedVersion = localStorage.getItem(USER_DATA_VERSION_KEY);
+    const cachedVersion = sessionStorageBackend().getItem(USER_DATA_VERSION_KEY);
     if (cachedVersion !== null && parseInt(cachedVersion, 10) !== CURRENT_USER_DATA_VERSION) {
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(USER_DATA_VERSION_KEY);
+      sessionStorageBackend().removeItem(USER_KEY);
+      sessionStorageBackend().removeItem(USER_DATA_VERSION_KEY);
     }
 
-    const savedUser = localStorage.getItem(USER_KEY);
+    const savedUser = sessionStorageBackend().getItem(USER_KEY);
     if (savedUser) {
       try {
         const userInfo = JSON.parse(savedUser);
@@ -251,13 +278,36 @@ export const useAuthStore = defineStore('auth', () => {
         setUserInfo(userInfo);
       } catch (error) {
         console.error('Failed to parse saved user info:', error);
-        localStorage.removeItem(USER_KEY);
-        localStorage.removeItem(USER_DATA_VERSION_KEY);
+        sessionStorageBackend().removeItem(USER_KEY);
+        sessionStorageBackend().removeItem(USER_DATA_VERSION_KEY);
       }
     }
   };
 
+  const restoreSession = (): Promise<boolean> => {
+    if (restorePromise) return restorePromise;
+    const revision = sessionRevision;
+    restorePromise = (async () => {
+      if (!canAttemptRefresh.value) return false;
+      const needsRefresh = tokenHasExpired();
+      if (needsRefresh) await refreshToken();
+      if (!user.value && !needsRefresh) initAuth();
+      // Refresh roles and permissions alongside a renewed session.
+      if (!user.value || needsRefresh) {
+        const { getUserInfo } = await import('@/api/auth');
+        const result = await getUserInfo({ skipErrorMessage: true, skipRedirect: true });
+        if (revision !== sessionRevision) throw new Error('Session changed during restoration');
+        setUserInfo(result.data);
+      }
+      return !!token.value && !!user.value;
+    })().finally(() => {
+      restorePromise = null;
+    });
+    return restorePromise;
+  };
+
   return {
+    rememberSession,
     token,
     hasSessionHint,
     tokenExpiresAt,
@@ -282,5 +332,6 @@ export const useAuthStore = defineStore('auth', () => {
     hasAnyPermission,
     hasAllPermissions,
     initAuth,
+    restoreSession,
   };
 });

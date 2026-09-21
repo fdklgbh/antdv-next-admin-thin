@@ -259,7 +259,7 @@ export default {
     title: 'ユーザーログイン',
     username: 'ユーザー名',
     password: 'パスワード',
-    remember: '私を覚えてますか',
+    remember: 'ログイン状態を保持する',
     login: 'ログイン',
     forgotPassword: 'パスワードをお忘れですか',
     noAccount: 'アカウントをお持ちでない場合は、',

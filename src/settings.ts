@@ -34,7 +34,15 @@ export interface ButtonDefaultSettings {
   size: 'large' | 'middle' | 'small';
 }
 
+export interface PreferenceVisibilitySettings {
+  /** 是否在偏好设置中显示「AI 对话分屏」选项，仅由开发者配置。 */
+  readonly showAiCollab: boolean;
+  /** 是否在偏好设置中显示「语言切换」选项，仅由开发者配置。 */
+  readonly showLanguageSwitch: boolean;
+}
+
 export interface AppDefaultSettings {
+  preferences: PreferenceVisibilitySettings;
   proTable: ProTableDefaultSettings;
   input: InputDefaultSettings;
   select: SelectDefaultSettings;
@@ -43,6 +51,11 @@ export interface AppDefaultSettings {
 }
 
 export const appDefaultSettings: AppDefaultSettings = {
+  // 控制偏好设置中的选项可见性，不写入用户偏好或 localStorage。
+  preferences: {
+    showAiCollab: true,
+    showLanguageSwitch: true,
+  },
   proTable: {
     size: 'smal',
     height: 'auto',

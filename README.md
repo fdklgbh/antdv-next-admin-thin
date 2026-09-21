@@ -311,7 +311,9 @@ pnpm run test:unit:run   # one-shot
 - 主题相关样式优先使用 `src/assets/styles/variables.css` 中的 CSS Variables；SCSS 和 Tailwind 可用于局部样式与工具类。
 - Antdv 组件通过 `unplugin-vue-components` 和 `AntdvNextResolver` 自动导入，但 `Select`、`DatePicker`、`DateRangePicker` 被排除，相关封装或使用需注意显式处理。
 - 全局默认组件属性在 `src/components/Global/defaultComponentProps.ts` 注册，修改基础表单控件行为前应先检查这里。
-- 登录态、语言、主题、Tabs 等状态会持久化到 localStorage；调试权限、路由或菜单问题时可清理本地存储后重新登录。
+- 勾选“记住登录状态”时，登录凭据保存在 localStorage；未勾选时保存在 sessionStorage。语言、主题、Tabs 等偏好仍保存在 localStorage。项目不会保存密码。
+- 登录接口提交 `remember`。开发 Mock 在勾选时设置 7 天的 HttpOnly 刷新 Cookie，续期时延长有效期；未勾选时设置会话 Cookie。真实后端需实现相同语义；跨域部署需允许凭据请求并正确配置 Cookie 的 Secure / SameSite。纯浏览器 Demo 的刷新凭据仍仅保存在内存，不能替代服务端持久会话。
+- 访问受保护页面时先恢复或续期会话，再恢复权限路由；HTTP 401 和业务 `code: 401` 共用续期流程，并发请求共用一次续期，原请求最多重试一次。续期失败回到登录页，成功登录后返回原站内路径（保留查询参数和 hash）。
 - 修改 `asyncRoutes`、权限码或角色权限后，建议退出登录或刷新会话再验证，避免旧的动态路由和 Tabs 缓存影响判断。
 
 ## 模块划分

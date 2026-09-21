@@ -20,8 +20,8 @@ function createMockToken(userId: string) {
   return `mock-token-${userId}-${Date.now()}`;
 }
 
-function createMockRefreshToken(userId: string) {
-  return `mock-refresh-token-${userId}-${Date.now()}`;
+function createMockRefreshToken(userId: string, remember = false) {
+  return `mock-refresh-token-${userId}-${Date.now()}${remember ? '-remember' : ''}`;
 }
 
 function resolveMockUser(username?: string, password?: string) {
@@ -86,8 +86,13 @@ const authMocks: MockOptions = [
       return user
         ? {
             [authConfig.refreshCookieName]: createRefreshCookieValue(
-              createMockRefreshToken(user.id),
-              refreshCookieOptions,
+              createMockRefreshToken(user.id, req.body.remember === true),
+              {
+                ...refreshCookieOptions,
+                ...(req.body.remember === true
+                  ? { maxAge: authConfig.rememberSessionMaxAgeMs }
+                  : {}),
+              },
             ),
           }
         : {};
@@ -180,8 +185,13 @@ const authMocks: MockOptions = [
       return userId
         ? {
             [authConfig.refreshCookieName]: createRefreshCookieValue(
-              createMockRefreshToken(userId),
-              refreshCookieOptions,
+              createMockRefreshToken(userId, refreshToken?.endsWith('-remember')),
+              {
+                ...refreshCookieOptions,
+                ...(refreshToken?.endsWith('-remember')
+                  ? { maxAge: authConfig.rememberSessionMaxAgeMs }
+                  : {}),
+              },
             ),
           }
         : {};
