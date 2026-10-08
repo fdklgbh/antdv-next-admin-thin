@@ -1,4 +1,3 @@
-import { message } from 'antdv-next';
 import {
   create as createAxiosInstance,
   AxiosError,
@@ -8,12 +7,21 @@ import {
   type InternalAxiosRequestConfig,
 } from 'axios';
 
+import { $t } from '@/locales';
 import router from '@/router';
 import { useAuthStore } from '@/stores/auth';
+import { showApiError } from '@/utils/apiError';
+import {
+  pageSessionVersion,
+  assertSessionVersion,
+  readAuthSession,
+  SessionChangedError,
+} from '@/utils/authSession';
 import { clearSessionState } from '@/utils/session';
 
 export interface RequestConfig extends AxiosRequestConfig {
   skipAuth?: boolean;
+  sessionVersion?: string;
   skipErrorMessage?: boolean;
   skipAuthRefresh?: boolean;
   skipRedirect?: boolean;
@@ -37,8 +45,16 @@ service.interceptors.request.use(
     const requestConfig = config as RequestConfig;
     const authStore = useAuthStore();
 
-    if (!requestConfig.skipAuth && authStore.token) {
-      config.headers.Authorization = `Bearer ${authStore.token}`;
+    if (!requestConfig.skipAuth) {
+      if (requestConfig.sessionVersion !== undefined)
+        assertSessionVersion(requestConfig.sessionVersion);
+      assertSessionVersion(pageSessionVersion());
+      requestConfig.sessionVersion = pageSessionVersion();
+      const snapshot = readAuthSession();
+      if (snapshot?.status === 'changing' || snapshot?.status === 'anonymous')
+        throw new SessionChangedError();
+      const currentToken = snapshot?.token ?? authStore.token;
+      if (currentToken) config.headers.Authorization = `Bearer ${currentToken}`;
     }
 
     return config;
@@ -46,7 +62,7 @@ service.interceptors.request.use(
   (error: AxiosError) => {
     console.error('Request error:', error);
     if (!(error.config as RequestConfig | undefined)?.skipErrorMessage) {
-      message.error('请求发送失败');
+      showApiError(error, $t('apiErrors.sendFailed'));
     }
     return Promise.reject(error);
   },
@@ -54,6 +70,9 @@ service.interceptors.request.use(
 
 // Normalize business-level 401 responses before the shared error interceptor.
 service.interceptors.response.use((response: AxiosResponse) => {
+  const config = response.config as RequestConfig;
+  if (!config.skipAuth && config.sessionVersion !== undefined)
+    assertSessionVersion(config.sessionVersion);
   if (response.data?.code === 401) {
     throw new AxiosError(
       response.data.message || 'Unauthorized',
@@ -66,10 +85,10 @@ service.interceptors.response.use((response: AxiosResponse) => {
   return response;
 });
 
-function expireSession(config: RequestConfig): void {
+function expireSession(config: RequestConfig, error: unknown): void {
   const currentRoute = router.currentRoute?.value;
   clearSessionState(router);
-  if (!config.skipErrorMessage) message.error('登录已过期，请重新登录');
+  if (!config.skipErrorMessage) showApiError(error, $t('apiErrors.sessionExpired'));
   if (!config.skipRedirect) {
     void router.push(
       currentRoute && currentRoute.path !== '/login'
@@ -84,17 +103,16 @@ service.interceptors.response.use(
     const res = response.data;
     const requestConfig = response.config as RequestConfig;
 
-    if (res.code !== undefined && res.code !== 200) {
-      if (res.code === 403) {
-        console.error('No permission:', res.message);
-        if (!requestConfig.skipErrorMessage) {
-          message.error(res.message || '没有访问权限');
-        }
-      } else if (!requestConfig.skipErrorMessage) {
-        message.error(res.message || '请求失败');
-      }
-
-      return Promise.reject(new Error(res.message || 'Error'));
+    if (res.code !== undefined && res.code !== 0 && res.code !== 200) {
+      const error = new AxiosError(
+        res.message || $t('apiErrors.requestFailed'),
+        AxiosError.ERR_BAD_RESPONSE,
+        response.config,
+        response.request,
+        response,
+      );
+      if (!requestConfig.skipErrorMessage) showApiError(error);
+      return Promise.reject(error);
     }
 
     return response;
@@ -102,6 +120,21 @@ service.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as RetriableRequestConfig | undefined;
 
+    // 下载失败时，JSON 错误响应仍可能被 Axios 包装成 Blob。
+    if (
+      error.response?.data instanceof Blob &&
+      error.response.data.type.includes('application/json')
+    ) {
+      try {
+        error.response.data = JSON.parse(await error.response.data.text());
+      } catch (parseError) {
+        console.error('Failed to parse download error response:', parseError);
+      }
+    }
+
+    if (!originalRequest?.skipAuth && originalRequest?.sessionVersion !== undefined) {
+      assertSessionVersion(originalRequest.sessionVersion);
+    }
     if (
       (error.response?.status === 401 ||
         (error.response?.data as { code?: number } | undefined)?.code === 401) &&
@@ -112,7 +145,7 @@ service.interceptors.response.use(
         return Promise.reject(error);
       }
       if (originalRequest._retry) {
-        expireSession(originalRequest);
+        expireSession(originalRequest, error);
         return Promise.reject(error);
       }
       originalRequest._retry = true;
@@ -120,9 +153,13 @@ service.interceptors.response.use(
       try {
         const authStore = useAuthStore();
         // A concurrent request may already have replaced the token used by this request.
-        const currentToken = authStore.token;
+        const currentSession = readAuthSession();
+        const currentToken = currentSession?.token ?? authStore.token;
+        const tokenIsFresh = !currentSession || currentSession.expiresAt > Date.now();
         const newToken =
-          currentToken && originalRequest.headers.Authorization !== `Bearer ${currentToken}`
+          tokenIsFresh &&
+          currentToken &&
+          originalRequest.headers.Authorization !== `Bearer ${currentToken}`
             ? currentToken
             : await authStore.refreshToken();
 
@@ -132,58 +169,21 @@ service.interceptors.response.use(
 
         return service(originalRequest);
       } catch (refreshError) {
-        expireSession(originalRequest);
+        if (originalRequest.sessionVersion !== undefined)
+          assertSessionVersion(originalRequest.sessionVersion);
+        if (isUnauthorized(refreshError)) expireSession(originalRequest, refreshError);
+        else if (!originalRequest.skipErrorMessage)
+          showApiError(refreshError, $t('apiErrors.refreshFailed'));
         return Promise.reject(refreshError);
       }
     }
 
     console.error('Response error:', error);
 
-    if (error.response) {
-      const { status } = error.response;
-      const requestConfig = originalRequest as RequestConfig | undefined;
-
-      switch (status) {
-        case 403:
-          console.error('Access forbidden');
-          if (!requestConfig?.skipErrorMessage) {
-            message.error('没有访问权限');
-          }
-          if (!requestConfig?.skipRedirect) {
-            router.push('/403');
-          }
-          break;
-        case 404:
-          console.error('Resource not found');
-          if (!requestConfig?.skipErrorMessage) {
-            message.error('请求的资源不存在');
-          }
-          break;
-        case 500:
-          console.error('Server error');
-          if (!requestConfig?.skipErrorMessage) {
-            message.error('服务器错误，请稍后重试');
-          }
-          if (!requestConfig?.skipRedirect) {
-            router.push('/500');
-          }
-          break;
-        default:
-          console.error(`Error ${status}:`, error.message);
-          if (!requestConfig?.skipErrorMessage) {
-            message.error(error.message || '请求失败');
-          }
-      }
-    } else if (error.request) {
-      console.error('No response received:', error.request);
-      if (!originalRequest?.skipErrorMessage) {
-        message.error('网络连接失败，请检查网络');
-      }
-    } else {
-      console.error('Request setup error:', error.message);
-      if (!originalRequest?.skipErrorMessage) {
-        message.error('请求配置错误');
-      }
+    if (!originalRequest?.skipErrorMessage) showApiError(error);
+    if (!originalRequest?.skipRedirect) {
+      if (error.response?.status === 403) void router.push('/403');
+      if (error.response?.status === 500) void router.push('/500');
     }
 
     return Promise.reject(error);
@@ -213,3 +213,11 @@ export const request = {
 };
 
 export default service;
+
+export function isUnauthorized(error: unknown): boolean {
+  if (!(error instanceof AxiosError)) return false;
+  return (
+    error.response?.status === 401 ||
+    (error.response?.data as { code?: number } | undefined)?.code === 401
+  );
+}

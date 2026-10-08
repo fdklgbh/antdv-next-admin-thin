@@ -142,6 +142,7 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { showApiError, resolveApiError } from '@/utils/apiError';
 import { getConfigList, createConfig, updateConfig, deleteConfig } from '@/api/config';
 import ProSplitLayout from '@/components/Pro/ProSplitLayout/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
@@ -252,7 +253,7 @@ const loadConfigList = async (params: Record<string, unknown>) => {
       page: params.current as number,
       pageSize: params.pageSize as number,
     });
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       return {
         data: response.data.list,
         total: response.data.total,
@@ -269,7 +270,7 @@ const loadConfigList = async (params: Record<string, unknown>) => {
 const loadAllConfigs = async () => {
   try {
     const response = await getConfigList({ page: 1, pageSize: 100 });
-    if (response.code === 200) allConfigs.value = response.data.list;
+    if (response.code === 0 || response.code === 200) allConfigs.value = response.data.list;
   } catch (_error: unknown) {}
 };
 
@@ -298,15 +299,15 @@ const handleDelete = (record: SysConfig) => {
     onOk: async () => {
       try {
         const response = await deleteConfig(record.id);
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('config.deleteSuccess'));
           refreshKey.value++;
           loadAllConfigs();
         } else {
-          message.error(response.message || t('config.deleteFailed'));
+          message.error(resolveApiError(response, t('config.deleteFailed')));
         }
-      } catch (_error: unknown) {
-        message.error(t('config.deleteFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('config.deleteFailed'));
       }
     },
   });
@@ -319,24 +320,27 @@ const handleSubmit = async () => {
   }
   try {
     if (form.value.id) {
-      const response = await updateConfig(form.value.id, form.value);
-      if (response.code === 200) {
+      const response = await updateConfig(form.value.id, {
+        ...form.value,
+        value: String(form.value.value ?? ''),
+      });
+      if (response.code === 0 || response.code === 200) {
         message.success(t('config.updateSuccess'));
         modalVisible.value = false;
         refreshKey.value++;
         loadAllConfigs();
       }
     } else {
-      const response = await createConfig(form.value);
-      if (response.code === 200) {
+      const response = await createConfig({ ...form.value, value: String(form.value.value ?? '') });
+      if (response.code === 0 || response.code === 200) {
         message.success(t('config.createSuccess'));
         modalVisible.value = false;
         refreshKey.value++;
         loadAllConfigs();
-      } else message.error(response.message || t('config.operateFailed'));
+      } else message.error(resolveApiError(response, t('config.operateFailed')));
     }
-  } catch (_error: unknown) {
-    message.error(t('config.operateFailed'));
+  } catch (error: unknown) {
+    showApiError(error, t('config.operateFailed'));
   }
 };
 

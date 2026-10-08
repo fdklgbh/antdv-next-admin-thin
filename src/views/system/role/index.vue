@@ -195,12 +195,15 @@ const columns = computed<ProTableColumn[]>(() => [
       {
         label: $t('common.edit'),
         icon: EditOutlined,
+        hidden: (record) => record.code === 'super_admin',
         onClick: (record) => handleEdit(record as unknown as Role),
       },
       {
         label: $t('common.delete'),
         icon: DeleteOutlined,
         danger: true,
+        hidden: (record) =>
+          ['super_admin', 'admin', 'manager', 'user', 'guest'].includes(String(record.code)),
         onClick: (record) => handleDelete(record as unknown as Role),
       },
     ],

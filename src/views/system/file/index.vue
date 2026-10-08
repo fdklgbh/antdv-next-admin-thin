@@ -1,5 +1,11 @@
 <template>
   <div class="page-container">
+    <div v-if="!isMockMode" style="margin-bottom: 16px">
+      <input ref="fileInput" type="file" hidden @change="handleUpload" />
+      <a-button v-permission="'system.file.upload'" :loading="uploading" @click="fileInput?.click()">
+        {{ t('file.upload') }}
+      </a-button>
+    </div>
     <ProTable
       :key="refreshKey"
       :columns="columns"
@@ -31,12 +37,15 @@
         </template>
         <template v-if="column.key === 'storage'">
           <a-tag :color="storageColor[record.storage]">{{
-            t(`file.storageType.${record.storage}`)
+            record.storage === 'database' ? t('file.database') : t(`file.storageType.${record.storage}`)
           }}</a-tag>
         </template>
         <template v-if="column.key === 'action'">
           <a-space :size="4">
-            <a-button type="link" size="small" danger @click="handleDelete(record)">
+            <a-button v-if="!isMockMode" type="link" size="small" @click="handleDownload(record)">
+              {{ t('file.download') }}
+            </a-button>
+            <a-button v-permission="'system.file.delete'" type="link" size="small" danger @click="handleDelete(record)">
               <template #icon><DeleteOutlined /></template>
               {{ t('file.delete') }}
             </a-button>
@@ -66,13 +75,54 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { getFileList, deleteFile } from '@/api/file';
+import { showApiError, resolveApiError } from '@/utils/apiError';
+import { getFileList, deleteFile, uploadFile, downloadFile } from '@/api/file';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 
 const { t } = useI18n();
 const refreshKey = ref(0);
+const isMockMode = import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.VITE_DEMO_MODE === 'true';
+const fileInput = ref<HTMLInputElement | null>(null);
+const uploading = ref(false);
+
+async function handleUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+    message.error(t('file.fileSizeError'));
+    input.value = '';
+    return;
+  }
+  uploading.value = true;
+  try {
+    await uploadFile(file);
+    message.success(t('file.uploadSuccess'));
+    refreshKey.value++;
+  } catch (error: unknown) {
+    showApiError(error, t('file.transferFailed'));
+  } finally {
+    uploading.value = false;
+    input.value = '';
+  }
+}
+
+async function handleDownload(record: SysFile) {
+  try {
+    const blob = await downloadFile(record.id);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = record.originalName;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (error: unknown) {
+    showApiError(error, t('file.transferFailed'));
+  }
+}
 
 const storageColor: Record<string, string> = {
+  database: 'purple',
   local: 'default',
   oss: 'blue',
   cos: 'green',
@@ -134,6 +184,7 @@ const searchFormItems = computed<ProFormItem[]>(() => [
     label: t('file.storage'),
     type: 'select',
     options: [
+      { label: t('file.database'), value: 'database' },
       { label: t('file.storageType.local'), value: 'local' },
       { label: t('file.storageType.oss'), value: 'oss' },
       { label: t('file.storageType.cos'), value: 'cos' },
@@ -191,7 +242,7 @@ const loadFileList = async (params: Record<string, unknown>) => {
       page: params.current as number,
       pageSize: params.pageSize as number,
     });
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       return {
         data: response.data.list,
         total: response.data.total,
@@ -211,14 +262,14 @@ const handleDelete = (record: SysFile) => {
     onOk: async () => {
       try {
         const response = await deleteFile(record.id);
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('file.deleteSuccess'));
           refreshKey.value++;
         } else {
-          message.error(response.message || t('file.deleteFailed'));
+          message.error(resolveApiError(response, t('file.deleteFailed')));
         }
-      } catch (_error: unknown) {
-        message.error(t('file.deleteFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('file.deleteFailed'));
       }
     },
   });

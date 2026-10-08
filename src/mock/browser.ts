@@ -31,7 +31,7 @@ const adminUser: User = {
   id: '1',
   username: 'admin',
   email: 'admin@example.com',
-  realName: 'Administrator',
+  displayName: 'Administrator',
   avatar: avatarImg,
   phone: '13800138000',
   gender: 'male',
@@ -68,7 +68,7 @@ const regularUser: User = {
   id: '2',
   username: 'user',
   email: 'user@example.com',
-  realName: 'Regular User',
+  displayName: 'Regular User',
   avatar: avatarImg,
   phone: '13800138001',
   gender: 'female',
@@ -108,7 +108,7 @@ const demoUsers: User[] = [
     id: '3',
     username: 'manager',
     email: 'manager@example.com',
-    realName: 'Demo Manager',
+    displayName: 'Demo Manager',
     avatar: avatarImg,
     phone: '13800138002',
     gender: 'male',
@@ -124,7 +124,7 @@ const demoUsers: User[] = [
     id: '4',
     username: 'guest',
     email: 'guest@example.com',
-    realName: 'Demo Guest',
+    displayName: 'Demo Guest',
     avatar: avatarImg,
     phone: '13800138003',
     gender: 'female',
@@ -447,6 +447,8 @@ function fallbackDemoResponse(config: { data?: unknown; method?: string; url?: s
 export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   const mock = new AxiosMockAdapter(service, { delayResponse: 250 });
   let refreshTokenValue: string | null = null;
+  let rememberSession = false;
+  let refreshExpiresAt = 0;
 
   mock.onGet(/\/api\/__mock_health$|\/__mock_health$/).reply(200, {
     code: 200,
@@ -456,7 +458,12 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
 
   mock.onPost(/\/api\/auth\/login$|\/auth\/login$/).reply((config) => {
-    const body = parseJsonBody<{ password?: string; username?: string }>(config.data, {});
+    const body = parseJsonBody<{
+      password?: string;
+      username?: string;
+      remember?: boolean;
+      rememberDays?: number;
+    }>(config.data, {});
     const user =
       body.username === 'admin' && body.password === '123456'
         ? adminUser
@@ -476,13 +483,20 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       ];
     }
 
+    if (body.remember && ![7, 15, 30].includes(body.rememberDays ?? 0)) {
+      return [400, { code: 10001, message: 'Invalid remember duration', data: null }];
+    }
     refreshTokenValue = createMockRefreshToken(user.id);
+    rememberSession = body.remember === true;
+    refreshExpiresAt = Date.now() + (rememberSession ? body.rememberDays! : 1) * 86400_000;
 
     return [
       200,
       successResponse({
         token: createMockToken(user.id),
-        expiresIn: 7200,
+        expiresIn: 900,
+        sessionId: refreshTokenValue,
+        remember: rememberSession,
       }),
     ];
   });
@@ -498,7 +512,10 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
 
   mock.onPost(/\/api\/auth\/refresh$|\/auth\/refresh$/).reply(() => {
-    const userId = resolveMockUserIdFromToken(refreshTokenValue || undefined);
+    const userId =
+      Date.now() < refreshExpiresAt
+        ? resolveMockUserIdFromToken(refreshTokenValue || undefined)
+        : null;
     if (!userId) {
       return [
         200,
@@ -511,13 +528,13 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
       ];
     }
 
-    refreshTokenValue = createMockRefreshToken(userId);
-
     return [
       200,
       successResponse({
         token: createMockToken(userId),
-        expiresIn: 7200,
+        expiresIn: 900,
+        sessionId: refreshTokenValue,
+        remember: rememberSession,
       }),
     ];
   });
@@ -653,7 +670,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
         id: String(Date.now()),
         username: body.username || `user_${Date.now()}`,
         email: body.email || 'user@example.com',
-        realName: body.realName || 'Demo User',
+        displayName: body.displayName || 'Demo User',
         avatar: body.avatar || avatarImg,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),

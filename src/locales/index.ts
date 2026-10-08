@@ -32,7 +32,9 @@ function normalizeLocale(locale: string | null): SupportedLocale {
 }
 
 // Get saved locale or use default
-const savedLocale = normalizeLocale(localStorage.getItem('app-locale'));
+const savedLocale = normalizeLocale(
+  typeof localStorage === 'undefined' ? null : localStorage.getItem('app-locale'),
+);
 
 const localeLoaders: Record<SupportedLocale, () => Promise<AppLocaleMessages>> = {
   'zh-CN': () => Promise.resolve(zhCN),
@@ -58,7 +60,7 @@ const i18n = createI18n({
   globalInjection: true,
 });
 
-document.documentElement.lang = savedLocale;
+if (typeof document !== 'undefined') document.documentElement.lang = savedLocale;
 dayjs.locale(DAYJS_LOCALE_MAP[savedLocale]);
 
 function setCurrentLocale(locale: SupportedLocale) {
@@ -110,10 +112,10 @@ export default i18n;
 export async function setLocale(locale: string) {
   const targetLocale = await loadLocaleMessages(locale);
   setCurrentLocale(targetLocale);
-  localStorage.setItem('app-locale', targetLocale);
+  if (typeof localStorage !== 'undefined') localStorage.setItem('app-locale', targetLocale);
 
   // Update HTML lang attribute
-  document.documentElement.lang = targetLocale;
+  if (typeof document !== 'undefined') document.documentElement.lang = targetLocale;
 }
 
 export function getLocale() {

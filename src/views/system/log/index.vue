@@ -77,6 +77,7 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { showApiError } from '@/utils/apiError';
 import { getOperationLogList, getLoginLogList, clearOperationLog, clearLoginLog } from '@/api/log';
 import ProStatus from '@/components/Pro/ProStatus/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
@@ -275,7 +276,7 @@ const loadOperationLogs = async (params: Record<string, unknown>) => {
       page: params.current as number,
       pageSize: params.pageSize as number,
     });
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       return {
         data: response.data.list,
         total: response.data.total,
@@ -297,7 +298,7 @@ const loadLoginLogs = async (params: Record<string, unknown>) => {
       page: params.current as number,
       pageSize: params.pageSize as number,
     });
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       return {
         data: response.data.list,
         total: response.data.total,
@@ -318,12 +319,12 @@ const handleClearOperationLog = () => {
     onOk: async () => {
       try {
         const response = await clearOperationLog();
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('log.clearSuccess'));
           operationRefreshKey.value++;
         }
-      } catch (_error: unknown) {
-        message.error(t('log.clearFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('log.clearFailed'));
       }
     },
   });
@@ -337,12 +338,12 @@ const handleClearLoginLog = () => {
     onOk: async () => {
       try {
         const response = await clearLoginLog();
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('log.clearSuccess'));
           loginRefreshKey.value++;
         }
-      } catch (_error: unknown) {
-        message.error(t('log.clearFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('log.clearFailed'));
       }
     },
   });

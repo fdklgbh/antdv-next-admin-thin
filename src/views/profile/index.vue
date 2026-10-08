@@ -9,7 +9,7 @@
               {{ authStore.user?.username?.charAt(0).toUpperCase() }}
             </a-avatar>
             <h2 class="profile-name">
-              {{ authStore.user?.realName || authStore.user?.username }}
+              {{ authStore.user?.displayName || authStore.user?.username }}
             </h2>
             <p class="profile-username">@{{ authStore.user?.username }}</p>
           </div>
@@ -135,6 +135,7 @@ import {
 import { message } from 'antdv-next';
 import { ref, reactive } from 'vue';
 
+import { resolveApiError } from '@/utils/apiError';
 import { changePassword, type ChangePasswordParams } from '@/api/user';
 import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
@@ -203,10 +204,10 @@ const handleChangePassword = async () => {
     const response = await changePassword(params);
 
     if (response.success) {
-      message.success(response.message || $t('profile.passwordChangeSuccess'));
+      message.success($t('profile.passwordChangeSuccess'));
       handleReset();
     } else {
-      message.error(response.message || $t('profile.passwordChangeFailed'));
+      message.error(resolveApiError(response, $t('profile.passwordChangeFailed')));
     }
   } catch (error: unknown) {
     console.error('Change password error:', (error as Error).message);

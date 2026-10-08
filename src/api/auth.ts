@@ -11,6 +11,7 @@ export function login(data: LoginParams): Promise<ApiResponse<LoginResult>> {
     skipAuth: true,
     skipAuthRefresh: true,
     skipErrorMessage: true,
+    skipRedirect: true,
     withCredentials: true,
   });
 }
@@ -20,6 +21,7 @@ export function login(data: LoginParams): Promise<ApiResponse<LoginResult>> {
  */
 export function logout(): Promise<ApiResponse<null>> {
   return request.post('/auth/logout', undefined, {
+    skipAuth: true,
     skipAuthRefresh: true,
     withCredentials: true,
   });

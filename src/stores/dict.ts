@@ -48,7 +48,7 @@ export const useDictStore = defineStore('dict', () => {
     try {
       loading.value = true;
       const response = await getAllDictData();
-      if (response.code === 200) {
+      if (response.code === 0 || response.code === 200) {
         dictData.value = response.data.filter((item: DictData) => item.status === 'enabled');
         loaded.value = true;
       }
