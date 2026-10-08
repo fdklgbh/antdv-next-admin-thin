@@ -1,202 +1,125 @@
 import type { MockOptions, SetCookieOption } from 'vite-plugin-mock-dev-server';
 
+import { randomUUID } from 'node:crypto';
 import { defineMock } from 'vite-plugin-mock-dev-server';
 
 import { authConfig } from '@/config/auth';
 
 import { adminUser, regularUser } from '../data/users.data';
 
-function resolveMockUserIdFromToken(token?: string) {
-  if (!token) return null;
-  const parts = token.split('-');
-  const tokenIndex = parts.indexOf('token');
-  const refreshIndex = parts.indexOf('refresh');
-  const userIdIndex = tokenIndex !== -1 ? tokenIndex + 1 : refreshIndex + 2;
-  const userId = parts[userIdIndex];
-  return userId === '1' || userId === '2' ? userId : null;
-}
-
-function createMockToken(userId: string) {
-  return `mock-token-${userId}-${Date.now()}`;
-}
-
-function createMockRefreshToken(userId: string, remember = false) {
-  return `mock-refresh-token-${userId}-${Date.now()}${remember ? '-remember' : ''}`;
-}
-
-function resolveMockUser(username?: string, password?: string) {
-  if (username === 'admin' && password === '123456') return adminUser;
-  if (username === 'user' && password === '123456') return regularUser;
-  return null;
-}
-
-const refreshCookieOptions = {
+const sessions = new Map<
+  string,
+  { userId: string; sessionId: string; remember: boolean; expiresAt: number }
+>();
+const cookieOptions: SetCookieOption = {
   httpOnly: true,
   path: '/api/auth',
-  sameSite: 'lax' as const,
+  sameSite: 'lax',
   secure: false,
 };
-
-const clearRefreshCookieOptions = {
-  ...refreshCookieOptions,
-  maxAge: 0,
+const pendingLogins = new WeakMap<
+  object,
+  { refresh: string; sessionId: string; userId: string; remember: boolean; expiresAt: number }
+>();
+const failure = {
+  code: 401,
+  message: 'Invalid credentials or expired session',
+  data: null,
+  success: false,
 };
-
-type MockResponseCookies = Record<string, string | [string, SetCookieOption]>;
-
-function createRefreshCookieValue(
-  value: string,
-  options: SetCookieOption,
-): [string, SetCookieOption] {
-  return [value, options];
+function token(userId: string): string {
+  return `mock-token-${userId}-${Date.now()}`;
 }
-
-const authMocks: MockOptions = [
-  // Login
+function success(data: unknown) {
+  return { code: 0, message: 'success', data, success: true };
+}
+function userFromToken(raw?: string) {
+  const match = /^mock-token-([12])-(\d+)$/.exec(raw ?? '');
+  if (!match || Date.now() >= Number(match[2]) + 900_000) return null;
+  return match[1] === '1' ? adminUser : regularUser;
+}
+const mocks: MockOptions = [
   {
     url: '/api/auth/login',
     method: 'POST',
-    body: (req) => {
-      const { username, password } = req.body;
-
-      // Validate credentials
-      const user = resolveMockUser(username, password);
-
-      if (user) {
-        return {
-          code: 200,
-          message: 'Login successful',
-          data: {
-            token: createMockToken(user.id),
-            expiresIn: 7200,
-          },
-          success: true,
-        };
-      } else {
-        return {
-          code: 401,
-          message: 'Invalid username or password',
-          data: null,
-          success: false,
-        };
-      }
-    },
-    cookies: (req): MockResponseCookies => {
-      const user = resolveMockUser(req.body.username, req.body.password);
-      return user
-        ? {
-            [authConfig.refreshCookieName]: createRefreshCookieValue(
-              createMockRefreshToken(user.id, req.body.remember === true),
-              {
-                ...refreshCookieOptions,
-                ...(req.body.remember === true
-                  ? { maxAge: authConfig.rememberSessionMaxAgeMs }
-                  : {}),
-              },
-            ),
-          }
-        : {};
-    },
-  },
-
-  // Logout
-  {
-    url: '/api/auth/logout',
-    method: 'POST',
-    body: {
-      code: 200,
-      message: 'Logout successful',
-      data: null,
-      success: true,
-    },
-    cookies: {
-      [authConfig.refreshCookieName]: createRefreshCookieValue('', clearRefreshCookieOptions),
-    },
-  },
-
-  // Get user info
-  {
-    url: '/api/auth/info',
-    method: 'GET',
-    body: (req) => {
-      // Get token from header
-      const token = req.headers.authorization?.replace('Bearer ', '');
-
-      if (!token) {
-        return {
-          code: 401,
-          message: 'Unauthorized',
-          data: null,
-          success: false,
-        };
-      }
-
-      // Extract user ID from token
-      const userId = resolveMockUserIdFromToken(token);
-      if (!userId) {
-        return {
-          code: 401,
-          message: 'Invalid token',
-          data: null,
-          success: false,
-        };
-      }
-      const user = userId === '1' ? adminUser : regularUser;
-
+    cookies: (req) => {
+      const { username, password, remember = false, rememberDays } = req.body;
+      const user =
+        password === '123456'
+          ? username === 'admin'
+            ? adminUser
+            : username === 'user'
+              ? regularUser
+              : null
+          : null;
+      if (!user || (remember && ![7, 15, 30].includes(rememberDays))) return {};
+      const previous = req.getCookie(authConfig.refreshCookieName);
+      if (previous) sessions.delete(previous);
+      const session = {
+        refresh: randomUUID(),
+        sessionId: randomUUID(),
+        userId: user.id,
+        remember: remember === true,
+        expiresAt: Date.now() + (remember ? rememberDays : 1) * 86400_000,
+      };
+      sessions.set(session.refresh, session);
+      pendingLogins.set(req, session);
       return {
-        code: 200,
-        message: 'Success',
-        data: user,
-        success: true,
+        [authConfig.refreshCookieName]: [
+          session.refresh,
+          {
+            ...cookieOptions,
+            ...(session.remember ? { maxAge: session.expiresAt - Date.now() } : {}),
+          },
+        ],
       };
     },
+    body: (req) => {
+      const session = pendingLogins.get(req);
+      if (!session) return failure;
+      pendingLogins.delete(req);
+      return success({
+        token: token(session.userId),
+        expiresIn: 900,
+        sessionId: session.sessionId,
+        remember: session.remember,
+      });
+    },
   },
-
-  // Refresh token
   {
     url: '/api/auth/refresh',
     method: 'POST',
     body: (req) => {
-      const refreshToken = req.getCookie(authConfig.refreshCookieName) || undefined;
-      const userId = resolveMockUserIdFromToken(refreshToken);
-
-      if (userId) {
-        return {
-          code: 200,
-          message: 'Token refreshed',
-          data: {
-            token: createMockToken(userId),
-            expiresIn: 7200,
-          },
-          success: true,
-        };
-      } else {
-        return {
-          code: 401,
-          message: 'Invalid refresh token',
-          data: null,
-          success: false,
-        };
+      const key = req.getCookie(authConfig.refreshCookieName) ?? '';
+      const session = sessions.get(key);
+      if (!session || Date.now() >= session.expiresAt) {
+        sessions.delete(key);
+        return failure;
       }
+      return success({
+        token: token(session.userId),
+        expiresIn: 900,
+        sessionId: session.sessionId,
+        remember: session.remember,
+      });
     },
-    cookies: (req): MockResponseCookies => {
-      const refreshToken = req.getCookie(authConfig.refreshCookieName) || undefined;
-      const userId = resolveMockUserIdFromToken(refreshToken);
-      return userId
-        ? {
-            [authConfig.refreshCookieName]: createRefreshCookieValue(
-              createMockRefreshToken(userId, refreshToken?.endsWith('-remember')),
-              {
-                ...refreshCookieOptions,
-                ...(refreshToken?.endsWith('-remember')
-                  ? { maxAge: authConfig.rememberSessionMaxAgeMs }
-                  : {}),
-              },
-            ),
-          }
-        : {};
+  },
+  {
+    url: '/api/auth/logout',
+    method: 'POST',
+    body: (req) => {
+      sessions.delete(req.getCookie(authConfig.refreshCookieName) ?? '');
+      return success(null);
+    },
+    cookies: { [authConfig.refreshCookieName]: ['', { ...cookieOptions, maxAge: 0 }] },
+  },
+  {
+    url: '/api/auth/info',
+    method: 'GET',
+    body: (req) => {
+      const user = userFromToken(req.headers.authorization?.replace('Bearer ', ''));
+      return user ? success(user) : failure;
     },
   },
 ];
-
-export default defineMock(authMocks);
+export default defineMock(mocks);

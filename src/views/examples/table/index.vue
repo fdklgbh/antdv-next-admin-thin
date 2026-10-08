@@ -78,7 +78,7 @@ import { commonRules } from '@/utils/formRules';
 type TableFormValues = {
   username: string;
   email: string;
-  realName: string;
+  displayName: string;
   phone: string;
   gender: 'male' | 'female';
   status: boolean;
@@ -88,7 +88,7 @@ type TableFormValues = {
 const createDefaultFormValues = (): TableFormValues => ({
   username: '',
   email: '',
-  realName: '',
+  displayName: '',
   phone: '',
   gender: 'male',
   status: true,
@@ -120,7 +120,7 @@ const genderValueEnum = computed<Record<string, { text: string; color?: string }
 // Search form items configuration
 const searchFormItems = computed<ProFormItem[]>(() => [
   { name: 'email', label: $t('user.email'), type: 'input' },
-  { name: 'realName', label: $t('user.realName'), type: 'input' },
+  { name: 'displayName', label: $t('user.displayName'), type: 'input' },
   { name: 'gender', label: $t('user.gender'), type: 'select', options: genderOptions.value },
   { name: 'createdAt', label: $t('common.createTime'), type: 'dateRange' },
 ]);
@@ -146,8 +146,8 @@ const columns = computed<ProTableColumn[]>(() => [
     copyable: true,
   },
   {
-    title: $t('user.realName'),
-    dataIndex: 'realName',
+    title: $t('user.displayName'),
+    dataIndex: 'displayName',
   },
   {
     title: $t('user.phone'),
@@ -226,8 +226,8 @@ const formItems = computed<ProFormItem[]>(() => [
     rules: [commonRules.required(), commonRules.email()],
   },
   {
-    name: 'realName',
-    label: $t('user.realName'),
+    name: 'displayName',
+    label: $t('user.displayName'),
     type: 'input',
     required: true,
   },
@@ -291,7 +291,7 @@ const handleEdit = (record: User) => {
   openEditForm(record, {
     username: record.username,
     email: record.email,
-    realName: record.realName,
+    displayName: record.displayName,
     phone: record.phone,
     gender: record.gender || 'male',
     status: record.status === 'active',

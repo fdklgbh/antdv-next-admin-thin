@@ -1,21 +1,26 @@
 // Authentication Types
 
+export type RememberDays = 7 | 15 | 30;
+
 export interface LoginParams {
   username: string;
   password: string;
   remember?: boolean;
+  rememberDays?: RememberDays;
 }
 
 export interface LoginResult {
   token: string;
-  expiresIn?: number;
+  expiresIn: number;
+  sessionId: string;
+  remember: boolean;
 }
 
 export interface User {
   id: string;
   username: string;
   email: string;
-  realName: string;
+  displayName: string;
   avatar: string;
   phone: string;
   gender?: 'male' | 'female';

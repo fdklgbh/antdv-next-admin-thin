@@ -4,7 +4,9 @@ export interface ApiResponse<T = unknown> {
   code: number;
   message: string;
   data: T;
-  success: boolean;
+  success?: boolean;
+  requestId?: string;
+  timestamp?: number;
 }
 
 export interface PageParams {

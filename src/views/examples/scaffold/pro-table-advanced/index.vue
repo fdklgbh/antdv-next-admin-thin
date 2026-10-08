@@ -101,7 +101,7 @@ import { $t } from '@/locales';
 interface DemoRow {
   id: string;
   username: string;
-  realName: string;
+  displayName: string;
   email: string;
   gender: 'male' | 'female';
   status: 'active' | 'inactive';
@@ -116,7 +116,7 @@ const createMockRows = (): DemoRow[] => {
     return {
       id: `demo-${i}`,
       username: `user_${String(i).padStart(3, '0')}`,
-      realName: isMale ? `张三${i}` : `李四${i}`,
+      displayName: isMale ? `张三${i}` : `李四${i}`,
       email: `user_${i}@example.com`,
       gender: isMale ? 'male' : 'female',
       status: i % 3 === 0 ? 'inactive' : 'active',
@@ -129,14 +129,14 @@ const tableRows = ref<DemoRow[]>(createMockRows());
 const selectedRowKeys = ref<string[]>([]);
 const switchLoadingId = ref<string | null>(null);
 
-type DemoFormValues = Pick<DemoRow, 'username' | 'realName' | 'email' | 'gender'> & {
+type DemoFormValues = Pick<DemoRow, 'username' | 'displayName' | 'email' | 'gender'> & {
   status: boolean;
 };
 
 function createDefaultFormValues(): DemoFormValues {
   return {
     username: '',
-    realName: '',
+    displayName: '',
     email: '',
     gender: 'male',
     status: true,
@@ -167,7 +167,7 @@ const toolbarConfig = computed(() => ({
 
 const searchFormItems = computed<ProFormItem[]>(() => [
   { name: 'username', label: $t('examples.scaffold.proTableAdvanced.username'), type: 'input' },
-  { name: 'realName', label: $t('examples.scaffold.proTableAdvanced.realName'), type: 'input' },
+  { name: 'displayName', label: $t('examples.scaffold.proTableAdvanced.displayName'), type: 'input' },
   { name: 'email', label: $t('examples.scaffold.proTableAdvanced.email'), type: 'input' },
   {
     name: 'gender',
@@ -210,8 +210,8 @@ const formItems = computed<ProFormItem[]>(() => [
     ],
   },
   {
-    name: 'realName',
-    label: $t('examples.scaffold.proTableAdvanced.realName'),
+    name: 'displayName',
+    label: $t('examples.scaffold.proTableAdvanced.displayName'),
     type: 'input',
     required: true,
   },
@@ -254,8 +254,8 @@ const columns = computed<ProTableColumn[]>(() => [
     width: 150,
   },
   {
-    title: $t('examples.scaffold.proTableAdvanced.realName'),
-    dataIndex: 'realName',
+    title: $t('examples.scaffold.proTableAdvanced.displayName'),
+    dataIndex: 'displayName',
     width: 140,
   },
   {
@@ -328,9 +328,9 @@ const requestTableData = async (params: Record<string, unknown>) => {
     filtered = filtered.filter((item) => item.username.toLowerCase().includes(keyword));
   }
 
-  if (params.realName) {
-    const keyword = String(params.realName).toLowerCase();
-    filtered = filtered.filter((item) => item.realName.toLowerCase().includes(keyword));
+  if (params.displayName) {
+    const keyword = String(params.displayName).toLowerCase();
+    filtered = filtered.filter((item) => item.displayName.toLowerCase().includes(keyword));
   }
 
   if (params.email) {
@@ -390,7 +390,7 @@ const handleCreate = () => {
 const handleEdit = (record: DemoRow) => {
   const initialValues: DemoFormValues = {
     username: record.username,
-    realName: record.realName,
+    displayName: record.displayName,
     email: record.email,
     gender: record.gender,
     status: record.status === 'active',
@@ -413,7 +413,7 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
       const row = tableRows.value.find((item) => item.id === editingId.value);
       if (row) {
         row.username = values.username.trim();
-        row.realName = values.realName.trim();
+        row.displayName = values.displayName.trim();
         row.email = values.email.trim();
         row.gender = values.gender;
         row.status = statusValue;
@@ -424,7 +424,7 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
       tableRows.value.unshift({
         id: newId,
         username: values.username.trim(),
-        realName: values.realName.trim(),
+        displayName: values.displayName.trim(),
         email: values.email.trim(),
         gender: values.gender,
         status: statusValue,
@@ -482,11 +482,11 @@ const handleBatchDelete = () => {
 };
 
 const exportCsv = () => {
-  const headers = ['id', 'username', 'realName', 'email', 'gender', 'status', 'createdAt'];
+  const headers = ['id', 'username', 'displayName', 'email', 'gender', 'status', 'createdAt'];
   const rows = tableRows.value.map((item) => [
     item.id,
     item.username,
-    item.realName,
+    item.displayName,
     item.email,
     item.gender,
     item.status,

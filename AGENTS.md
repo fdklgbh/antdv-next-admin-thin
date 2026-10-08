@@ -24,7 +24,7 @@ mock/
 
 tests/
 ├── e2e/              # End-to-end tests (*.spec.ts) - templates for future Playwright setup
-└── unit/             # Unit tests (*.spec.ts) - templates for future Vitest setup
+└── unit/             # Runnable Vitest unit tests (*.spec.ts)
 ```
 
 ## Build, Test, and Development Commands
@@ -60,6 +60,8 @@ pnpm run format:check     # Check formatting
 ### Testing
 - **Vitest** is configured (`vitest.config.ts`): `environment: 'node'`, `globals: false`
 - Test files: `tests/unit/**/*.spec.ts` — must import `describe`/`it`/`expect` from vitest
+- 请求层回归用例位于 `tests/unit/request-service.spec.ts`：刷新遇到网络故障、超时、503 或普通异常时保留登录态；刷新返回 HTTP 401（真实后端业务码 `20001`）或现有 Mock 的业务码 `401` 时清理登录态并跳转登录。使用真实 `AxiosError` 构造异常，并验证原始错误继续向上传播。
+- 修改请求错误处理或刷新策略后运行 `pnpm run test:unit:run`，不要为满足旧断言而将所有刷新失败都改为退出登录。
 - **Playwright** e2e templates exist in `tests/e2e/` but Playwright is not yet installed
 
 ## Code Style Guidelines
@@ -153,16 +155,22 @@ import type { User, LoginParams } from '@/types/auth'
 | Constants | SCREAMING_SNAKE_CASE | `TOKEN_KEY`, `API_BASE_URL` |
 
 ### Error Handling
-- **Try/catch**: wrap all async operations with meaningful error messages
-- **Axios interceptors**: global error handling in `src/utils/request.ts`
-- **User feedback**: use `message.error()` or `notification.error()` from antdv-next
+- 接口错误统一通过 `src/utils/apiError.ts` 处理。`resolveApiError()` 解析文案，`showApiError()` 展示提示并按异常对象去重；不要重新包装异常后再次弹窗。
+- 优先使用当前语言的 `apiErrors.codes` 文案；未知业务码使用后端中文 `message` 兜底；缺少文案时使用 HTTP 状态、网络异常或通用失败提示。新增业务码时同步维护 `zh-CN`、`en-US`、`ja-JP`、`ko-KR` 四种语言包。
+- `src/utils/request.ts` 默认负责弹窗；页面需要接管时设置 `skipErrorMessage: true`，捕获后仍使用 `showApiError(error)`。成功提示及前端本地校验使用 `$t()` / `t()`，不直接展示后端成功 `message`，不写死中文。
+- 业务错误保留为携带原始响应的 `AxiosError`，不得丢失业务码、HTTP 状态或 `requestId`。下载接口的 JSON 错误可能以 Blob 返回，由请求层解析。
+- HTTP `status` 与业务 `code` 分开处理：真实后端成功码为 `0`，现有 Mock 也接受 `200`；真实后端未认证为 HTTP 401 / code `20001`，无权限为 HTTP 403 / code `20002`。旧 Mock 业务码 `401` 的处理属于已有兼容路径，不作为新增后端接口约定。
+- 受保护请求认证失败时刷新，原请求最多重试一次；刷新遇到网络故障、超时或服务异常时保留登录态并传播错误。刷新明确未认证，或重试仍返回未认证时，清理登录态；遵守 `skipRedirect`。登录和刷新接口本身不得递归触发刷新。
+
 ```ts
+import { getUserInfo } from '@/api/auth'
+import { showApiError } from '@/utils/apiError'
+
 try {
-  const response = await getUserInfo()
+  const response = await getUserInfo({ skipErrorMessage: true })
   // Success path
 } catch (error) {
-  console.error('Failed to fetch user info:', error)
-  message.error('获取用户信息失败')
+  showApiError(error)
 }
 ```
 
@@ -233,7 +241,7 @@ if (canAll(['user.edit', 'user.approve'])) {
 
 1. **Oxlint** lints `src/` and `mock/` — run `pnpm run lint` before committing. Oxfmt handles import sorting automatically.
 2. **Don't suppress TypeScript errors** - fix the root cause instead
-3. **Test files are templates** - don't try to run them without installing test frameworks
+3. **Tests**: Vitest unit tests are runnable with `pnpm run test:unit:run`; only the Playwright e2e files remain templates without installed Playwright dependencies.
 4. **Mock users**: `admin/123456` has full permissions, `user/123456` has limited permissions
 5. **Dynamic routes**: permissions control route visibility via `src/router/guards.ts`
 6. **KeepAlive caching**: managed by `tabs` store - check cached component names

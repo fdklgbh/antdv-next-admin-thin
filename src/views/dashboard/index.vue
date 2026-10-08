@@ -112,7 +112,7 @@ const now = ref(new Date());
 let timer: number | null = null;
 
 const displayName = computed(() => {
-  return authStore.user?.realName || authStore.user?.username || 'Administrator';
+  return authStore.user?.displayName || authStore.user?.username || 'Administrator';
 });
 
 const greetingText = computed(() => {

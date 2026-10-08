@@ -73,7 +73,9 @@
         <div class="login-card">
           <div class="eyebrow">{{ $t('login.securityEyebrow') }}</div>
           <h2 id="login-form-title">{{ $t('login.formTitle') }}</h2>
-          <p class="form-sub">{{ $t('login.formSubtitle') }}</p>
+          <p class="form-sub">
+            {{ $t(isMockMode ? 'login.formSubtitle' : 'login.realFormSubtitle') }}
+          </p>
 
           <a-form
             :model="formState"
@@ -123,6 +125,19 @@
               <a-checkbox v-model:checked="formState.remember">
                 {{ $t('login.remember') }}
               </a-checkbox>
+              <Select
+                v-if="formState.remember"
+                v-model:value="formState.rememberDays"
+                :allow-clear="false"
+                :aria-label="$t('login.rememberDuration')"
+                class="remember-duration"
+                :options="
+                  [7, 15, 30].map((value) => ({
+                    value,
+                    label: $t('login.rememberDays', { days: value }),
+                  }))
+                "
+              />
             </div>
 
             <a-form-item>
@@ -142,7 +157,7 @@
             </a-form-item>
           </a-form>
 
-          <div class="login-demo">
+          <div v-if="isMockMode" class="login-demo">
             <div class="demo-title">
               <CheckCircleOutlined />
               <span>{{ $t('login.demoAccount') }}</span>
@@ -177,11 +192,14 @@
 </template>
 
 <script setup lang="ts">
+import type { RememberDays } from '@/types/auth';
+
 import { CheckCircleOutlined, LockOutlined, UserOutlined } from '@antdv-next/icons';
-import { message } from 'antdv-next';
+import { message, Select } from 'antdv-next';
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { showApiError } from '@/utils/apiError';
 import logoImg from '@/assets/images/logo.png';
 import { SliderCaptcha } from '@/components/Captcha';
 import LanguageSwitch from '@/components/Layout/LanguageSwitch.vue';
@@ -195,14 +213,17 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const settingsStore = useSettingsStore();
+const isMockMode =
+  import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.VITE_DEMO_MODE === 'true';
 
 const loading = ref(false);
 const captchaVerified = ref(false);
 const captchaRef = ref<InstanceType<typeof SliderCaptcha>>();
 const formState = reactive({
-  username: 'admin',
-  password: '123456',
+  username: isMockMode ? 'admin' : '',
+  password: isMockMode ? '123456' : '',
   remember: authStore.rememberSession,
+  rememberDays: 7 as RememberDays,
 });
 
 const capabilityStats = [
@@ -255,13 +276,16 @@ const handleSubmit = async () => {
         ? redirect
         : '/';
     clearSessionState(router);
-    await authStore.login(formState.username, formState.password, formState.remember);
+    await authStore.login(
+      formState.username,
+      formState.password,
+      formState.remember,
+      formState.rememberDays,
+    );
     message.success($t('login.loginSuccess'));
     await router.replace(target);
   } catch (error: unknown) {
-    message.error(
-      (error instanceof Error ? error.message : String(error)) || $t('login.loginFailed'),
-    );
+    showApiError(error, $t('login.loginFailed'));
     captchaVerified.value = false;
     captchaRef.value?.reset();
   } finally {
@@ -799,14 +823,23 @@ const handleSubmit = async () => {
 
 .login-options {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   min-height: 24px;
   margin: -2px 0 14px;
 
   :deep(.ant-checkbox-wrapper) {
     color: var(--login-ink-3);
     font-size: var(--font-size-sm);
+  }
+
+  .remember-duration {
+    width: 160px;
+    max-width: 100%;
+    flex-shrink: 0;
+    margin-inline-start: auto;
   }
 }
 

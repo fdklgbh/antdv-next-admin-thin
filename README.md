@@ -260,7 +260,22 @@ interface ApiResponse<T> {
 }
 ```
 
-`src/utils/request.ts` 的 Axios 响应拦截器会返回 `response.data`，并将 `{ code !== 200 }` 视为错误。业务 API 方法应按调用方实际消费的数据结构声明类型。
+`src/utils/request.ts` 中的 `request` 方法返回 `response.data`，业务码 `0` 和 `200` 表示成功。业务错误以保留原始响应的 `AxiosError` 抛出，调用方可读取业务码、HTTP 状态和 `requestId`。
+
+接口错误通过 `src/utils/apiError.ts` 统一解析：优先使用当前语言的 `apiErrors.codes` 文案；未知业务码使用后端中文 `message` 兜底；缺少文案时按 HTTP 状态或网络异常提供本地化提示。新增业务码时同步补齐四种语言包。请求层默认提示错误，页面捕获后使用 `showApiError(error)` 可避免重复弹窗；需要页面自行接管时设置 `skipErrorMessage: true`。成功提示使用页面语言包，不直接展示后端 `message`。
+
+### 刷新失败与登录态
+
+HTTP 状态与业务码分别判断：真实后端未认证为 HTTP 401 / code `20001`，登录凭据错误为 HTTP 401 / code `20004`。现有 Mock 的业务码 `401` 仍由请求层识别，不应将其用于新增后端接口。
+
+| 场景 | 前端处理 |
+|---|---|
+| 受保护请求返回未认证 | 尝试刷新，原请求最多重试一次 |
+| 刷新遇到断网、超时、503 或其他非未认证异常 | 保留登录态，传播原始错误，按配置提示失败 |
+| 刷新明确未认证，或重试后仍未认证 | 清理登录态；未设置 `skipRedirect` 时跳转登录页 |
+| 登录或刷新接口自身返回未认证 | 直接传播错误，不递归刷新；登录页负责提示 |
+
+对应回归用例位于 `tests/unit/request-service.spec.ts`，覆盖刷新异常分类、登录态清理、跳转及错误传播。修改这些行为后运行 `pnpm run test:unit:run`。多语言提示按展示时的当前语言解析，不根据中文 `message` 匹配业务行为。
 
 ## Mock 数据
 
@@ -311,9 +326,11 @@ pnpm run test:unit:run   # one-shot
 - 主题相关样式优先使用 `src/assets/styles/variables.css` 中的 CSS Variables；SCSS 和 Tailwind 可用于局部样式与工具类。
 - Antdv 组件通过 `unplugin-vue-components` 和 `AntdvNextResolver` 自动导入，但 `Select`、`DatePicker`、`DateRangePicker` 被排除，相关封装或使用需注意显式处理。
 - 全局默认组件属性在 `src/components/Global/defaultComponentProps.ts` 注册，修改基础表单控件行为前应先检查这里。
-- 勾选“记住登录状态”时，登录凭据保存在 localStorage；未勾选时保存在 sessionStorage。语言、主题、Tabs 等偏好仍保存在 localStorage。项目不会保存密码。
-- 登录接口提交 `remember`。开发 Mock 在勾选时设置 7 天的 HttpOnly 刷新 Cookie，续期时延长有效期；未勾选时设置会话 Cookie。真实后端需实现相同语义；跨域部署需允许凭据请求并正确配置 Cookie 的 Secure / SameSite。纯浏览器 Demo 的刷新凭据仍仅保存在内存，不能替代服务端持久会话。
-- 访问受保护页面时先恢复或续期会话，再恢复权限路由；HTTP 401 和业务 `code: 401` 共用续期流程，并发请求共用一次续期，原请求最多重试一次。续期失败回到登录页，成功登录后返回原站内路径（保留查询参数和 hash）。
+- Access JWT 有效期为 15 分钟，与过期时间、会话 ID、版本和记住登录状态一起保存在 localStorage 的 `auth_session_v1` 对象中。页面监听 storage 事件并在后台恢复时核对版本；账号变化或退出会重新加载其他页面，旧请求不能跨会话重试。localStorage 不是锁，多页可以同时刷新。
+- “记住登录”右侧可选 7/15/30 天，默认 7 天。登录提交 `remember`，勾选时同时提交 `rememberDays`。HttpOnly Refresh Token 在会话期间保持不变，不轮换、不滑动延期；未勾选时使用会话 Cookie，服务端最长保留 24 小时。短期 JWT 在关闭浏览器后仍可能保留至过期。
+- 真实后端使用 `code: 0` 表示成功；请求封装也接受现有业务 Mock 的 `code: 200`。登录和刷新响应的 data 包含 `token`、`expiresIn`（秒）、`sessionId`、`remember`，不包含 Refresh Token。退出仅撤销刷新会话，已签发 JWT 到期前仍有效。
+- 访问受保护页面时，即使本地没有登录标记，也尝试通过 Cookie 恢复。明确退出后不自动恢复。401 触发刷新、原请求最多重试一次；刷新明确未认证或重试仍未认证时清空登录，网络故障或 5xx 保留会话供重试。
+- 真实后端建议同源反向代理部署；HTTPS 下启用 Secure Cookie。跨域部署需另行配置 CORS 和 Cookie 属性。纯浏览器 Demo 的刷新凭据仅存于内存，不能验证跨页 HttpOnly Cookie；本地开发 Mock 支持固定 Cookie、绝对过期与退出撤销，但不是生产鉴权实现。
 - 修改 `asyncRoutes`、权限码或角色权限后，建议退出登录或刷新会话再验证，避免旧的动态路由和 Tabs 缓存影响判断。
 
 ## 模块划分

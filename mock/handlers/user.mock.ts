@@ -104,7 +104,7 @@ export default defineMock([
         id: faker.string.uuid(),
         username: userData.username || `user_${faker.string.alphanumeric(6)}`,
         email: userData.email || faker.internet.email(),
-        realName: userData.realName || faker.person.fullName(),
+        displayName: userData.displayName || faker.person.fullName(),
         avatar: userData.avatar || faker.image.avatar(),
         phone: userData.phone || `1${faker.string.numeric(10)}`,
         gender: userData.gender || 'male',

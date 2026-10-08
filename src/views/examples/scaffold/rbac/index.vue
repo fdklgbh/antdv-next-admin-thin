@@ -95,8 +95,8 @@
           <strong>{{ emailText }}</strong>
         </div>
         <div class="field-row">
-          <span>{{ $t('examples.scaffold.rbac.realNameLabel') }}</span>
-          <strong>{{ authStore.user?.realName || '-' }}</strong>
+          <span>{{ $t('examples.scaffold.rbac.displayNameLabel') }}</span>
+          <strong>{{ authStore.user?.displayName || '-' }}</strong>
         </div>
       </div>
 

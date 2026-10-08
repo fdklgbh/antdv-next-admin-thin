@@ -58,7 +58,8 @@ import {
 import { message, Modal } from 'antdv-next';
 import { computed, onMounted, ref } from 'vue';
 
-import { getRoleList } from '@/api/role';
+import { showApiError } from '@/utils/apiError';
+import { getRoleOptions } from '@/api/role';
 import { createUser, deleteUser, getUserList, updateUser } from '@/api/user';
 import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
@@ -67,8 +68,9 @@ import { $t } from '@/locales';
 import { exportToCSV, parseCSV } from '@/utils/export';
 
 type UserFormValues = {
+  password: string;
   username: string;
-  realName: string;
+  displayName: string;
   email: string;
   phone: string;
   gender: 'male' | 'female';
@@ -148,8 +150,8 @@ const columns = computed((): ProTableColumn[] => [
     fixed: 'left',
   },
   {
-    title: $t('user.realName'),
-    dataIndex: 'realName',
+    title: $t('user.displayName'),
+    dataIndex: 'displayName',
     width: 140,
   },
   {
@@ -223,8 +225,16 @@ const formItems = computed<ProFormItem[]>(() => [
     ],
   },
   {
-    name: 'realName',
-    label: $t('user.realName'),
+    name: 'password',
+    label: $t('login.password'),
+    type: 'password',
+    hidden: Boolean(editingUserId.value),
+    required: !editingUserId.value,
+    rules: [{ min: 8, max: 72, message: $t('user.passwordLength') }],
+  },
+  {
+    name: 'displayName',
+    label: $t('user.displayName'),
     type: 'input',
     required: true,
   },
@@ -287,8 +297,9 @@ const formItems = computed<ProFormItem[]>(() => [
 
 function createDefaultFormValues(): UserFormValues {
   return {
+    password: '',
     username: '',
-    realName: '',
+    displayName: '',
     email: '',
     phone: '',
     gender: 'male',
@@ -327,7 +338,7 @@ const fetchTableData = async (params: Record<string, unknown>) => {
 };
 
 const fetchRoleOptions = async () => {
-  const response = await getRoleList({ current: 1, pageSize: 200 });
+  const response = await getRoleOptions();
   roleOptions.value = response.data.list;
 };
 
@@ -346,8 +357,9 @@ const handleCreate = () => {
 const handleEdit = (record: User) => {
   const statusStr = record.status || 'active';
   const initialValues: UserFormValues = {
+    password: '',
     username: record.username,
-    realName: record.realName,
+    displayName: record.displayName,
     email: record.email,
     phone: record.phone,
     gender: record.gender || 'male',
@@ -379,9 +391,10 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
 
   const selectedRoles = roleOptions.value.filter((role) => values.roleIds?.includes(role.id));
 
-  const payload: Partial<User> = {
+  const payload: Partial<User> & { password?: string } = {
+    password: editingUserId.value ? undefined : values.password,
     username: values.username?.trim(),
-    realName: values.realName?.trim(),
+    displayName: values.displayName?.trim(),
     email: values.email?.trim(),
     phone: values.phone?.trim(),
     gender: values.gender,
@@ -419,7 +432,7 @@ const handleExport = async () => {
     exportToCSV(
       [
         { title: $t('user.username'), dataIndex: 'username' },
-        { title: $t('user.realName'), dataIndex: 'realName' },
+        { title: $t('user.displayName'), dataIndex: 'displayName' },
         { title: $t('user.email'), dataIndex: 'email' },
         { title: $t('user.phone'), dataIndex: 'phone' },
         {
@@ -446,8 +459,8 @@ const handleExport = async () => {
       `${$t('user.title')}_${new Date().toISOString().slice(0, 10)}`,
     );
     message.success($t('user.exportSuccess'));
-  } catch {
-    message.error($t('user.exportFailed'));
+  } catch (error: unknown) {
+    showApiError(error, $t('user.exportFailed'));
   }
 };
 
@@ -460,11 +473,12 @@ const handleImport = async (file: File) => {
       return false;
     }
     const header = rows[0];
-    const usernameIdx = header.findIndex((h) => h.includes('Username') || h.includes('username'));
-    const realNameIdx = header.findIndex((h) => h.includes('Name') || h.includes('name'));
-    const emailIdx = header.findIndex((h) => h.includes('Email') || h.includes('email'));
+    const usernameIdx = header.findIndex((h) => ['username', '用户名'].includes(h.trim().toLowerCase()));
+    const displayNameIdx = header.findIndex((h) => ['displayname', 'display name', '显示名称'].includes(h.trim().toLowerCase()));
+    const passwordIdx = header.findIndex((h) => ['password', '密码'].includes(h.trim().toLowerCase()));
+    const emailIdx = header.findIndex((h) => ['email', '邮箱'].includes(h.trim().toLowerCase()));
 
-    if (usernameIdx === -1 || realNameIdx === -1 || emailIdx === -1) {
+    if (usernameIdx === -1 || displayNameIdx === -1 || emailIdx === -1 || passwordIdx === -1) {
       message.error($t('user.importFormatError'));
       return false;
     }
@@ -475,7 +489,9 @@ const handleImport = async (file: File) => {
       .map((row) =>
         createUser({
           username: row[usernameIdx],
-          realName: row[realNameIdx] || '',
+          password: row[passwordIdx],
+          roles: [],
+          displayName: row[displayNameIdx] || '',
           email: row[emailIdx] || '',
           status: 'active',
         }),

@@ -2,12 +2,16 @@ import type { MenuHistoryItem } from '@/types/navigation';
 import type { AppRouteRecordRaw } from '@/types/router';
 import type { Router, RouteLocationNormalized, RouteRecordRaw } from 'vue-router';
 
+import { message } from 'antdv-next';
+
 import { useAuthStore } from '@/stores/auth';
 import { useDictStore } from '@/stores/dict';
 import { usePermissionStore } from '@/stores/permission';
 import { useTabsStore } from '@/stores/tabs';
+import { readAuthSession, SessionChangedError } from '@/utils/authSession';
 import { resolveLocaleText } from '@/utils/i18n';
 import { normalizeMenuHistoryItems } from '@/utils/menuPreferences';
+import { isUnauthorized } from '@/utils/request';
 import { clearSessionState } from '@/utils/session';
 
 import { shouldRecoverDynamicRoute } from './routeRecovery';
@@ -191,7 +195,9 @@ export function setupRouterGuards(router: Router) {
     const requiresAuth = to.meta.requiresAuth !== false;
     // Resolve the refresh cookie before restoring cached permissions or dynamic routes.
     const shouldRestoreSession =
-      requiresAuth || (to.name === 'NotFoundCatchAll' && authStore.canAttemptRefresh);
+      requiresAuth ||
+      (to.name === 'NotFoundCatchAll' && authStore.canAttemptRefresh) ||
+      (to.path === '/login' && readAuthSession()?.status === 'active');
     if (shouldRestoreSession) {
       try {
         if (!(await authStore.restoreSession())) {
@@ -199,10 +205,15 @@ export function setupRouterGuards(router: Router) {
         }
       } catch (error) {
         console.error('Failed to restore session:', error);
-        clearSessionState(router);
+        if (error instanceof SessionChangedError) return false;
+        if (isUnauthorized(error)) clearSessionState(router);
+        else message.error('登录会话恢复失败，请检查网络后重试');
+        if (to.path === '/login') return true;
         return { path: '/login', query: { redirect: to.fullPath } };
       }
     }
+
+    if (to.path === '/login' && shouldRestoreSession && authStore.user) return '/';
 
     // A dynamic route may initially match the catch-all on a fresh page load.
     // Restore permission routes first, then resolve the unchanged target again.
@@ -219,7 +230,9 @@ export function setupRouterGuards(router: Router) {
         return { path: to.path, query: to.query, hash: to.hash, replace: true };
       } catch (error) {
         console.error('Failed to recover dynamic route:', error);
-        return '/403';
+        if (error instanceof SessionChangedError) return false;
+        message.error('页面初始化失败，请刷新后重试');
+        return '/500';
       }
     }
 
@@ -244,7 +257,9 @@ export function setupRouterGuards(router: Router) {
           return { ...to, replace: true };
         } catch (error) {
           console.error('Failed to generate routes:', error);
-          return '/403';
+          if (error instanceof SessionChangedError) return false;
+          message.error('页面初始化失败，请刷新后重试');
+          return '/500';
         }
       }
 

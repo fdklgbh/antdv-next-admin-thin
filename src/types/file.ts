@@ -16,7 +16,7 @@ export interface SysFile {
   /** 文件扩展名 */
   ext: string;
   /** 存储方式 */
-  storage: 'local' | 'oss' | 'cos';
+  storage: 'local' | 'oss' | 'cos' | 'database';
   /** 上传者 */
   uploader: string;
   /** 备注 */

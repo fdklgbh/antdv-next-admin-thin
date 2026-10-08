@@ -157,6 +157,7 @@ import {
   updateDictData,
   deleteDictData,
 } from '@/api/dict';
+import { showApiError } from '@/utils/apiError';
 import ProSplitLayout from '@/components/Pro/ProSplitLayout/index.vue';
 import ProStatus from '@/components/Pro/ProStatus/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
@@ -245,7 +246,7 @@ const columns: ProTableColumn[] = [
 const loadDictTypes = async () => {
   try {
     const response = await getDictTypes();
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       dictTypes.value = response.data;
       if (dictTypes.value.length > 0 && !selectedTypeCode.value) {
         selectedTypeCode.value = dictTypes.value[0].code;
@@ -264,7 +265,7 @@ const loadData = async (params: Record<string, unknown>) => {
       page: params.current as number,
       pageSize: params.pageSize as number,
     });
-    if (response.code === 200) {
+    if (response.code === 0 || response.code === 200) {
       return {
         data: response.data.list,
         total: response.data.total,
@@ -311,15 +312,15 @@ const handleDeleteType = (type: DictType) => {
     onOk: async () => {
       try {
         const response = await deleteDictType(type.id);
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('dict.deleteSuccess'));
           loadDictTypes();
           if (selectedTypeCode.value === type.code) {
             selectedTypeCode.value = '';
           }
         }
-      } catch (_error: unknown) {
-        message.error(t('dict.deleteFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('dict.deleteFailed'));
       }
     },
   });
@@ -335,21 +336,21 @@ const handleTypeSubmit = async () => {
   try {
     if (typeForm.value.id) {
       const response = await updateDictType(typeForm.value.id, typeForm.value);
-      if (response.code === 200) {
+      if (response.code === 0 || response.code === 200) {
         message.success(t('dict.updateSuccess'));
         typeModalVisible.value = false;
         loadDictTypes();
       }
     } else {
       const response = await createDictType(typeForm.value);
-      if (response.code === 200) {
+      if (response.code === 0 || response.code === 200) {
         message.success(t('dict.createSuccess'));
         typeModalVisible.value = false;
         loadDictTypes();
       }
     }
-  } catch (_error: unknown) {
-    message.error(t('dict.operateFailed'));
+  } catch (error: unknown) {
+    showApiError(error, t('dict.operateFailed'));
   }
 };
 
@@ -380,12 +381,12 @@ const handleDelete = (record: DictData) => {
     onOk: async () => {
       try {
         const response = await deleteDictData(record.id);
-        if (response.code === 200) {
+        if (response.code === 0 || response.code === 200) {
           message.success(t('dict.deleteSuccess'));
           dictStore.refreshDictData();
         }
-      } catch (_error: unknown) {
-        message.error(t('dict.deleteFailed'));
+      } catch (error: unknown) {
+        showApiError(error, t('dict.deleteFailed'));
       }
     },
   });
@@ -401,21 +402,21 @@ const handleDataSubmit = async () => {
   try {
     if (dataForm.value.id) {
       const response = await updateDictData(dataForm.value.id, dataForm.value);
-      if (response.code === 200) {
+      if (response.code === 0 || response.code === 200) {
         message.success(t('dict.updateSuccess'));
         dataModalVisible.value = false;
         dictStore.refreshDictData();
       }
     } else {
       const response = await createDictData(dataForm.value);
-      if (response.code === 200) {
+      if (response.code === 0 || response.code === 200) {
         message.success(t('dict.createSuccess'));
         dataModalVisible.value = false;
         dictStore.refreshDictData();
       }
     }
-  } catch (_error: unknown) {
-    message.error(t('dict.operateFailed'));
+  } catch (error: unknown) {
+    showApiError(error, t('dict.operateFailed'));
   }
 };
 
