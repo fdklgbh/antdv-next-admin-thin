@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, type PropType } from 'vue';
+import { computed, type PropType } from 'vue';
 
 import JsonInput from '@/components/JsonInput/index.vue';
 import { getLocale, SUPPORTED_LOCALES } from '@/locales';
@@ -89,9 +89,15 @@ const localeLabelMap = computed(() => {
   return map;
 });
 
-const innerValue = ref<Record<string, string>>({});
-const valueType = ref<'string' | 'object'>('object');
-const syncingFromProps = ref(false);
+const innerValue = computed<Record<string, string>>({
+  get: () => normalizeValue(props.value),
+  set: (value) => {
+    const nextValue =
+      typeof props.value === 'string' ? JSON.stringify(value) : value;
+    emit('update:value', nextValue);
+    emit('change', nextValue);
+  },
+});
 
 // Initialize default value with all locales
 function getDefaultValue(): Record<string, string> {
@@ -100,17 +106,6 @@ function getDefaultValue(): Record<string, string> {
     defaultValue[item.locale] = '';
   });
   return defaultValue;
-}
-
-function isRecordEqual(a: Record<string, string>, b: Record<string, string>): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-
-  if (aKeys.length !== bKeys.length) {
-    return false;
-  }
-
-  return aKeys.every((key) => a[key] === b[key]);
 }
 
 // Parse and normalize value
@@ -153,40 +148,4 @@ function normalizeValue(
   return parsed;
 }
 
-// Watch for external value changes
-watch(
-  () => props.value,
-  (newValue) => {
-    valueType.value = typeof newValue === 'string' ? 'string' : 'object';
-    const normalized = normalizeValue(newValue);
-
-    if (isRecordEqual(normalized, innerValue.value)) {
-      return;
-    }
-
-    syncingFromProps.value = true;
-    innerValue.value = normalized;
-  },
-  { immediate: true },
-);
-
-// Watch for internal value changes and emit
-watch(
-  () => innerValue.value,
-  (newValue) => {
-    if (syncingFromProps.value) {
-      syncingFromProps.value = false;
-      return;
-    }
-
-    if (isRecordEqual(newValue, normalizeValue(props.value))) {
-      return;
-    }
-
-    const returnValue = valueType.value === 'string' ? JSON.stringify(newValue) : newValue;
-    emit('update:value', returnValue);
-    emit('change', returnValue);
-  },
-  { deep: true },
-);
 </script>

@@ -308,6 +308,23 @@ const formItems = computed<ProFormItem[]>(() => [
         type: 'custom',
         render: I18nInput,
         required: true,
+        rules: [
+          {
+            validator: (_rule: unknown, value: unknown) => {
+              const localizedName =
+                typeof value === 'object' && value !== null
+                  ? (value as Record<string, unknown>)['zh-CN']
+                  : undefined;
+              const hasName =
+                typeof value === 'string'
+                  ? value.trim().length > 0
+                  : typeof localizedName === 'string' && localizedName.trim().length > 0;
+              return hasName
+                ? Promise.resolve()
+                : Promise.reject(new Error($t('permission.nameRequired')));
+            },
+          },
+        ],
         props: {
           placeholder: $t('permission.name'),
           modalTitle: $t('permission.name'),
