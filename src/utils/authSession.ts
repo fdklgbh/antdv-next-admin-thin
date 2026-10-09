@@ -1,5 +1,18 @@
 export const AUTH_SESSION_KEY = 'auth_session_v1';
 
+export function resolveLoginRedirectTarget(redirect: unknown): string {
+  if (
+    typeof redirect === 'string' &&
+    redirect.startsWith('/') &&
+    !redirect.startsWith('//') &&
+    !redirect.includes('\\') &&
+    [...redirect].every((character) => character.charCodeAt(0) >= 32) &&
+    !/^\/login\/?(?:[?#]|$)/i.test(redirect)
+  )
+    return redirect;
+  return '/';
+}
+
 export interface AuthSession {
   version: string;
   status: 'active' | 'anonymous' | 'changing';
@@ -16,8 +29,13 @@ export class SessionChangedError extends Error {
 }
 
 export function readAuthSession(): AuthSession | null {
-  if (typeof localStorage === 'undefined') return null;
-  const raw = localStorage.getItem(AUTH_SESSION_KEY);
+  if (typeof localStorage === 'undefined' || typeof sessionStorage === 'undefined') return null;
+  return readStoredSession(
+    localStorage.getItem(AUTH_SESSION_KEY) ?? sessionStorage.getItem(AUTH_SESSION_KEY),
+  );
+}
+
+function readStoredSession(raw: string | null): AuthSession | null {
   if (!raw) return null;
   try {
     const value: unknown = JSON.parse(raw);
@@ -40,7 +58,7 @@ export function readAuthSession(): AuthSession | null {
 }
 
 export function sessionVersion(): string {
-  return readAuthSession()?.version ?? 'initial';
+  return remoteSessionVersion ?? readAuthSession()?.version ?? 'initial';
 }
 
 export function assertSessionVersion(version: string): void {
@@ -52,6 +70,21 @@ export function newSessionVersion(): string {
 }
 
 let pageVersion: string | undefined;
+let remoteSessionVersion: string | undefined;
+const sessionListeners = new Set<() => void>();
+const sessionChannel =
+  typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel('auth-session');
+
+sessionChannel?.addEventListener('message', (event: MessageEvent<unknown>) => {
+  if (typeof event.data !== 'string') return;
+  remoteSessionVersion = event.data;
+  sessionListeners.forEach((listener) => listener());
+});
+
+export function subscribeToSessionChanges(listener: () => void): () => void {
+  sessionListeners.add(listener);
+  return () => sessionListeners.delete(listener);
+}
 
 export function pageSessionVersion(): string {
   pageVersion ??= sessionVersion();
@@ -59,6 +92,35 @@ export function pageSessionVersion(): string {
 }
 
 export function writeAuthSession(session: AuthSession): void {
-  localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+  if (session.status === 'anonymous') {
+    const hadActiveSession = readAuthSession()?.status === 'active';
+    localStorage.removeItem(AUTH_SESSION_KEY);
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+    pageVersion = session.version;
+    remoteSessionVersion = session.version;
+    if (hadActiveSession) sessionChannel?.postMessage(session.version);
+    return;
+  }
+
+  const serialized = JSON.stringify(session);
+  if (session.remember) {
+    localStorage.setItem(AUTH_SESSION_KEY, serialized);
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+  } else {
+    sessionStorage.setItem(AUTH_SESSION_KEY, serialized);
+    localStorage.removeItem(AUTH_SESSION_KEY);
+  }
   pageVersion = session.version;
+  remoteSessionVersion = session.version;
+  if (session.status === 'active') sessionChannel?.postMessage(session.version);
+}
+
+export function clearTransientAuthSession(): void {
+  if (typeof localStorage !== 'undefined') {
+    const persisted = readStoredSession(localStorage.getItem(AUTH_SESSION_KEY));
+    if (!persisted?.remember) localStorage.removeItem(AUTH_SESSION_KEY);
+  }
+  if (typeof sessionStorage !== 'undefined') {
+    sessionStorage.removeItem(AUTH_SESSION_KEY);
+  }
 }

@@ -9,6 +9,7 @@ import { setupDirectives } from './directives';
 import i18n, { localeReady } from './locales';
 import router from './router';
 import { service } from './utils/request';
+import { clearTransientAuthSession } from './utils/authSession';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
 import 'antdv-next/dist/reset.css';
@@ -35,6 +36,7 @@ function restoreGitHubPagesRedirect() {
 
 export async function bootstrap() {
   await localeReady;
+  clearTransientAuthSession();
 
   if (import.meta.env.VITE_DEMO_MODE === 'true') {
     const { setupBrowserMock } = await import('./mock/browser');

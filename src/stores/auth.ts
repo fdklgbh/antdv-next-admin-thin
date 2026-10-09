@@ -14,6 +14,7 @@ import {
   pageSessionVersion,
   assertSessionVersion,
   newSessionVersion,
+  subscribeToSessionChanges,
   SessionChangedError,
   type AuthSession,
 } from '@/utils/authSession';
@@ -84,10 +85,12 @@ export const useAuthStore = defineStore('auth', () => {
     if (document.visibilityState === 'visible') syncSession();
   }
   window.addEventListener('storage', onStorage);
+  const unsubscribeSessionChanges = subscribeToSessionChanges(syncSession);
   window.addEventListener('pageshow', syncSession);
   document.addEventListener('visibilitychange', onVisible);
   onScopeDispose(() => {
     window.removeEventListener('storage', onStorage);
+    unsubscribeSessionChanges();
     window.removeEventListener('pageshow', syncSession);
     document.removeEventListener('visibilitychange', onVisible);
   });
@@ -164,7 +167,7 @@ export const useAuthStore = defineStore('auth', () => {
         sessionId: result.data.sessionId,
         remember: result.data.remember,
       });
-      const info = await getUserInfo();
+      const info = await getUserInfo({ sessionVersion: completedVersion });
       assertSessionVersion(completedVersion);
       setUserInfo(info.data);
     } catch (error) {

@@ -208,6 +208,7 @@ import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
 import { clearSessionState } from '@/utils/session';
+import { resolveLoginRedirectTarget } from '@/utils/authSession';
 
 const router = useRouter();
 const route = useRoute();
@@ -264,17 +265,7 @@ const handleSubmit = async () => {
   if (!captchaVerified.value || loading.value) return;
   loading.value = true;
   try {
-    const redirect = route.query.redirect;
-    // Accept only internal paths and avoid returning to the login page itself.
-    const target =
-      typeof redirect === 'string' &&
-      redirect.startsWith('/') &&
-      !redirect.startsWith('//') &&
-      !redirect.includes('\\') &&
-      [...redirect].every((character) => character.charCodeAt(0) >= 32) &&
-      !/^\/login\/?(?:[?#]|$)/i.test(redirect)
-        ? redirect
-        : '/';
+    const target = resolveLoginRedirectTarget(route.query.redirect);
     clearSessionState(router);
     await authStore.login(
       formState.username,

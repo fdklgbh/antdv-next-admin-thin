@@ -8,7 +8,11 @@ import { useAuthStore } from '@/stores/auth';
 import { useDictStore } from '@/stores/dict';
 import { usePermissionStore } from '@/stores/permission';
 import { useTabsStore } from '@/stores/tabs';
-import { readAuthSession, SessionChangedError } from '@/utils/authSession';
+import {
+  readAuthSession,
+  resolveLoginRedirectTarget,
+  SessionChangedError,
+} from '@/utils/authSession';
 import { resolveLocaleText } from '@/utils/i18n';
 import { normalizeMenuHistoryItems } from '@/utils/menuPreferences';
 import { isUnauthorized } from '@/utils/request';
@@ -140,6 +144,11 @@ function shouldAddTab(route: RouteLocationNormalized) {
   return Boolean(route.name && route.meta.requiresAuth !== false && !route.meta.hidden);
 }
 
+function redirectAfterSessionChange(route: RouteLocationNormalized) {
+  if (route.path === '/login') return true;
+  return { path: '/login', query: { redirect: route.fullPath }, replace: true } as const;
+}
+
 function recordMenuHistory(route: RouteLocationNormalized) {
   let history: MenuHistoryItem[] = [];
   try {
@@ -197,7 +206,8 @@ export function setupRouterGuards(router: Router) {
     const shouldRestoreSession =
       requiresAuth ||
       (to.name === 'NotFoundCatchAll' && authStore.canAttemptRefresh) ||
-      (to.path === '/login' && readAuthSession()?.status === 'active');
+      (to.path === '/login' && authStore.canAttemptRefresh &&
+        (readAuthSession()?.status === 'active' || Boolean(to.query.redirect)));
     if (shouldRestoreSession) {
       try {
         if (!(await authStore.restoreSession())) {
@@ -205,7 +215,7 @@ export function setupRouterGuards(router: Router) {
         }
       } catch (error) {
         console.error('Failed to restore session:', error);
-        if (error instanceof SessionChangedError) return false;
+        if (error instanceof SessionChangedError) return redirectAfterSessionChange(to);
         if (isUnauthorized(error)) clearSessionState(router);
         else message.error('登录会话恢复失败，请检查网络后重试');
         if (to.path === '/login') return true;
@@ -213,7 +223,8 @@ export function setupRouterGuards(router: Router) {
       }
     }
 
-    if (to.path === '/login' && shouldRestoreSession && authStore.user) return '/';
+    if (to.path === '/login' && shouldRestoreSession && authStore.user)
+      return resolveLoginRedirectTarget(to.query.redirect);
 
     // A dynamic route may initially match the catch-all on a fresh page load.
     // Restore permission routes first, then resolve the unchanged target again.
@@ -230,7 +241,7 @@ export function setupRouterGuards(router: Router) {
         return { path: to.path, query: to.query, hash: to.hash, replace: true };
       } catch (error) {
         console.error('Failed to recover dynamic route:', error);
-        if (error instanceof SessionChangedError) return false;
+        if (error instanceof SessionChangedError) return redirectAfterSessionChange(to);
         message.error('页面初始化失败，请刷新后重试');
         return '/500';
       }
@@ -257,7 +268,7 @@ export function setupRouterGuards(router: Router) {
           return { ...to, replace: true };
         } catch (error) {
           console.error('Failed to generate routes:', error);
-          if (error instanceof SessionChangedError) return false;
+          if (error instanceof SessionChangedError) return redirectAfterSessionChange(to);
           message.error('页面初始化失败，请刷新后重试');
           return '/500';
         }
