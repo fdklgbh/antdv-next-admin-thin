@@ -609,7 +609,9 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
     code: values.code?.trim(),
     type: values.type,
     description: values.description?.trim(),
-    parentId: values.parentId,
+    parentId:
+      values.parentId ??
+      (modalMode.value === 'edit' ? editingPermission.value?.parentId : undefined),
     status: values.status ? 'active' : 'inactive',
     visible: values.visible,
     sort: Number(values.sort ?? 0),
