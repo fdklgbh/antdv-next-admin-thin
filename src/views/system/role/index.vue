@@ -11,9 +11,10 @@
         defaultCollapsed: true,
       }"
       row-key="id"
+      :has-permission="can"
     >
       <template #toolbar-actions>
-        <a-button type="primary" @click="handleCreate">
+        <a-button v-permission="'system.role.create'" type="primary" @click="handleCreate">
           <PlusOutlined /> {{ $t('role.createRole') }}
         </a-button>
       </template>
@@ -51,14 +52,23 @@ import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
 import { $t, getLocale } from '@/locales';
+import { usePermission } from '@/composables/usePermission';
+import { useAuthStore } from '@/stores/auth';
 import { resolveLocalizedText } from '@/utils/localizedText';
 
+import {
+  collectSelectedPermissionCodes,
+  resolveEditablePermissionIds,
+  resolvePermissionNodeTitle,
+} from './permissionSelection';
 import { getPermissionTypePresentation } from './permissionTypePresentation';
+import { canManageRole as canManageRoleRecord, getHighestRoleLevel } from '../roleLevel';
 
 type RoleFormValues = {
   name: string;
   code: string;
   description: string;
+  level: number;
   permissionIds: string[];
 };
 
@@ -66,6 +76,12 @@ type PermissionOption = {
   label: string;
   value: string;
   children?: PermissionOption[];
+};
+
+type RolePermissionRef = Pick<Permission, 'code'>;
+
+type RoleSavePayload = Omit<Partial<Role>, 'permissions'> & {
+  permissions: RolePermissionRef[];
 };
 
 const tableRef = ref<{
@@ -85,6 +101,14 @@ const {
 const submitting = ref(false);
 const editingRoleId = computed(() => editingRole.value?.id ?? null);
 const permissionTree = ref<Permission[]>([]);
+const permissionTreeLoaded = ref(false);
+
+const authStore = useAuthStore();
+const { can } = usePermission();
+/** 当前登录用户的最高角色优先级（super_admin 为 100）。 */
+const myRoleLevel = computed(() => getHighestRoleLevel(authStore.user?.roles));
+/** 不能管理同级、更高优先级以及超级管理员角色。 */
+const canManageRole = (record: Role): boolean => canManageRoleRecord(record, myRoleLevel.value);
 
 const toolbarConfig = computed(() => ({
   title: $t('role.title'),
@@ -123,8 +147,9 @@ const permissionMap = computed(() => {
 });
 
 const renderPermissionTreeTitle: NonNullable<TreeSelectProps['treeTitleRender']> = (nodeData) => {
-  const title = String(nodeData.title ?? '');
-  const permission = permissionMap.value.get(String(nodeData.value));
+  const title = resolvePermissionNodeTitle(nodeData);
+  const permission =
+    nodeData == null ? undefined : permissionMap.value.get(String(nodeData.value));
   const presentation = getPermissionTypePresentation(permission?.type);
 
   if (!presentation) {
@@ -176,6 +201,11 @@ const columns = computed<ProTableColumn[]>(() => [
     dataIndex: 'description',
   },
   {
+    title: $t('role.level'),
+    dataIndex: 'level',
+    width: 100,
+  },
+  {
     title: $t('role.permissions'),
     dataIndex: 'permissionCount',
     width: 120,
@@ -195,15 +225,16 @@ const columns = computed<ProTableColumn[]>(() => [
       {
         label: $t('common.edit'),
         icon: EditOutlined,
-        hidden: (record) => record.code === 'super_admin',
+        permission: 'system.role.edit',
+        hidden: (record) => !canManageRole(record as unknown as Role),
         onClick: (record) => handleEdit(record as unknown as Role),
       },
       {
         label: $t('common.delete'),
         icon: DeleteOutlined,
+        permission: 'system.role.delete',
         danger: true,
-        hidden: (record) =>
-          ['super_admin', 'admin', 'manager', 'user', 'guest'].includes(String(record.code)),
+        hidden: (record) => !canManageRole(record as unknown as Role),
         onClick: (record) => handleDelete(record as unknown as Role),
       },
     ],
@@ -228,6 +259,33 @@ const formItems = computed<ProFormItem[]>(() => [
     rules: [
       { required: true, message: $t('role.codeRequired') },
       { pattern: /^[a-zA-Z0-9_.-]+$/, message: $t('role.codePattern') },
+    ],
+  },
+  {
+    name: 'level',
+    label: $t('role.level'),
+    type: 'number',
+    required: true,
+    props: {
+      min: 0,
+      max: 99,
+      precision: 0,
+      style: { width: '100%' },
+    },
+    rules: [
+      { required: true, message: $t('role.levelRequired') },
+      {
+        validator: (_rule: unknown, value: unknown) => {
+          const numeric = Number(value);
+          if (!Number.isInteger(numeric) || numeric < 0 || numeric > 99) {
+            return Promise.reject(new Error($t('role.levelRange')));
+          }
+          if (numeric >= myRoleLevel.value) {
+            return Promise.reject(new Error($t('role.levelTooHigh')));
+          }
+          return Promise.resolve();
+        },
+      },
     ],
   },
   {
@@ -263,6 +321,7 @@ function createDefaultFormValues(): RoleFormValues {
     name: '',
     code: '',
     description: '',
+    level: 0,
     permissionIds: [],
   };
 }
@@ -270,6 +329,7 @@ function createDefaultFormValues(): RoleFormValues {
 const fetchPermissionTreeData = async () => {
   const response = await getPermissionTree();
   permissionTree.value = response.data;
+  permissionTreeLoaded.value = true;
 };
 
 const fetchTableData = async (params: Record<string, unknown>) => {
@@ -305,11 +365,15 @@ const handleCreate = () => {
 };
 
 const handleEdit = (record: Role) => {
+  const grantedIds = (record.permissions || []).map((permission) => permission.id);
   const initialValues: RoleFormValues = {
     name: record.name,
     code: record.code,
     description: record.description || '',
-    permissionIds: (record.permissions || []).map((permission) => permission.id),
+    level: record.level ?? 0,
+    // 直接下发全部权限会让 TreeSelect 把页面级菜单当成"父节点全选"，
+    // 从而把已取消的按钮权限重新勾上；这里先收敛成逻辑勾选集合。
+    permissionIds: resolveEditablePermissionIds(permissionTree.value, grantedIds),
   };
   openEditForm(record, initialValues);
 };
@@ -333,27 +397,34 @@ const handleDelete = async (record: Role) => {
 const handleSubmit = async (rawValues: Record<string, unknown>) => {
   const values = rawValues as RoleFormValues;
 
-  const permissionIds: string[] = values.permissionIds || [];
+  if (!permissionTreeLoaded.value || permissionTree.value.length === 0) {
+    message.error($t('role.permissionTreeUnavailable'));
+    return;
+  }
 
-  const selectedPermissions = permissionIds
-    .map((id) => permissionMap.value.get(id))
-    .filter((permission): permission is Permission => Boolean(permission));
+  const selectedPermissionCodes = collectSelectedPermissionCodes(
+    permissionTree.value,
+    values.permissionIds || [],
+  );
 
-  const payload: Partial<Role> = {
+  const payload: RoleSavePayload = {
     name: values.name?.trim(),
     code: values.code?.trim(),
     description: values.description?.trim(),
-    permissions: selectedPermissions,
+    level: Number(values.level ?? 0),
+    permissions: selectedPermissionCodes.map((code) => ({ code })),
   };
+  // 后端 RoleInput 只消费 permissions[].code，这里显式收敛为最小契约。
+  const rolePayload = payload as Partial<Role>;
 
   submitting.value = true;
   try {
     if (editingRoleId.value) {
-      await updateRole(editingRoleId.value, payload);
+      await updateRole(editingRoleId.value, rolePayload);
       message.success($t('role.updateSuccess'));
       refreshTable();
     } else {
-      await createRole(payload);
+      await createRole(rolePayload);
       message.success($t('role.createSuccess'));
       reloadTable();
     }

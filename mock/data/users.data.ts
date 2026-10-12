@@ -22,6 +22,21 @@ export const mockUsers: User[] = Array.from({ length: 50 }, () => ({
   permissions: [],
 }));
 
+// Role references use the canonical code from mockRoles so permission aggregation
+// can resolve them without importing roles.data (avoiding a cyclic dependency).
+function roleRef(id: string, name: string, code: string, description: string, level: number) {
+  return {
+    id,
+    name,
+    code,
+    description,
+    level,
+    permissions: [],
+    createdAt: '2023-01-01T00:00:00.000Z',
+    updatedAt: '2023-01-01T00:00:00.000Z',
+  };
+}
+
 // Admin user
 export const adminUser: User = {
   id: '1',
@@ -36,17 +51,7 @@ export const adminUser: User = {
   status: 'active',
   createdAt: '2023-01-01T00:00:00.000Z',
   updatedAt: new Date().toISOString(),
-  roles: [
-    {
-      id: '1',
-      name: 'Administrator',
-      code: 'admin',
-      description: 'System Administrator',
-      permissions: [],
-      createdAt: '2023-01-01T00:00:00.000Z',
-      updatedAt: '2023-01-01T00:00:00.000Z',
-    },
-  ],
+  roles: [roleRef('1', 'Administrator', 'admin', 'System Administrator', 90)],
   permissions: [
     {
       id: '1',
@@ -74,17 +79,7 @@ export const regularUser: User = {
   status: 'active',
   createdAt: '2023-01-01T00:00:00.000Z',
   updatedAt: new Date().toISOString(),
-  roles: [
-    {
-      id: '2',
-      name: 'User',
-      code: 'user',
-      description: 'Regular User',
-      permissions: [],
-      createdAt: '2023-01-01T00:00:00.000Z',
-      updatedAt: '2023-01-01T00:00:00.000Z',
-    },
-  ],
+  roles: [roleRef('3', 'User', 'user', 'Regular User', 50)],
   permissions: [
     {
       id: '2',

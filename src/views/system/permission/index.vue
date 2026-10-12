@@ -17,10 +17,15 @@
       :children-column-name="'children'"
       :expandable="{ expandIconColumnIndex: 0 }"
       @expanded-rows-change="handleExpandedRowsChange"
+      :has-permission="can"
     >
       <template #toolbar-actions>
         <a-space :size="8">
-          <a-button type="primary" @click="handleCreateRoot">
+          <a-button
+            v-permission="'system.permission.create'"
+            type="primary"
+            @click="handleCreateRoot"
+          >
             <PlusOutlined /> {{ $t('permission.createPermission') }}
           </a-button>
           <a-button @click="expandAllRows">{{ $t('permission.expandAll') }}</a-button>
@@ -72,24 +77,14 @@ import IconPicker from '@/components/IconPicker/index.vue';
 import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
+import { usePermission } from '@/composables/usePermission';
 import { $t, getLocale } from '@/locales';
 import { useSettingsStore } from '@/stores/settings';
 import { renderIcon } from '@/utils/icon';
 import { resolveLocalizedText } from '@/utils/localizedText';
 
-type PermissionFormValues = {
-  name: string | LocalizedText;
-  code: string;
-  type: Permission['type'];
-  description: string;
-  parentId?: string;
-  path: string;
-  component: string;
-  icon: string;
-  sort: number;
-  status: boolean;
-  visible: boolean;
-};
+import type { PermissionFormValues } from './permissionParent';
+import { resolvePermissionParentId } from './permissionParent';
 
 const viewModules = import.meta.glob('/src/views/**/*.vue');
 const componentPathOptions = Object.keys(viewModules)
@@ -105,6 +100,7 @@ const tableRef = ref<{
 } | null>(null);
 
 const settingsStore = useSettingsStore();
+const { can } = usePermission();
 const useI18nName = computed(() => settingsStore.showLanguageSwitch);
 
 const {
@@ -282,17 +278,20 @@ const columns = computed((): ProTableColumn[] => [
       {
         label: $t('common.edit'),
         icon: EditOutlined,
+        permission: 'system.permission.edit',
         onClick: (record) => handleEdit(record as unknown as Permission),
       },
       {
         label: $t('common.delete'),
         icon: DeleteOutlined,
+        permission: 'system.permission.delete',
         danger: true,
         onClick: (record) => handleDelete(record as unknown as Permission),
       },
       {
         label: $t('permission.addChild'),
         icon: PlusOutlined,
+        permission: 'system.permission.create',
         hidden: (record) => (record as unknown as Permission).type !== 'menu',
         onClick: (record) => handleCreateChild(record as unknown as Permission),
       },
@@ -603,15 +602,18 @@ const handleFormValuesChange = (values: Record<string, unknown>) => {
 
 const handleSubmit = async (rawValues: Record<string, unknown>) => {
   const values = rawValues as PermissionFormValues;
+  const parentId = resolvePermissionParentId(
+    modalMode.value,
+    editingPermission.value,
+    formValues.value,
+  );
 
   const payload: Partial<Permission> = {
     name: values.name,
     code: values.code?.trim(),
     type: values.type,
     description: values.description?.trim(),
-    parentId:
-      values.parentId ??
-      (modalMode.value === 'edit' ? editingPermission.value?.parentId : undefined),
+    parentId,
     status: values.status ? 'active' : 'inactive',
     visible: values.visible,
     sort: Number(values.sort ?? 0),

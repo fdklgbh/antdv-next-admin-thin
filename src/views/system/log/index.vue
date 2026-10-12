@@ -12,7 +12,11 @@
             :search="{ formItems: operationSearchFormItems }"
           >
             <template #toolbar-actions>
-              <a-button danger @click="handleClearOperationLog">
+              <a-button
+                v-permission="'system.log.clear'"
+                danger
+                @click="handleClearOperationLog"
+              >
                 <DeleteOutlined /> {{ t('log.clearLog') }}
               </a-button>
             </template>
@@ -53,7 +57,7 @@
             :search="{ formItems: loginSearchFormItems }"
           >
             <template #toolbar-actions>
-              <a-button danger @click="handleClearLoginLog">
+              <a-button v-permission="'system.log.clear'" danger @click="handleClearLoginLog">
                 <DeleteOutlined /> {{ t('log.clearLog') }}
               </a-button>
             </template>

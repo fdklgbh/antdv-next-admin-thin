@@ -25,7 +25,7 @@
           :toolbar="{ title: $t(`config.groups.${selectedGroup}`) }"
         >
           <template #toolbar-actions>
-            <a-button type="primary" @click="handleAdd">
+            <a-button v-permission="'system.config.create'" type="primary" @click="handleAdd">
               <PlusOutlined /> {{ $t('config.createConfig') }}
             </a-button>
           </template>
@@ -54,12 +54,18 @@
             </template>
             <template v-if="column.key === 'action'">
               <a-space :size="4">
-                <a-button type="link" size="small" @click="handleEdit(record)">
+                <a-button
+                  v-permission="'system.config.edit'"
+                  type="link"
+                  size="small"
+                  @click="handleEdit(record)"
+                >
                   <template #icon><EditOutlined /></template>
                   {{ $t('common.edit') }}
                 </a-button>
                 <a-button
                   v-if="!record.builtIn"
+                  v-permission="'system.config.delete'"
                   type="link"
                   size="small"
                   danger

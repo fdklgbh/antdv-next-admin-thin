@@ -38,6 +38,8 @@ export interface Role {
   name: string;
   code: string;
   description: string;
+  /** 角色优先级，数值越大权限越高；super_admin 为 100，新建角色上限 99。 */
+  level: number;
   permissions: Permission[];
   createdAt: string;
   updatedAt: string;

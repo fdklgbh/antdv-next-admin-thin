@@ -49,4 +49,40 @@ describe('mock role permissions', () => {
     );
     expect(adminDashboard).not.toBe(sourceDashboard);
   });
+
+  it('keeps role permission lists flat without children', () => {
+    for (const role of mockRoles) {
+      for (const permission of role.permissions) {
+        expect(permission.children).toBeUndefined();
+        expect(Object.prototype.hasOwnProperty.call(permission, 'children')).toBe(false);
+      }
+    }
+  });
+
+  it('does not share permission object references between roles', () => {
+    const permissionsByCode = new Map<string, Permission[]>();
+    for (const role of mockRoles) {
+      for (const permission of role.permissions) {
+        const owners = permissionsByCode.get(permission.code) ?? [];
+        owners.push(permission);
+        permissionsByCode.set(permission.code, owners);
+      }
+    }
+
+    for (const owners of permissionsByCode.values()) {
+      for (let index = 1; index < owners.length; index += 1) {
+        expect(owners[index]).not.toBe(owners[0]);
+      }
+    }
+  });
+
+  it('keeps role codes unique', () => {
+    const codes = mockRoles.map((role) => role.code);
+    expect(new Set(codes).size).toBe(codes.length);
+  });
+
+  it('gives the super administrator only the * wildcard', () => {
+    const superAdmin = rolesByCode.get('super_admin');
+    expect(superAdmin?.permissions.map((permission) => permission.code)).toEqual(['*']);
+  });
 });

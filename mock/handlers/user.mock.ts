@@ -54,7 +54,7 @@ export default defineMock([
       const list = filteredUsers.slice(start, end);
 
       return {
-        code: 200,
+        code: 0,
         message: 'Success',
         data: {
           list,
@@ -77,7 +77,7 @@ export default defineMock([
 
       if (user) {
         return {
-          code: 200,
+          code: 0,
           message: 'Success',
           data: user,
           success: true,
@@ -122,7 +122,7 @@ export default defineMock([
       mockUsers.unshift(newUser);
 
       return {
-        code: 200,
+        code: 0,
         message: 'User created successfully',
         data: newUser,
         success: true,
@@ -143,7 +143,7 @@ export default defineMock([
           updatedAt: new Date().toISOString(),
         });
         return {
-          code: 200,
+          code: 0,
           message: 'User updated successfully',
           data: adminUser,
           success: true,
@@ -160,7 +160,7 @@ export default defineMock([
         };
 
         return {
-          code: 200,
+          code: 0,
           message: 'User updated successfully',
           data: mockUsers[index],
           success: true,
@@ -197,7 +197,7 @@ export default defineMock([
         mockUsers.splice(index, 1);
 
         return {
-          code: 200,
+          code: 0,
           message: 'User deleted successfully',
           data: null,
           success: true,
@@ -239,7 +239,7 @@ export default defineMock([
       });
 
       return {
-        code: 200,
+        code: 0,
         message: `Deleted ${deletedCount} users successfully`,
         data: { deletedCount },
         success: true,
@@ -282,7 +282,7 @@ export default defineMock([
       }
 
       return {
-        code: 200,
+        code: 0,
         message: 'Password changed successfully',
         data: null,
         success: true,

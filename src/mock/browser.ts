@@ -46,6 +46,7 @@ const adminUser: User = {
       name: 'Administrator',
       code: 'admin',
       description: 'System Administrator',
+      level: 90,
       permissions: [],
       createdAt: DEMO_CREATED_AT,
       updatedAt: DEMO_UPDATED_AT,
@@ -83,6 +84,7 @@ const regularUser: User = {
       name: 'User',
       code: 'user',
       description: 'Regular User',
+      level: 50,
       permissions: [],
       createdAt: DEMO_CREATED_AT,
       updatedAt: DEMO_UPDATED_AT,
@@ -140,13 +142,29 @@ const demoUsers: User[] = [
 
 function successResponse<T>(data: T) {
   return {
-    code: 200,
+    code: 0,
     message: SUCCESS_MESSAGE,
     success: true,
     data,
   };
 }
 
+function resolveRolePermissions(roleCodes: string[]) {
+  const selected = new Set(roleCodes);
+  const seen = new Set<string>();
+  const permissions: Permission[] = [];
+
+  for (const role of mockRoles) {
+    if (!selected.has(role.code)) continue;
+    for (const permission of role.permissions) {
+      if (permission.code === '*' || seen.has(permission.code)) continue;
+      seen.add(permission.code);
+      permissions.push(permission);
+    }
+  }
+
+  return permissions.sort((left, right) => left.code.localeCompare(right.code));
+}
 function createMockToken(userId: string): string {
   return `mock-token-${userId}-${Date.now()}`;
 }
@@ -171,6 +189,66 @@ function getAuthorizationToken(headers: unknown): string | undefined {
   const record = headers as Record<string, string | undefined>;
   const value = record.Authorization || record.authorization;
   return value?.replace('Bearer ', '');
+}
+
+/**
+ * Demo 浏览器 mock 的 RBAC 拒绝：与 dev mock / 真实后端 route_permissions 同源。
+ * demo 默认以 admin（* 通配）身份运行，仅有 token 对应非管理员角色时才触发拒绝。
+ */
+const BROWSER_ROUTE_PERMISSIONS: Record<string, string> = {
+  'GET /api/roles': 'system.role.view',
+  'POST /api/roles': 'system.role.create',
+  'PUT /api/roles/:id': 'system.role.edit',
+  'DELETE /api/roles/:id': 'system.role.delete',
+  'GET /api/permissions': 'system.permission.view',
+  'GET /api/permissions/tree': 'system.role.view',
+  'POST /api/permissions': 'system.permission.create',
+  'PUT /api/permissions/:id': 'system.permission.edit',
+  'DELETE /api/permissions/:id': 'system.permission.delete',
+};
+
+function permissionDenied(routeKey: string, headers: unknown): Record<string, unknown> | null {
+  const requiredCode = BROWSER_ROUTE_PERMISSIONS[routeKey];
+  if (!requiredCode) return null;
+
+  const userId = resolveMockUserIdFromToken(getAuthorizationToken(headers));
+  const user = demoUsers.find((item) => item.id === userId);
+  // demo 在未携带有效 token 时按 admin 数据集运行，保持静态演示可用。
+  if (!user || user.username === 'admin') return null;
+
+  const roleCodes = user.roles.map((role) => role.code);
+  const wildcard = mockRoles
+    .filter((role) => roleCodes.includes(role.code))
+    .some((role) => role.permissions.some((permission) => permission.code === '*'));
+  if (wildcard) return null;
+
+  const codes = new Set(
+    mockRoles
+      .filter((role) => roleCodes.includes(role.code))
+      .flatMap((role) => role.permissions.map((permission) => permission.code)),
+  );
+  if (codes.has(requiredCode)) return null;
+
+  return { code: 20002, message: '没有访问权限', success: false, data: null };
+}
+
+/** 按 token 推导 demo 操作者层级：admin 等同超级管理员（101），其余取持有角色的最高层级。 */
+function canManageRoleByToken(headers: unknown, code: string, level: number): boolean {
+  if (code === 'super_admin') return false;
+
+  const userId = resolveMockUserIdFromToken(getAuthorizationToken(headers));
+  const user = demoUsers.find((item) => item.id === userId);
+  // 未携带有效 token 时 demo 仍以管理员数据集运行，保持静态演示可用。
+  if (!user || user.username === 'admin') return true;
+
+  const roleCodes = user.roles.map((role) => role.code);
+  if (roleCodes.includes('super_admin')) return true;
+
+  const actorLevel = mockRoles
+    .filter((role) => roleCodes.includes(role.code))
+    .reduce((highest, role) => Math.max(highest, role.level ?? 0), 0);
+
+  return level < actorLevel;
 }
 
 function parseJsonBody<T>(data: unknown, fallback: T): T {
@@ -451,7 +529,7 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   let refreshExpiresAt = 0;
 
   mock.onGet(/\/api\/__mock_health$|\/__mock_health$/).reply(200, {
-    code: 200,
+    code: 0,
     message: SUCCESS_MESSAGE,
     success: true,
     data: { enabled: true },
@@ -599,14 +677,40 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock
     .onGet(/\/api\/permissions$|\/permissions$/)
-    .reply(200, successResponse(cloneData<Permission[]>(mockPermissions)));
+    .reply((config) => {
+      const denied = permissionDenied('GET /api/permissions', config.headers);
+      if (denied) return [403, denied];
+      return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
+    });
   mock
     .onGet(/\/api\/permissions\/tree$|\/permissions\/tree$/)
-    .reply(200, successResponse(cloneData<Permission[]>(mockPermissions)));
-  mock
-    .onGet(/\/api\/permissions\/user$|\/permissions\/user$/)
-    .reply(200, successResponse(cloneData<Permission[]>(adminUser.permissions)));
+    .reply((config) => {
+      const denied = permissionDenied('GET /api/permissions/tree', config.headers);
+      if (denied) return [403, denied];
+      return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
+    });
+  mock.onGet(/\/api\/permissions\/user$|\/permissions\/user$/).reply((config) => {
+    const token = getAuthorizationToken(config.headers);
+    const userId = resolveMockUserIdFromToken(token);
+    // Without a token the demo keeps serving the admin dataset so static demo pages stay usable.
+    const user = demoUsers.find((item) => item.id === userId) ?? adminUser;
+
+    const wildcard =
+      user.username === 'admin' ||
+      user.roles.some((role) =>
+        mockRoles
+          .filter((candidate) => candidate.code === role.code)
+          .some((candidate) => candidate.permissions.some((permission) => permission.code === '*')),
+      );
+    const permissions = wildcard
+      ? (mockRoles.find((role) => role.code === 'super_admin')?.permissions ?? [])
+      : resolveRolePermissions(user.roles.map((role) => role.code));
+
+    return [200, successResponse(cloneData<Permission[]>(permissions))];
+  });
   mock.onGet(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('GET /api/permissions/:id', config.headers);
+    if (denied) return [403, denied];
     const id = config.url?.split('/permissions/')[1]?.split('?')[0] || '';
     const item = findPermissionById(mockPermissions, id);
 
@@ -617,17 +721,57 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     return [200, successResponse(cloneData(item))];
   });
   mock.onPost(/\/api\/permissions$|\/permissions$/).reply((config) => {
+    const denied = permissionDenied('POST /api/permissions', config.headers);
+    if (denied) return [403, denied];
     const body = parseJsonBody(config.data, {});
     return [200, successResponse({ id: String(Date.now()), ...body })];
   });
   mock.onPut(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('PUT /api/permissions/:id', config.headers);
+    if (denied) return [403, denied];
     const body = parseJsonBody(config.data, {});
     const id = config.url?.split('/permissions/')[1]?.split('?')[0] || '';
     return [200, successResponse({ id, ...body })];
   });
-  mock
-    .onDelete(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/)
-    .reply(200, successResponse(null));
+  mock.onDelete(/\/api\/permissions\/[^/]+$|\/permissions\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('DELETE /api/permissions/:id', config.headers);
+    if (denied) return [403, denied];
+    const id = config.url?.split('/permissions/')[1]?.split('?')[0] || '';
+    const item = findPermissionById(mockPermissions, id);
+
+    if (!item) {
+      return [404, { code: 10002, message: 'Permission not found', success: false, data: null }];
+    }
+
+    if (item.children && item.children.length > 0) {
+      return [
+        409,
+        {
+          code: 10006,
+          message: 'Permission still has child permissions',
+          success: false,
+          data: null,
+        },
+      ];
+    }
+
+    const referenced = mockRoles.some((role) =>
+      role.permissions.some((permission) => permission.code === item.code),
+    );
+    if (referenced) {
+      return [
+        409,
+        {
+          code: 10006,
+          message: 'Permission is still referenced by roles',
+          success: false,
+          data: null,
+        },
+      ];
+    }
+
+    return [200, successResponse(null)];
+  });
 
   mock
     .onGet(/\/api\/file\/list(?:\?.*)?$|\/file\/list(?:\?.*)?$/)
@@ -692,9 +836,15 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
 
   mock
     .onGet(/\/api\/roles(?:\?.*)?$|\/roles(?:\?.*)?$/)
-    .reply((config) => [200, successResponse(getPaginatedRoles(config.url))]);
+    .reply((config) => {
+      const denied = permissionDenied('GET /api/roles', config.headers);
+      if (denied) return [403, denied];
+      return [200, successResponse(getPaginatedRoles(config.url))];
+    });
 
   mock.onGet(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('GET /api/roles/:id', config.headers);
+    if (denied) return [403, denied];
     const id = config.url?.split('/roles/')[1]?.split('?')[0] || '';
     const item = mockRoles.find((role) => role.id === id);
 
@@ -706,6 +856,8 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
 
   mock.onPost(/\/api\/roles$|\/roles$/).reply((config) => {
+    const denied = permissionDenied('POST /api/roles', config.headers);
+    if (denied) return [403, denied];
     const body = parseJsonBody<Partial<Role>>(config.data, {});
     return [
       200,
@@ -722,13 +874,45 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   });
 
   mock.onPut(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('PUT /api/roles/:id', config.headers);
+    if (denied) return [403, denied];
     const body = parseJsonBody<Partial<Role>>(config.data, {});
     const id = config.url?.split('/roles/')[1]?.split('?')[0] || '';
     const item = mockRoles.find((role) => role.id === id) || mockRoles[0];
     return [200, successResponse({ ...item, ...body, updatedAt: new Date().toISOString() })];
   });
 
-  mock.onDelete(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply(200, successResponse(null));
+  mock.onDelete(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
+    const denied = permissionDenied('DELETE /api/roles/:id', config.headers);
+    if (denied) return [403, denied];
+    const id = config.url?.split('/roles/')[1]?.split('?')[0] || '';
+    const index = mockRoles.findIndex((role) => role.id === id);
+    const role = mockRoles[index];
+
+    if (!role) {
+      return [404, { code: 10002, message: 'Role not found', success: false, data: null }];
+    }
+
+    if (!canManageRoleByToken(config.headers, role.code, role.level ?? 0)) {
+      return [
+        403,
+        { code: 10007, message: 'Protected roles cannot be deleted', success: false, data: null },
+      ];
+    }
+
+    const bound = demoUsers.some((user) =>
+      user.roles.some((userRole) => userRole.id === role.id || userRole.code === role.code),
+    );
+    if (bound) {
+      return [
+        409,
+        { code: 10006, message: 'Role is still assigned to users', success: false, data: null },
+      ];
+    }
+
+    mockRoles.splice(index, 1);
+    return [200, successResponse(null)];
+  });
 
   mock
     .onGet(/\/api\/config\/list(?:\?.*)?$|\/config\/list(?:\?.*)?$/)

@@ -1,13 +1,49 @@
-import type { Permission } from '@/types/auth';
+import type { Permission, Role } from '@/types/auth';
+import type { MockResponse } from 'vite-plugin-mock-dev-server';
 
 import { faker } from '@faker-js/faker';
 import { defineMock } from 'vite-plugin-mock-dev-server';
 
 import { mockPermissions } from '../data/permissions.data';
+import {
+  cloneFlatPermission,
+  flattenPermissions,
+  mockRoles,
+  wildcardPermission,
+} from '../data/roles.data';
+import { mockUsers } from '../data/users.data';
+import { authorizeRoute, resolveTokenUserId } from '../data/routePermissions';
 
-const permissionStore: Permission[] = JSON.parse(JSON.stringify(mockPermissions));
+const ALL_PERMISSION = '*';
 
-const deepClone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
+export const permissionStore: Permission[] = structuredClone(mockPermissions);
+
+const permissionDefinitions = flattenPermissions(mockPermissions);
+const permissionByCode = new Map(
+  permissionDefinitions.map((permission) => [permission.code, permission]),
+);
+
+export interface MockFailure {
+  status: number;
+  code: number;
+  message: string;
+}
+
+export type DeletePermissionOutcome = { ok: true } | ({ ok: false } & MockFailure);
+
+function sendJson(res: MockResponse, status: number, body: Record<string, unknown>): void {
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.end(JSON.stringify(body));
+}
+
+function success(res: MockResponse, data: unknown, message = 'Success'): void {
+  sendJson(res, 200, { code: 0, message, data, success: true });
+}
+
+function fail(res: MockResponse, status: number, code: number, message: string): void {
+  sendJson(res, status, { code, message, data: null, success: false });
+}
 
 function getPermissionNameText(name: Permission['name']): string {
   if (typeof name === 'string') {
@@ -36,6 +72,23 @@ function findPermissionById(
   }
 
   return { permission: null, parent: null };
+}
+
+function findPermissionByCode(permissions: Permission[], code: string): Permission | null {
+  for (const permission of permissions) {
+    if (permission.code === code) {
+      return permission;
+    }
+
+    if (permission.children && permission.children.length > 0) {
+      const found = findPermissionByCode(permission.children, code);
+      if (found) {
+        return found;
+      }
+    }
+  }
+
+  return null;
 }
 
 function removePermissionById(permissions: Permission[], id: string): boolean {
@@ -129,24 +182,103 @@ function normalizeQueryValue(value: unknown): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
+function roleReferencesPermission(permission: Permission): boolean {
+  return mockRoles.some((role) => role.permissions.some((item) => item.code === permission.code));
+}
+
+export function resolveUserPermissions(userId: string): Permission[] | null {
+  const user = mockUsers.find((item) => item.id === userId);
+  if (!user) {
+    return null;
+  }
+
+  const roles = user.roles
+    .map(
+      (userRole) =>
+        mockRoles.find((role) => role.code === userRole.code) ??
+        mockRoles.find((role) => role.id === userRole.id),
+    )
+    .filter((role): role is Role => Boolean(role));
+
+  const hasWildcard =
+    user.username === 'admin' ||
+    roles.some((role) => role.permissions.some((item) => item.code === ALL_PERMISSION));
+
+  if (hasWildcard) {
+    return [wildcardPermission()];
+  }
+
+  const seen = new Set<string>();
+  const permissions: Permission[] = [];
+
+  for (const role of roles) {
+    for (const permission of role.permissions) {
+      if (permission.code === ALL_PERMISSION || seen.has(permission.code)) {
+        continue;
+      }
+
+      seen.add(permission.code);
+      const latest = findPermissionByCode(permissionStore, permission.code);
+      permissions.push(cloneFlatPermission(latest ?? permission));
+    }
+  }
+
+  permissions.sort((left, right) => left.code.localeCompare(right.code));
+  return permissions;
+}
+
+export function deleteMockPermission(id: string): DeletePermissionOutcome {
+  const { permission } = findPermissionById(permissionStore, id);
+
+  if (!permission) {
+    return { ok: false, status: 404, code: 10002, message: 'Permission not found' };
+  }
+
+  if (permission.children && permission.children.length > 0) {
+    return {
+      ok: false,
+      status: 409,
+      code: 10006,
+      message: 'Permission still has child permissions',
+    };
+  }
+
+  if (roleReferencesPermission(permission)) {
+    return {
+      ok: false,
+      status: 409,
+      code: 10006,
+      message: 'Permission is still referenced by roles',
+    };
+  }
+
+  const removed = removePermissionById(permissionStore, permission.id);
+  if (!removed) {
+    return { ok: false, status: 404, code: 10002, message: 'Permission not found' };
+  }
+
+  return { ok: true };
+}
+
 export default defineMock([
   // Get permission list (tree structure)
   {
     url: '/api/permissions',
     method: 'GET',
-    body: (req) => {
+    response: (req, res) => {
+      const authorization = authorizeRoute('GET /api/permissions', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
+      }
+
       const query = req.query || {};
       const keyword = normalizeQueryValue(query.keyword);
       const type = normalizeQueryValue(query.type);
       const status = normalizeQueryValue(query.status);
       const filtered = filterPermissionTree(permissionStore, keyword, type, status);
 
-      return {
-        code: 200,
-        message: 'Success',
-        data: deepClone(filtered),
-        success: true,
-      };
+      success(res, filtered);
     },
   },
 
@@ -154,13 +286,14 @@ export default defineMock([
   {
     url: '/api/permissions/tree',
     method: 'GET',
-    body: () => {
-      return {
-        code: 200,
-        message: 'Success',
-        data: deepClone(permissionStore),
-        success: true,
-      };
+    response: (req, res) => {
+      const authorization = authorizeRoute('GET /api/permissions/tree', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
+      }
+
+      success(res, permissionStore);
     },
   },
 
@@ -168,25 +301,21 @@ export default defineMock([
   {
     url: '/api/permissions/:id',
     method: 'GET',
-    body: (req) => {
-      const { id } = req.params;
-      const { permission } = findPermissionById(permissionStore, id);
-
-      if (!permission) {
-        return {
-          code: 404,
-          message: 'Permission not found',
-          data: null,
-          success: false,
-        };
+    response: (req, res) => {
+      const authorization = authorizeRoute('GET /api/permissions/:id', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
       }
 
-      return {
-        code: 200,
-        message: 'Success',
-        data: deepClone(permission),
-        success: true,
-      };
+      const { permission } = findPermissionById(permissionStore, req.params.id);
+
+      if (!permission) {
+        fail(res, 404, 10002, 'Permission not found');
+        return;
+      }
+
+      success(res, permission);
     },
   },
 
@@ -194,42 +323,56 @@ export default defineMock([
   {
     url: '/api/permissions',
     method: 'POST',
-    body: (req) => {
+    response: (req, res) => {
+      const authorization = authorizeRoute('POST /api/permissions', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
+      }
+
       const payload = req.body || {};
+      const code = normalizeQueryValue(payload.code);
+      const parentId = normalizeQueryValue(payload.parentId);
+
+      if (!code || code === ALL_PERMISSION || !/^[a-zA-Z0-9_.-]+$/.test(code)) {
+        fail(res, 400, 10001, 'Invalid permission code');
+        return;
+      }
+
+      if (permissionByCode.has(code) || findPermissionByCode(permissionStore, code)) {
+        fail(res, 409, 10006, 'Permission code already exists');
+        return;
+      }
+
+      if (parentId && !findPermissionById(permissionStore, parentId).permission) {
+        fail(res, 400, 10001, 'Parent permission not found');
+        return;
+      }
+
       const permission: Permission = {
         id: faker.string.uuid(),
         name: payload.name,
-        code: payload.code,
+        code,
         description: payload.description || '',
-        resource: payload.resource || payload.path || payload.code,
-        action: payload.action || (payload.type === 'menu' ? 'view' : '*'),
+        resource: payload.resource || payload.path || code,
+        action: payload.action || (payload.type === 'menu' ? 'view' : ALL_PERMISSION),
         type: payload.type || 'menu',
-        parentId: payload.parentId,
+        parentId,
         path: payload.path,
         component: payload.component,
         icon: payload.icon,
         sort: payload.sort ?? 0,
         status: payload.status || 'active',
         visible: payload.visible ?? true,
-        children: payload.children && payload.children.length > 0 ? payload.children : undefined,
       };
 
-      const appended = appendPermission(permissionStore, permission, payload.parentId);
+      const appended = appendPermission(permissionStore, permission, parentId);
       if (!appended) {
-        return {
-          code: 400,
-          message: 'Parent permission not found',
-          data: null,
-          success: false,
-        };
+        fail(res, 400, 10001, 'Parent permission not found');
+        return;
       }
 
-      return {
-        code: 200,
-        message: 'Permission created successfully',
-        data: deepClone(permission),
-        success: true,
-      };
+      success(res, permission, 'Permission created successfully');
     },
   },
 
@@ -237,56 +380,49 @@ export default defineMock([
   {
     url: '/api/permissions/:id',
     method: 'PUT',
-    body: (req) => {
-      const { id } = req.params;
-      const payload = req.body || {};
-      const { permission, parent } = findPermissionById(permissionStore, id);
-
-      if (!permission) {
-        return {
-          code: 404,
-          message: 'Permission not found',
-          data: null,
-          success: false,
-        };
+    response: (req, res) => {
+      const authorization = authorizeRoute('PUT /api/permissions/:id', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
       }
 
-      if (payload.parentId !== undefined && payload.parentId !== permission.parentId) {
-        const movedPermission = deepClone(permission);
-        removePermissionById(permissionStore, id);
-        movedPermission.parentId = payload.parentId;
-        movedPermission.children = permission.children || [];
-        const appended = appendPermission(permissionStore, movedPermission, payload.parentId);
+      const payload = req.body || {};
+      const { permission, parent } = findPermissionById(permissionStore, req.params.id);
+
+      if (!permission) {
+        fail(res, 404, 10002, 'Permission not found');
+        return;
+      }
+
+      const nextParentId = normalizeQueryValue(payload.parentId);
+      if (nextParentId !== undefined && nextParentId !== permission.parentId) {
+        if (!findPermissionById(permissionStore, nextParentId).permission) {
+          fail(res, 400, 10001, 'Parent permission not found');
+          return;
+        }
+
+        const movedPermission = structuredClone(permission);
+        removePermissionById(permissionStore, permission.id);
+        movedPermission.parentId = nextParentId;
+        const appended = appendPermission(permissionStore, movedPermission, nextParentId);
         if (!appended) {
           appendPermission(permissionStore, movedPermission, parent?.id);
-          return {
-            code: 400,
-            message: 'Parent permission not found',
-            data: null,
-            success: false,
-          };
+          fail(res, 400, 10001, 'Parent permission not found');
+          return;
         }
       }
 
-      const { permission: nextPermission } = findPermissionById(permissionStore, id);
+      const { permission: nextPermission } = findPermissionById(permissionStore, permission.id);
       if (!nextPermission) {
-        return {
-          code: 404,
-          message: 'Permission not found',
-          data: null,
-          success: false,
-        };
+        fail(res, 404, 10002, 'Permission not found');
+        return;
       }
 
       const children = nextPermission.children;
       Object.assign(nextPermission, payload, { children });
 
-      return {
-        code: 200,
-        message: 'Permission updated successfully',
-        data: deepClone(nextPermission),
-        success: true,
-      };
+      success(res, nextPermission, 'Permission updated successfully');
     },
   },
 
@@ -294,59 +430,44 @@ export default defineMock([
   {
     url: '/api/permissions/:id',
     method: 'DELETE',
-    body: (req) => {
-      const { id } = req.params;
-      const removed = removePermissionById(permissionStore, id);
-
-      if (!removed) {
-        return {
-          code: 404,
-          message: 'Permission not found',
-          data: null,
-          success: false,
-        };
+    response: (req, res) => {
+      const authorization = authorizeRoute('DELETE /api/permissions/:id', req.headers.authorization);
+      if (!authorization.ok) {
+        fail(res, authorization.status, authorization.code, authorization.message);
+        return;
       }
 
-      return {
-        code: 200,
-        message: 'Permission deleted successfully',
-        data: null,
-        success: true,
-      };
+      const outcome = deleteMockPermission(req.params.id);
+
+      if (!outcome.ok) {
+        fail(res, outcome.status, outcome.code, outcome.message);
+        return;
+      }
+
+      success(res, null, 'Permission deleted successfully');
     },
   },
 
-  // Get user permissions
+  // Get permissions for the current token user, aggregated from mockRoles.
   {
     url: '/api/permissions/user',
     method: 'GET',
-    body: (req) => {
-      // In a real app, this would be based on the user's roles
-      // For now, return all permissions for admin
+    response: (req, res) => {
       const token = req.headers.authorization?.replace('Bearer ', '');
-      const parts = token?.split('-') || [];
-      const tokenIndex = parts.indexOf('token');
-      const userId = tokenIndex === -1 ? undefined : parts[tokenIndex + 1];
+      const userId = resolveTokenUserId(token);
 
-      if (userId === '1') {
-        // Admin - all permissions
-        return {
-          code: 200,
-          message: 'Success',
-          data: deepClone(permissionStore),
-          success: true,
-        };
-      } else {
-        // Regular user - limited permissions
-        return {
-          code: 200,
-          message: 'Success',
-          data: deepClone(
-            permissionStore.filter((permission) => permission.code === 'dashboard.view'),
-          ),
-          success: true,
-        };
+      if (!userId) {
+        fail(res, 401, 20001, 'Unauthenticated');
+        return;
       }
+
+      const permissions = resolveUserPermissions(userId);
+      if (!permissions) {
+        fail(res, 401, 20001, 'Unauthenticated');
+        return;
+      }
+
+      success(res, permissions);
     },
   },
 ]);

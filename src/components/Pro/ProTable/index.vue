@@ -347,6 +347,7 @@ import { $t } from '@/locales';
 import { appDefaultSettings } from '@/settings';
 
 import ProFormModal from '../ProFormModal/index.vue';
+import { filterActionsByPermission } from './composables/actionPermission';
 import {
   applyKeywordClientFilter,
   applySelectClientFilter,
@@ -394,6 +395,13 @@ interface Props {
   formModalWidth?: number | string;
   formCreateTitle?: string;
   formEditTitle?: string;
+  /**
+   * 权限判断函数：用于过滤 actions 中声明了 `permission` 的操作。
+   *
+   * 由调用方注入，ProTable 自身不依赖 Pinia / auth store，保持通用。
+   * 未传入时视为「无权限」，带 `permission` 的操作一律不渲染（fail-closed）。
+   */
+  hasPermission?: (permission: string) => boolean;
 }
 
 interface ColumnState {
@@ -532,6 +540,10 @@ const props = withDefaults(defineProps<Props>(), {
 const attrs = useAttrs();
 const emit = defineEmits(['refresh', 'form-submit']);
 const { modal } = App.useApp();
+
+// 权限判断由调用方通过 hasPermission 注入；未提供时保持 fail-closed（受控操作不渲染）。
+const can: (permission: string) => boolean = (permission) =>
+  props.hasPermission ? props.hasPermission(permission) : false;
 
 const resolveActionIcon = (icon: unknown) => {
   if (!icon) return undefined;
@@ -1081,6 +1093,10 @@ const tableColumns = computed(() => {
     const enhancedColumn: Record<string, unknown> = {
       ...column,
     };
+
+    if (column.actions?.length) {
+      enhancedColumn.actions = filterActionsByPermission(column.actions, can);
+    }
 
     if (headerFilter) {
       enhancedColumn.__proHeaderFilter = headerFilter;

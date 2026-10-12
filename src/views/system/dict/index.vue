@@ -5,7 +5,7 @@
         <!-- dict type list -->
         <div class="dict-types-header">
           <h3>{{ t('dict.dictType') }}</h3>
-          <a-button type="primary" size="small" @click="handleAddType">
+          <a-button v-permission="'system.dict.create'" type="primary" size="small" @click="handleAddType">
             <template #icon><PlusOutlined /></template>
             {{ t('common.add') }}
           </a-button>
@@ -24,12 +24,23 @@
             </div>
             <div class="type-actions" @click.stop>
               <a-tooltip :title="t('common.edit')">
-                <a-button type="text" size="small" @click="handleEditType(type)">
+                <a-button
+                  v-permission="'system.dict.edit'"
+                  type="text"
+                  size="small"
+                  @click="handleEditType(type)"
+                >
                   <template #icon><EditOutlined /></template>
                 </a-button>
               </a-tooltip>
               <a-tooltip :title="t('common.delete')">
-                <a-button type="text" size="small" danger @click="handleDeleteType(type)">
+                <a-button
+                  v-permission="'system.dict.delete'"
+                  type="text"
+                  size="small"
+                  danger
+                  @click="handleDeleteType(type)"
+                >
                   <template #icon><DeleteOutlined /></template>
                 </a-button>
               </a-tooltip>
@@ -51,7 +62,7 @@
           }"
         >
           <template #toolbar-actions>
-            <a-button type="primary" @click="handleAdd">
+            <a-button v-permission="'system.dict.create'" type="primary" @click="handleAdd">
               <PlusOutlined /> {{ t('dict.createData') }}
             </a-button>
           </template>
@@ -61,11 +72,22 @@
             </template>
             <template v-if="column.key === 'action'">
               <a-space :size="4">
-                <a-button type="link" size="small" @click="handleEdit(record)">
+                <a-button
+                  v-permission="'system.dict.edit'"
+                  type="link"
+                  size="small"
+                  @click="handleEdit(record)"
+                >
                   <template #icon><EditOutlined /></template>
                   {{ t('common.edit') }}
                 </a-button>
-                <a-button type="link" size="small" danger @click="handleDelete(record)">
+                <a-button
+                  v-permission="'system.dict.delete'"
+                  type="link"
+                  size="small"
+                  danger
+                  @click="handleDelete(record)"
+                >
                   <template #icon><DeleteOutlined /></template>
                   {{ t('common.delete') }}
                 </a-button>

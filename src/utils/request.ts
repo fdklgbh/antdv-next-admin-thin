@@ -182,7 +182,6 @@ service.interceptors.response.use(
 
     if (!originalRequest?.skipErrorMessage) showApiError(error);
     if (!originalRequest?.skipRedirect) {
-      if (error.response?.status === 403) void router.push('/403');
       if (error.response?.status === 500) void router.push('/500');
     }
 

@@ -11,16 +11,19 @@
         defaultCollapsed: true,
       }"
       row-key="id"
+      :has-permission="can"
     >
       <template #toolbar-actions>
         <a-space>
           <a-upload :show-upload-list="false" accept=".csv" :before-upload="handleImport">
-            <a-button> <UploadOutlined /> {{ $t('common.import') }} </a-button>
+            <a-button v-permission="'system.user.create'">
+              <UploadOutlined /> {{ $t('common.import') }}
+            </a-button>
           </a-upload>
           <a-button @click="handleExport">
             <DownloadOutlined /> {{ $t('common.export') }}
           </a-button>
-          <a-button type="primary" @click="handleCreate">
+          <a-button v-permission="'system.user.create'" type="primary" @click="handleCreate">
             <PlusOutlined /> {{ $t('user.createUser') }}
           </a-button>
         </a-space>
@@ -65,6 +68,10 @@ import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
 import { $t } from '@/locales';
+import { usePermission } from '@/composables/usePermission';
+import { useAuthStore } from '@/stores/auth';
+
+import { filterAssignableRoles, getHighestRoleLevel } from '../roleLevel';
 import { exportToCSV, parseCSV } from '@/utils/export';
 
 type UserFormValues = {
@@ -115,8 +122,24 @@ const genderOptions = computed(() => [
   { label: $t('user.female'), value: 'female' },
 ]);
 
+const authStore = useAuthStore();
+const { can } = usePermission();
+/** 当前登录用户的最高角色优先级（super_admin 为 100）。 */
+const myRoleLevel = computed(() => getHighestRoleLevel(authStore.user?.roles));
+/** 只能分配低于自身优先级且非超级管理员的角色。 */
+const assignableRoles = computed(() => filterAssignableRoles(roleOptions.value, myRoleLevel.value));
+
 const roleSelectOptions = computed(() => {
-  return roleOptions.value.map((role) => ({
+  // 可分配角色 + 当前已选角色：后者仅为保证被编辑用户的已有角色能正确回显标签，
+  // 不代表可以重新分配（越权分配仍由后端层级校验兜底）。
+  const selectedIds = new Set(formData.value?.roleIds ?? []);
+  const options = [...assignableRoles.value];
+  for (const role of roleOptions.value) {
+    if (selectedIds.has(role.id) && !options.some((item) => item.id === role.id)) {
+      options.push(role);
+    }
+  }
+  return options.map((role) => ({
     label: role.name,
     value: role.id,
   }));
@@ -198,11 +221,13 @@ const columns = computed((): ProTableColumn[] => [
       {
         label: $t('common.edit'),
         icon: EditOutlined,
+        permission: 'system.user.edit',
         onClick: (record) => handleEdit(record as unknown as User),
       },
       {
         label: $t('common.delete'),
         icon: DeleteOutlined,
+        permission: 'system.user.delete',
         danger: true,
         onClick: (record) => handleDelete(record as unknown as User),
       },
