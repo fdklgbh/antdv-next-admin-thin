@@ -24,6 +24,18 @@ export interface SysConfig {
 }
 
 /**
+ * 系统配置分组及配置数量
+ */
+export interface SysConfigGroup {
+  id: string;
+  group: string;
+  name: string;
+  description?: string;
+  sort: number;
+  count: number;
+}
+
+/**
  * 系统配置查询参数
  */
 export interface SysConfigQueryParams {

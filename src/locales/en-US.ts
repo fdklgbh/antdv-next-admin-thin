@@ -779,6 +779,7 @@ export default {
       custom: 'Custom',
     },
     placeholders: {
+      group: 'Enter or select a group code',
       configName: 'Please enter config name',
       configKey: 'e.g. site.name',
       configValue: 'Please enter config value',

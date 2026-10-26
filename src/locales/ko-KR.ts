@@ -760,6 +760,7 @@ export default {
       custom: '관습',
     },
     placeholders: {
+      group: '그룹 코드를 입력하거나 선택하세요',
       configName: '구성 이름을 입력하세요.',
       configKey: '예를 들어 사이트.이름',
       configValue: '구성 값을 입력하세요.',

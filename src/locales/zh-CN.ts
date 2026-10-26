@@ -772,6 +772,7 @@ export default {
       custom: '自定义',
     },
     placeholders: {
+      group: '请输入或选择分组编码',
       configName: '请输入配置名称',
       configKey: '如 site.name',
       configValue: '请输入配置值',

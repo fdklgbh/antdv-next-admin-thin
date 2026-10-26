@@ -1,5 +1,5 @@
 import type { ApiResponse } from '@/types/api';
-import type { SysConfig, SysConfigQueryParams } from '@/types/config';
+import type { SysConfig, SysConfigGroup, SysConfigQueryParams } from '@/types/config';
 
 import { request } from '@/utils/request';
 
@@ -16,6 +16,10 @@ export function getConfigList(params: SysConfigQueryParams): Promise<
 
 export function getConfigByKey(key: string): Promise<ApiResponse<SysConfig>> {
   return request.get(`/config/key/${key}`);
+}
+
+export function getConfigGroups(): Promise<ApiResponse<SysConfigGroup[]>> {
+  return request.get('/config/groups');
 }
 
 export function createConfig(data: Partial<SysConfig>): Promise<ApiResponse<SysConfig>> {

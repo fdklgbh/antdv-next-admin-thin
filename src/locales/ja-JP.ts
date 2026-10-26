@@ -760,6 +760,7 @@ export default {
       custom: 'カスタム',
     },
     placeholders: {
+      group: 'グループコードを入力または選択',
       configName: '構成名を入力してください',
       configKey: '例えばサイト名',
       configValue: '設定値を入力してください',

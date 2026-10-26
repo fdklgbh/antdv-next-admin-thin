@@ -300,6 +300,20 @@ function getConfigList(url: string | undefined) {
   };
 }
 
+const configGroups = [
+  { id: 'config_group_basic', group: 'basic', name: '基础配置', sort: 1 },
+  { id: 'config_group_security', group: 'security', name: '安全配置', sort: 2 },
+  { id: 'config_group_upload', group: 'upload', name: '上传配置', sort: 3 },
+  { id: 'config_group_notification', group: 'notification', name: '通知配置', sort: 4 },
+];
+
+function getConfigGroups() {
+  return configGroups.map((group) => ({
+    ...group,
+    count: sysConfigs.filter((item) => item.group === group.group).length,
+  }));
+}
+
 function getDictTypeList(url: string | undefined) {
   const name = getQueryParam(url, 'name');
   const code = getQueryParam(url, 'code');
@@ -675,20 +689,16 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .onGet(/\/api\/dashboard\/chart-data$|\/dashboard\/chart-data$/)
     .reply(200, successResponse(mockChartData));
 
-  mock
-    .onGet(/\/api\/permissions$|\/permissions$/)
-    .reply((config) => {
-      const denied = permissionDenied('GET /api/permissions', config.headers);
-      if (denied) return [403, denied];
-      return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
-    });
-  mock
-    .onGet(/\/api\/permissions\/tree$|\/permissions\/tree$/)
-    .reply((config) => {
-      const denied = permissionDenied('GET /api/permissions/tree', config.headers);
-      if (denied) return [403, denied];
-      return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
-    });
+  mock.onGet(/\/api\/permissions$|\/permissions$/).reply((config) => {
+    const denied = permissionDenied('GET /api/permissions', config.headers);
+    if (denied) return [403, denied];
+    return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
+  });
+  mock.onGet(/\/api\/permissions\/tree$|\/permissions\/tree$/).reply((config) => {
+    const denied = permissionDenied('GET /api/permissions/tree', config.headers);
+    if (denied) return [403, denied];
+    return [200, successResponse(cloneData<Permission[]>(mockPermissions))];
+  });
   mock.onGet(/\/api\/permissions\/user$|\/permissions\/user$/).reply((config) => {
     const token = getAuthorizationToken(config.headers);
     const userId = resolveMockUserIdFromToken(token);
@@ -834,13 +844,11 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
     .onPost(/\/api\/users\/change-password$|\/users\/change-password$/)
     .reply(200, successResponse(null));
 
-  mock
-    .onGet(/\/api\/roles(?:\?.*)?$|\/roles(?:\?.*)?$/)
-    .reply((config) => {
-      const denied = permissionDenied('GET /api/roles', config.headers);
-      if (denied) return [403, denied];
-      return [200, successResponse(getPaginatedRoles(config.url))];
-    });
+  mock.onGet(/\/api\/roles(?:\?.*)?$|\/roles(?:\?.*)?$/).reply((config) => {
+    const denied = permissionDenied('GET /api/roles', config.headers);
+    if (denied) return [403, denied];
+    return [200, successResponse(getPaginatedRoles(config.url))];
+  });
 
   mock.onGet(/\/api\/roles\/[^/]+$|\/roles\/[^/]+$/).reply((config) => {
     const denied = permissionDenied('GET /api/roles/:id', config.headers);
@@ -917,6 +925,10 @@ export function setupBrowserMock(service: AxiosInstance): AxiosMockAdapter {
   mock
     .onGet(/\/api\/config\/list(?:\?.*)?$|\/config\/list(?:\?.*)?$/)
     .reply((config) => [200, successResponse(getConfigList(config.url))]);
+
+  mock
+    .onGet(/\/api\/config\/groups$|\/config\/groups$/)
+    .reply(() => [200, successResponse(getConfigGroups())]);
 
   mock.onGet(/\/api\/config\/key\/[^/]+$|\/config\/key\/[^/]+$/).reply((config) => {
     const key = config.url?.split('/config/key/')[1]?.split('?')[0] || '';

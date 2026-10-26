@@ -6,6 +6,23 @@ import { sysConfigs } from '../data/config.data';
 
 export default defineMock([
   {
+    url: '/api/config/groups',
+    method: 'GET',
+    body: () => {
+      const groups = [
+        { id: 'config_group_basic', group: 'basic', name: '基础配置', sort: 1 },
+        { id: 'config_group_security', group: 'security', name: '安全配置', sort: 2 },
+        { id: 'config_group_upload', group: 'upload', name: '上传配置', sort: 3 },
+        { id: 'config_group_notification', group: 'notification', name: '通知配置', sort: 4 },
+      ].map((group) => ({
+        ...group,
+        count: sysConfigs.filter((item) => item.group === group.group).length,
+      }));
+      return { code: 200, message: 'success', success: true, data: groups };
+    },
+  },
+
+  {
     url: '/api/config/list',
     method: 'GET',
     body: (req) => {

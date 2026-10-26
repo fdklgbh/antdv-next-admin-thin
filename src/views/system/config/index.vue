@@ -8,6 +8,7 @@
         </div>
         <a-menu
           v-model:selectedKeys="selectedMenuKeys"
+          :key="i18nLocale"
           mode="inline"
           :items="menuItems"
           class="config-groups-menu"
@@ -22,7 +23,7 @@
           :columns="columns"
           :request="loadConfigList"
           :search="false"
-          :toolbar="{ title: $t(`config.groups.${selectedGroup}`) }"
+          :toolbar="{ title: getGroupLabel(selectedGroup) }"
         >
           <template #toolbar-actions>
             <a-button v-permission="'system.config.create'" type="primary" @click="handleAdd">
@@ -121,7 +122,12 @@
           />
         </a-form-item>
         <a-form-item :label="$t('config.group')">
-          <a-select v-model:value="form.group" allow-clear :options="groupOptions" />
+          <a-auto-complete
+            v-model:value="form.group"
+            :options="groupOptions"
+            :placeholder="$t('config.placeholders.group')"
+            allow-clear
+          />
         </a-form-item>
         <a-form-item :label="$t('config.sort')">
           <a-input-number v-model:value="form.sort" :min="0" style="width: 100%" />
@@ -139,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SysConfig } from '@/types/config';
+import type { SysConfig, SysConfigGroup } from '@/types/config';
 import type { ProTableColumn } from '@/types/pro';
 import type { MenuItemType } from 'antdv-next';
 
@@ -148,17 +154,23 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed, h } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { showApiError, resolveApiError } from '@/utils/apiError';
-import { getConfigList, createConfig, updateConfig, deleteConfig } from '@/api/config';
+import {
+  getConfigList,
+  getConfigGroups,
+  createConfig,
+  updateConfig,
+  deleteConfig,
+} from '@/api/config';
 import ProSplitLayout from '@/components/Pro/ProSplitLayout/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
+import { showApiError, resolveApiError } from '@/utils/apiError';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
-const groups = ref<string[]>(['basic', 'security', 'upload', 'notification']);
-const selectedGroup = ref('basic');
-const allConfigs = ref<SysConfig[]>([]);
+const groups = ref<SysConfigGroup[]>([]);
+const selectedGroup = ref('');
 const refreshKey = ref(0);
+const i18nLocale = computed(() => locale.value);
 const valueTypeOptions = computed(() =>
   ['string', 'number', 'boolean', 'json'].map((value) => ({
     label: t(`config.valueTypes.${value}`),
@@ -166,33 +178,42 @@ const valueTypeOptions = computed(() =>
   })),
 );
 const groupOptions = computed(() =>
-  groups.value.map((group) => ({
-    label: t(`config.groups.${group}`),
-    value: group,
+  groups.value.map((item) => ({
+    label: getGroupLabel(item.group),
+    value: item.group,
   })),
 );
 const selectedMenuKeys = computed({
   get: () => [selectedGroup.value],
   set: (keys: string[]) => {
-    if (keys.length > 0) selectedGroup.value = keys[0];
+    if (keys.length > 0) selectGroup(keys[0]);
   },
 });
 
-const getGroupCount = (group: string) => allConfigs.value.filter((c) => c.group === group).length;
+function getGroupLabel(group: string) {
+  if (!group) return '';
+  const item = groups.value.find((candidate) => candidate.group === group);
+  return item?.name || group;
+}
+
+function selectGroup(group: string) {
+  if (!group) return;
+  selectedGroup.value = group;
+}
 
 const menuItems = computed<MenuItemType[]>(() =>
-  groups.value.map((group) => ({
-    key: group,
+  groups.value.map((item) => ({
+    key: item.group,
     label: h('div', { class: 'menu-item-label' }, [
-      h('span', { class: 'group-name' }, t(`config.groups.${group}`)),
-      h('span', { class: 'group-count' }, String(getGroupCount(group))),
+      h('span', { class: 'group-name' }, getGroupLabel(item.group)),
+      h('span', { class: 'group-count' }, String(item.count)),
     ]),
-    title: t(`config.groups.${group}`),
+    title: getGroupLabel(item.group),
   })),
 );
 
 const handleMenuClick = ({ key }: { key: string }) => {
-  selectedGroup.value = key;
+  selectGroup(key);
 };
 
 // modal
@@ -253,6 +274,7 @@ const columns: ProTableColumn[] = [
 ];
 
 const loadConfigList = async (params: Record<string, unknown>) => {
+  if (!selectedGroup.value) return { data: [], total: 0, success: true };
   try {
     const response = await getConfigList({
       group: selectedGroup.value,
@@ -272,12 +294,25 @@ const loadConfigList = async (params: Record<string, unknown>) => {
   return { data: [], total: 0, success: false };
 };
 
-// load all configs for group count
-const loadAllConfigs = async () => {
+const loadConfigGroups = async (preferredGroup?: string) => {
   try {
-    const response = await getConfigList({ page: 1, pageSize: 100 });
-    if (response.code === 0 || response.code === 200) allConfigs.value = response.data.list;
-  } catch (_error: unknown) {}
+    const response = await getConfigGroups();
+    if (response.code !== 0 && response.code !== 200) return;
+    groups.value = response.data;
+    const nextGroup =
+      preferredGroup && response.data.some((item) => item.group === preferredGroup)
+        ? preferredGroup
+        : selectedGroup.value && response.data.some((item) => item.group === selectedGroup.value)
+          ? selectedGroup.value
+          : (response.data[0]?.group ?? '');
+    if (nextGroup === selectedGroup.value) {
+      refreshKey.value++;
+      return;
+    }
+    selectedGroup.value = nextGroup;
+  } catch (error: unknown) {
+    showApiError(error, t('config.loadConfigFailed'));
+  }
 };
 
 const handleAdd = () => {
@@ -308,7 +343,7 @@ const handleDelete = (record: SysConfig) => {
         if (response.code === 0 || response.code === 200) {
           message.success(t('config.deleteSuccess'));
           refreshKey.value++;
-          loadAllConfigs();
+          loadConfigGroups();
         } else {
           message.error(resolveApiError(response, t('config.deleteFailed')));
         }
@@ -334,23 +369,24 @@ const handleSubmit = async () => {
         message.success(t('config.updateSuccess'));
         modalVisible.value = false;
         refreshKey.value++;
-        loadAllConfigs();
+        loadConfigGroups();
       }
     } else {
       const response = await createConfig({ ...form.value, value: String(form.value.value ?? '') });
       if (response.code === 0 || response.code === 200) {
         message.success(t('config.createSuccess'));
         modalVisible.value = false;
-        refreshKey.value++;
-        loadAllConfigs();
-      } else message.error(resolveApiError(response, t('config.operateFailed')));
+        loadConfigGroups(form.value.group);
+      } else {
+        message.error(resolveApiError(response, t('config.operateFailed')));
+      }
     }
   } catch (error: unknown) {
     showApiError(error, t('config.operateFailed'));
   }
 };
 
-loadAllConfigs();
+loadConfigGroups();
 </script>
 
 <style scoped lang="scss">
