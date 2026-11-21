@@ -27,19 +27,11 @@ describe('collectSelectedPermissionCodes', () => {
     permission('b', 'b.view', [permission('b1', 'b.create')]),
   ];
 
-  it('returns the parent code and every descendant code when the parent is selected', () => {
-    expect(collectSelectedPermissionCodes(tree, ['a'])).toEqual([
-      'a.view',
-      'a.create',
-      'a.delete',
-      'a.export',
-      'a.export.run',
-    ]);
+  it('returns only the selected parent and its required ancestors', () => {
+    expect(collectSelectedPermissionCodes(tree, ['a'])).toEqual(['a.view']);
   });
 
-  it('keeps the ancestor menu codes when only part of the children are selected', () => {
-    // TreeSelect 半选时值里只有叶子，必须补齐祖先菜单/页面权限，
-    // 否则角色会失去页面访问权（本次线上问题）。
+  it('keeps ancestor menu codes when only part of the children are selected', () => {
     expect(collectSelectedPermissionCodes(tree, ['a1', 'a3-1'])).toEqual([
       'a.view',
       'a.create',
@@ -49,18 +41,11 @@ describe('collectSelectedPermissionCodes', () => {
   });
 
   it('does not pull in unselected siblings when completing ancestor codes', () => {
-    // 只勾选 a1 时，a2 / a3 都不应出现在结果里。
     expect(collectSelectedPermissionCodes(tree, ['a1'])).toEqual(['a.view', 'a.create']);
   });
 
-  it('returns the selected ancestor code together with its selected descendants', () => {
-    expect(collectSelectedPermissionCodes(tree, ['a', 'a2'])).toEqual([
-      'a.view',
-      'a.create',
-      'a.delete',
-      'a.export',
-      'a.export.run',
-    ]);
+  it('returns only explicitly selected nodes and their ancestors', () => {
+    expect(collectSelectedPermissionCodes(tree, ['a', 'a2'])).toEqual(['a.view', 'a.delete']);
   });
 
   it('returns an empty array for an empty tree', () => {

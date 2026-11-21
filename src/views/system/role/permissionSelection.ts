@@ -1,112 +1,251 @@
 import type { Permission } from '@/types/auth';
 
-/** 收集权限树中所有叶子节点（无子节点的权限，通常是按钮/接口级）。 */
-function collectLeafIds(nodes: Permission[]): Set<string> {
-  const leafIds = new Set<string>();
-  const walk = (list: Permission[]) => {
-    for (const node of list) {
-      const children = node.children ?? [];
-      if (children.length === 0) {
-        leafIds.add(node.id);
-      } else {
-        walk(children);
-      }
+import { resolveLocalizedText } from '@/utils/localizedText';
+
+export type PermissionLabeledValue = {
+  label: string;
+  value: string;
+};
+
+export type PermissionOption = {
+  title: string;
+  value: string;
+  children?: PermissionOption[];
+};
+
+type SelectionChangeOptions = {
+  /** 勾选父节点时是否同时授予全部后代。角色页使用 false。 */
+  includeDescendantsOnCheck?: boolean;
+};
+
+/** 构建 TreeSelect 原生 treeData，节点标题必须使用 title 字段。 */
+export function buildPermissionOptions(permissionTree: Permission[], locale: string): PermissionOption[] {
+  return permissionTree.map((node) => ({
+    title: `${formatPermissionName(node.name, locale)} (${node.code})`,
+    value: node.id,
+    children: node.children?.length ? buildPermissionOptions(node.children, locale) : undefined,
+  }));
+}
+
+/** 仅承载子路由的 Layout 节点，按分组处理全选和反选。 */
+export function isPermissionGroup(permission: Permission): boolean {
+  return permission.type === 'menu' && permission.component === 'Layout';
+}
+
+function formatPermissionName(name: Permission['name'], locale: string): string {
+  return typeof name === 'string' ? name : resolveLocalizedText(name, locale);
+}
+
+function collectPermissionMap(permissionTree: Permission[]): Map<string, Permission> {
+  const permissionMap = new Map<string, Permission>();
+  const traverse = (nodes: Permission[]): void => {
+    for (const node of nodes) {
+      permissionMap.set(node.id, node);
+      traverse(node.children ?? []);
     }
   };
-  walk(nodes);
-  return leafIds;
+  traverse(permissionTree);
+  return permissionMap;
 }
 
-/**
- * 将角色已持有的权限 ID 还原成 TreeSelect 的 v-model 值。
- *
- * TreeSelect（rc-tree）非严格勾选模式下 v-model 存在强制联动：
- *   - 节点在 v-model 中 → 其全部后代被强制勾选；
- *   - 全部子节点被勾选 → 父节点被强制加入 v-model。
- *
- * 而角色权限里同时包含「菜单/页面级权限」与「按钮级权限」，菜单权限只是
- * 为了让角色能进入页面而存在的祖先节点。若把菜单 ID 放进 v-model，rc-tree
- * 会把该菜单下【所有】按钮一并勾上，导致用户取消过的按钮权限再次出现
- * （线上问题：取消「新增用户」后重开编辑又被勾选）。
- *
- * 因此 v-model 只下发叶子节点：
- *   - 菜单节点的勾选/半选状态由 rc-tree 依据叶子自动推导；
- *   - 叶子节点本身代表用户真实勾选过的按钮权限，不会凭空多出权限。
- *
- * 保存时再由 collectSelectedPermissionCodes 补齐祖先菜单权限，
- * 保证角色既能进入页面、又不越权拥有按钮权限。
- */
-export function resolveEditablePermissionIds(
-  permissionTree: Permission[],
-  grantedIds: string[],
-): string[] {
-  const granted = new Set(grantedIds);
-  const leafIds = collectLeafIds(permissionTree);
+function collectPreorderIds(nodes: Permission[]): string[] {
+  return nodes.flatMap((node) => [node.id, ...collectPreorderIds(node.children ?? [])]);
+}
 
-  const editableIds: string[] = [];
-  const seen = new Set<string>();
-  for (const id of grantedIds) {
-    if (!granted.has(id) || seen.has(id)) {
-      continue;
+function findPermissionNode(
+  nodes: Permission[],
+  id: string,
+  ancestors: Permission[] = [],
+): { node: Permission; ancestors: Permission[] } | undefined {
+  for (const node of nodes) {
+    if (node.id === id) {
+      return { node, ancestors };
     }
-    if (leafIds.has(id)) {
-      seen.add(id);
-      editableIds.push(id);
+    const child = findPermissionNode(node.children ?? [], id, [...ancestors, node]);
+    if (child) {
+      return child;
     }
   }
-  return editableIds;
+  return undefined;
+}
+
+function collectSubtreeIds(node: Permission, target: Set<string>): void {
+  target.add(node.id);
+  for (const child of node.children ?? []) {
+    collectSubtreeIds(child, target);
+  }
+}
+
+function removeSubtreeIds(node: Permission, target: Set<string>): void {
+  target.delete(node.id);
+  for (const child of node.children ?? []) {
+    removeSubtreeIds(child, target);
+  }
+}
+
+function hasSelectedDescendant(node: Permission, selectedIds: Set<string>): boolean {
+  return (node.children ?? []).some(
+    (child) => selectedIds.has(child.id) || hasSelectedDescendant(child, selectedIds),
+  );
 }
 
 /**
- * 将 TreeSelect 的选中 ID 汇总为角色保存所需的权限 code 列表。
+ * 顶层分组是否勾选完全由后代决定：只要下面还有选中项就勾选，
+ * 下面全部取消后自动取消，不单独保留一个空分组值。
+ */
+function normalizeGroupSelections(
+  nodes: Permission[],
+  selectedIds: Set<string>,
+): void {
+  for (const node of nodes) {
+    normalizeGroupSelections(node.children ?? [], selectedIds);
+    if (!isPermissionGroup(node)) {
+      continue;
+    }
+    if (hasSelectedDescendant(node, selectedIds)) {
+      selectedIds.add(node.id);
+    } else {
+      selectedIds.delete(node.id);
+    }
+  }
+}
+
+function normalizeSelectionIds(permissionTree: Permission[], selectedIds: string[]): string[] {
+  const normalizedIds = new Set(selectedIds);
+  normalizeGroupSelections(permissionTree, normalizedIds);
+  return collectPreorderIds(permissionTree).filter((id) => normalizedIds.has(id));
+}
+
+/** 将 TreeSelect 严格勾选返回的 LabeledValue 或旧版字符串值归一化为权限 ID。 */
+export function normalizePermissionSelection(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalized: string[] = [];
+  const seen = new Set<string>();
+  for (const item of value) {
+    const rawValue =
+      item && typeof item === 'object' && 'value' in item
+        ? (item as { value?: unknown }).value
+        : item;
+    if (typeof rawValue !== 'string' && typeof rawValue !== 'number') {
+      continue;
+    }
+
+    const id = String(rawValue);
+    if (!seen.has(id)) {
+      seen.add(id);
+      normalized.push(id);
+    }
+  }
+  return normalized;
+}
+
+/**
+ * 将已授权权限还原为 TreeSelect 严格勾选所需的 LabeledValue。
  *
- * TreeSelect 在「非严格勾选 + SHOW_PARENT」下的取值语义：
- *   - 某节点被完整勾选时，值里只保留该节点 ID（其后代被折叠隐藏）；
- *   - 某节点处于半选状态时，值里只有被勾选的叶子，父节点 ID 不在其中。
+ * 页面 view 与按钮权限必须分别回填：如果把 view 交给非严格联动，组件会
+ * 把页面下全部按钮一起选中；只回填叶子则会在按钮清空时丢掉 view。
+ */
+export function resolveEditablePermissionSelections(
+  permissionTree: Permission[],
+  grantedIds: string[],
+  locale: string,
+): PermissionLabeledValue[] {
+  const permissionMap = collectPermissionMap(permissionTree);
+  const selections: PermissionLabeledValue[] = [];
+  const seen = new Set<string>();
+
+  const normalizedIds = normalizeSelectionIds(permissionTree, grantedIds);
+  for (const id of normalizedIds) {
+    const permission = permissionMap.get(id);
+    if (!permission || seen.has(id)) {
+      continue;
+    }
+    seen.add(id);
+    selections.push({
+      label: formatPermissionName(permission.name, locale),
+      value: permission.id,
+    });
+  }
+  return selections;
+}
+
+/**
+ * 处理一次权限勾选变化。
  *
- * 若直接使用 TreeSelect 的值，第二种情况会丢掉「菜单/页面级」权限，
- * 导致角色失去页面访问权（例如取消「新增用户」后连用户管理页都进不去）。
+ * 规则：
+ * - 勾选页面/菜单：只授予节点自身（角色页不自动授予按钮）；
+ * - 勾选按钮：补齐其祖先访问路径；
+ * - 取消页面/菜单：取消其自身及全部后代；
+ * - 取消按钮：只取消自身，不反推页面 view。
+ */
+export function resolvePermissionSelectionChange(
+  permissionTree: Permission[],
+  selectedIds: unknown,
+  changedId: unknown,
+  checked: boolean,
+  locale: string,
+  options: SelectionChangeOptions = {},
+): PermissionLabeledValue[] {
+  const currentIds = normalizePermissionSelection(selectedIds);
+  if (typeof changedId !== 'string' && typeof changedId !== 'number') {
+    return resolveEditablePermissionSelections(permissionTree, currentIds, locale);
+  }
+
+  const changed = findPermissionNode(permissionTree, String(changedId));
+  if (!changed) {
+    return resolveEditablePermissionSelections(permissionTree, currentIds, locale);
+  }
+
+  const nextIds = new Set(currentIds);
+  if (checked) {
+    if (isPermissionGroup(changed.node)) {
+      collectSubtreeIds(changed.node, nextIds);
+    } else {
+      nextIds.add(changed.node.id);
+      for (const ancestor of changed.ancestors) {
+        nextIds.add(ancestor.id);
+      }
+    }
+    if (options.includeDescendantsOnCheck) {
+      collectSubtreeIds(changed.node, nextIds);
+    }
+  } else {
+    removeSubtreeIds(changed.node, nextIds);
+  }
+
+  return resolveEditablePermissionSelections(
+    permissionTree,
+    normalizeSelectionIds(permissionTree, [...nextIds]),
+    locale,
+  );
+}
+
+/**
+ * 将角色权限选择保存为后端使用的 code 列表。
  *
- * 因此这里按以下规则归一化：
- *   1. 显式选中的节点：输出自身 + 全部后代（还原 SHOW_PARENT 折叠的部分）；
- *   2. 显式选中节点的祖先：只输出祖先自身，不展开其未选中的后代；
- *   3. 结果按权限树前序遍历顺序去重输出。
+ * 选择树是严格模式，勾选值就是用户实际选择的节点。保存时只补齐进入页面
+ * 所需的祖先菜单路径，不展开未勾选的按钮；取消页面时会由选择变更逻辑
+ * 一并清理后代。
  */
 export function collectSelectedPermissionCodes(
   permissionTree: Permission[],
-  selectedIds: string[],
+  selectedIds: unknown,
 ): string[] {
-  const explicitIds = new Set(selectedIds);
+  const explicitIds = new Set(normalizePermissionSelection(selectedIds));
   const requiredIds = new Set<string>();
 
-  const markSubtree = (node: Permission): void => {
-    requiredIds.add(node.id);
-    for (const child of node.children ?? []) {
-      markSubtree(child);
-    }
-  };
-  const collectSubtree = (nodes: Permission[]): void => {
+  const collectAncestors = (nodes: Permission[], ancestors: Permission[]): void => {
     for (const node of nodes) {
       if (explicitIds.has(node.id)) {
-        markSubtree(node);
-      }
-      if (node.children && node.children.length > 0) {
-        collectSubtree(node.children);
-      }
-    }
-  };
-  collectSubtree(permissionTree);
-
-  const collectAncestors = (nodes: Permission[], ancestors: string[]): void => {
-    for (const node of nodes) {
-      if (explicitIds.has(node.id)) {
-        for (const ancestorId of ancestors) {
-          requiredIds.add(ancestorId);
+        requiredIds.add(node.id);
+        for (const ancestor of ancestors) {
+          requiredIds.add(ancestor.id);
         }
       }
-      if (node.children && node.children.length > 0) {
-        collectAncestors(node.children, [...ancestors, node.id]);
-      }
+      collectAncestors(node.children ?? [], [...ancestors, node]);
     }
   };
   collectAncestors(permissionTree, []);
@@ -119,9 +258,7 @@ export function collectSelectedPermissionCodes(
         seenCodes.add(node.code);
         collectedCodes.push(node.code);
       }
-      if (node.children && node.children.length > 0) {
-        collectNodes(node.children);
-      }
+      collectNodes(node.children ?? []);
     }
   };
   collectNodes(permissionTree);
@@ -139,7 +276,6 @@ export function collectSelectedPermissionCodes(
 export function resolvePermissionNodeTitle(
   nodeData?: { value?: unknown; title?: unknown } | null,
 ): string {
-  // 部分渲染路径可能以 undefined/null 调用（例如 rc-tree 对缺失节点的标签解析）。
   if (nodeData == null) {
     return '';
   }

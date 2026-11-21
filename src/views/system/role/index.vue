@@ -43,39 +43,36 @@ import type { ProFormItem, ProTableColumn } from '@/types/pro';
 import type { TreeSelectProps } from 'antdv-next';
 
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@antdv-next/icons';
-import { message, Modal, Tag } from 'antdv-next';
-import { computed, h, onMounted, ref } from 'vue';
+import { message, Modal, Tag, TreeSelect } from 'antdv-next';
+import { computed, defineComponent, h, onMounted, ref } from 'vue';
 
 import { getPermissionTree } from '@/api/permission';
 import { createRole, deleteRole, getRoleList, updateRole } from '@/api/role';
 import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
-import { $t, getLocale } from '@/locales';
 import { usePermission } from '@/composables/usePermission';
+import { $t, getLocale } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
-import { resolveLocalizedText } from '@/utils/localizedText';
 
+import { canManageRole as canManageRoleRecord, getHighestRoleLevel } from '../roleLevel';
 import {
+  buildPermissionOptions,
   collectSelectedPermissionCodes,
-  resolveEditablePermissionIds,
+  normalizePermissionSelection,
+  resolveEditablePermissionSelections,
   resolvePermissionNodeTitle,
+  resolvePermissionSelectionChange,
+  type PermissionLabeledValue,
 } from './permissionSelection';
 import { getPermissionTypePresentation } from './permissionTypePresentation';
-import { canManageRole as canManageRoleRecord, getHighestRoleLevel } from '../roleLevel';
 
 type RoleFormValues = {
   name: string;
   code: string;
   description: string;
   level: number;
-  permissionIds: string[];
-};
-
-type PermissionOption = {
-  label: string;
-  value: string;
-  children?: PermissionOption[];
+  permissionIds: unknown[];
 };
 
 type RolePermissionRef = Pick<Permission, 'code'>;
@@ -118,29 +115,15 @@ const toolbarConfig = computed(() => ({
   >,
 }));
 
-const permissionOptions = computed<PermissionOption[]>(() => {
-  const buildOptions = (nodes: Permission[]): PermissionOption[] => {
-    return nodes.map((node) => ({
-      label: `${resolveLocalizedText(node.name, getLocale())} (${node.code})`,
-      value: node.id,
-      children: node.children && node.children.length > 0 ? buildOptions(node.children) : undefined,
-    }));
-  };
-  return buildOptions(permissionTree.value);
-});
+const permissionOptions = computed(() => buildPermissionOptions(permissionTree.value, getLocale()));
 
 const permissionMap = computed(() => {
   const map = new Map<string, Permission>();
   const traverse = (nodes: Permission[]) => {
-    nodes.forEach((node) => {
-      map.set(node.id, {
-        ...node,
-        children: node.children ? [...node.children] : undefined,
-      });
-      if (node.children && node.children.length > 0) {
-        traverse(node.children);
-      }
-    });
+    for (const node of nodes) {
+      map.set(node.id, node);
+      traverse(node.children ?? []);
+    }
   };
   traverse(permissionTree.value);
   return map;
@@ -148,8 +131,7 @@ const permissionMap = computed(() => {
 
 const renderPermissionTreeTitle: NonNullable<TreeSelectProps['treeTitleRender']> = (nodeData) => {
   const title = resolvePermissionNodeTitle(nodeData);
-  const permission =
-    nodeData == null ? undefined : permissionMap.value.get(String(nodeData.value));
+  const permission = nodeData == null ? undefined : permissionMap.value.get(String(nodeData.value));
   const presentation = getPermissionTypePresentation(permission?.type);
 
   if (!presentation) {
@@ -179,6 +161,70 @@ const renderPermissionTreeTitle: NonNullable<TreeSelectProps['treeTitleRender']>
     ],
   );
 };
+
+const PermissionTreeSelectField = defineComponent({
+  name: 'PermissionTreeSelectField',
+  props: {
+    value: {
+      type: null,
+      default: () => [],
+    },
+    placeholder: {
+      type: String,
+      default: undefined,
+    },
+  },
+  emits: {
+    'update:value': (_value: PermissionLabeledValue[]) => true,
+  },
+  setup(props, { emit }) {
+    function handleChange(_value: unknown, _labels: unknown, extra: unknown): void {
+      const change = extra as { triggerValue?: unknown; checked?: boolean } | undefined;
+      const selections =
+        change?.triggerValue == null || change.checked == null
+          ? resolveEditablePermissionSelections(
+              permissionTree.value,
+              normalizePermissionSelection(props.value),
+              getLocale(),
+            )
+          : resolvePermissionSelectionChange(
+              permissionTree.value,
+              normalizePermissionSelection(props.value),
+              change.triggerValue,
+              change.checked,
+              getLocale(),
+              { includeDescendantsOnCheck: false },
+            );
+      emit('update:value', selections);
+    }
+
+    return () =>
+      h(TreeSelect, {
+        value: props.value,
+        placeholder: props.placeholder,
+        treeData: permissionOptions.value,
+        showSearch: true,
+        filterTreeNode: (input: string, node: { title?: unknown; value?: unknown }) => {
+          const keyword = input.trim().toLowerCase();
+          if (!keyword) {
+            return true;
+          }
+          return [node.title, node.value]
+            .filter((item) => item != null)
+            .some((item) => String(item).toLowerCase().includes(keyword));
+        },
+        treeCheckable: true,
+        treeCheckStrictly: true,
+        allowClear: true,
+        treeDefaultExpandAll: true,
+        maxTagCount: 2,
+        treeTitleRender: renderPermissionTreeTitle,
+        class: ['permission-role-tree-select', 'w-full'],
+        style: { width: '100%' },
+        onChange: handleChange,
+      });
+  },
+});
 
 const searchFormItems = computed<ProFormItem[]>(() => [
   { name: 'name', label: $t('role.name'), type: 'input' },
@@ -300,17 +346,11 @@ const formItems = computed<ProFormItem[]>(() => [
   {
     name: 'permissionIds',
     label: $t('role.permissions'),
-    type: 'treeSelect',
+    type: 'custom',
     colSpan: 2,
-    options: permissionOptions.value,
+    render: PermissionTreeSelectField,
     props: {
-      class: 'permission-role-tree-select',
-      treeCheckable: true,
-      allowClear: true,
-      treeDefaultExpandAll: true,
-      showCheckedStrategy: 'SHOW_PARENT',
-      maxTagCount: 2,
-      treeTitleRender: renderPermissionTreeTitle,
+      placeholder: $t('role.selectPermissions'),
     },
     rules: [{ type: 'array', required: true, message: $t('role.selectPermissions') }],
   },
@@ -371,9 +411,11 @@ const handleEdit = (record: Role) => {
     code: record.code,
     description: record.description || '',
     level: record.level ?? 0,
-    // 直接下发全部权限会让 TreeSelect 把页面级菜单当成"父节点全选"，
-    // 从而把已取消的按钮权限重新勾上；这里先收敛成逻辑勾选集合。
-    permissionIds: resolveEditablePermissionIds(permissionTree.value, grantedIds),
+    permissionIds: resolveEditablePermissionSelections(
+      permissionTree.value,
+      grantedIds,
+      getLocale(),
+    ),
   };
   openEditForm(record, initialValues);
 };
@@ -395,7 +437,7 @@ const handleDelete = async (record: Role) => {
 };
 
 const handleSubmit = async (rawValues: Record<string, unknown>) => {
-  const values = rawValues as RoleFormValues;
+  const values = rawValues as RoleFormValues & { permissionIds?: unknown };
 
   if (!permissionTreeLoaded.value || permissionTree.value.length === 0) {
     message.error($t('role.permissionTreeUnavailable'));
@@ -404,7 +446,7 @@ const handleSubmit = async (rawValues: Record<string, unknown>) => {
 
   const selectedPermissionCodes = collectSelectedPermissionCodes(
     permissionTree.value,
-    values.permissionIds || [],
+    normalizePermissionSelection(values.permissionIds),
   );
 
   const payload: RoleSavePayload = {

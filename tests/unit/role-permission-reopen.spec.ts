@@ -4,10 +4,17 @@ import { describe, expect, it } from 'vitest';
 
 import {
   collectSelectedPermissionCodes,
-  resolveEditablePermissionIds,
+  normalizePermissionSelection,
+  resolveEditablePermissionSelections,
+  resolvePermissionSelectionChange,
 } from '@/views/system/role/permissionSelection';
 
-function permission(id: string, code: string, children?: Permission[]): Permission {
+function permission(
+  id: string,
+  code: string,
+  children?: Permission[],
+  component?: string,
+): Permission {
   return {
     id,
     code,
@@ -16,6 +23,7 @@ function permission(id: string, code: string, children?: Permission[]): Permissi
     resource: code,
     action: 'view',
     type: 'menu',
+    component,
     children,
   };
 }
@@ -23,62 +31,140 @@ function permission(id: string, code: string, children?: Permission[]): Permissi
 /**
  * 用真实系统结构建模：
  *   system.menu(10)
- *     system.user.view(11)      <- 菜单/页面级权限
- *       system.user.create(12)  <- 按钮
+ *     system.user.view(11)
+ *       system.user.create(12)
  *       system.user.edit(13)
  *       system.user.delete(14)
  *     system.role.view(20)
  *       system.role.create(21)
  */
 const tree: Permission[] = [
-  permission('10', 'system.menu', [
-    permission('11', 'system.user.view', [
-      permission('12', 'system.user.create'),
-      permission('13', 'system.user.edit'),
-      permission('14', 'system.user.delete'),
-    ]),
-    permission('20', 'system.role.view', [permission('21', 'system.role.create')]),
-  ]),
+  permission(
+    '10',
+    'system.menu',
+    [
+      permission('11', 'system.user.view', [
+        permission('12', 'system.user.create'),
+        permission('13', 'system.user.edit'),
+        permission('14', 'system.user.delete'),
+      ]),
+      permission('20', 'system.role.view', [permission('21', 'system.role.create')]),
+    ],
+    'Layout',
+  ),
 ];
 
-describe('resolveEditablePermissionIds', () => {
+const values = (selections: Array<{ value: string }>): string[] =>
+  selections.map((selection) => selection.value);
+
+describe('normalizePermissionSelection', () => {
+  it('normalizes strict TreeSelect labeled values to permission ids', () => {
+    expect(
+      normalizePermissionSelection([
+        { label: 'User Management', value: '11' },
+        { label: 'Edit User', value: '13' },
+      ]),
+    ).toEqual(['11', '13']);
+  });
+
+  it('keeps backward compatibility with string values and removes duplicates', () => {
+    expect(normalizePermissionSelection(['11', '13', '11'])).toEqual(['11', '13']);
+  });
+
+  it('ignores invalid values', () => {
+    expect(normalizePermissionSelection(undefined)).toEqual([]);
+    expect(normalizePermissionSelection(['11', null, {}])).toEqual(['11']);
+  });
+});
+
+describe('resolveEditablePermissionSelections', () => {
   it('returns an empty array when nothing is granted', () => {
-    expect(resolveEditablePermissionIds(tree, [])).toEqual([]);
+    expect(resolveEditablePermissionSelections(tree, [], 'en-US')).toEqual([]);
   });
 
-  it('only returns leaf ids, never menu ids', () => {
-    // 菜单 ID（10/11/20）不得下发，否则 rc-tree 会强制勾选其全部子节点。
-    expect(resolveEditablePermissionIds(tree, ['10', '11', '13', '14'])).toEqual(['13', '14']);
-  });
-
-  it('keeps every granted leaf', () => {
-    expect(resolveEditablePermissionIds(tree, ['10', '11', '12', '13', '14'])).toEqual([
-      '12',
-      '13',
-      '14',
+  it('keeps view and button ids as separate strict selections', () => {
+    expect(resolveEditablePermissionSelections(tree, ['10', '11', '13', '14'], 'en-US')).toEqual([
+      { label: 'system.menu', value: '10' },
+      { label: 'system.user.view', value: '11' },
+      { label: 'system.user.edit', value: '13' },
+      { label: 'system.user.delete', value: '14' },
     ]);
   });
 
-  it('ignores menu ids even when they are the only granted items', () => {
-    // 仅有页面级权限时，v-model 不能放菜单 ID（会让所有按钮被勾上）。
-    // 该场景下的页面访问权由保存时的祖先补齐保证，而非靠回填菜单 ID。
-    expect(resolveEditablePermissionIds(tree, ['10', '11'])).toEqual([]);
+  it('keeps a view permission when every button below it is removed', () => {
+    expect(resolveEditablePermissionSelections(tree, ['10', '11'], 'en-US')).toEqual([
+      { label: 'system.menu', value: '10' },
+      { label: 'system.user.view', value: '11' },
+    ]);
   });
 
-  it('deduplicates while preserving the granted order', () => {
-    expect(resolveEditablePermissionIds(tree, ['13', '13', '12'])).toEqual(['13', '12']);
+  it('checks a group automatically when any descendant is selected', () => {
+    expect(resolveEditablePermissionSelections(tree, ['11'], 'en-US')).toEqual([
+      { label: 'system.menu', value: '10' },
+      { label: 'system.user.view', value: '11' },
+    ]);
+  });
+
+  it('drops a group that has no selected descendants', () => {
+    expect(resolveEditablePermissionSelections(tree, ['10'], 'en-US')).toEqual([]);
+  });
+});
+
+describe('resolvePermissionSelectionChange', () => {
+  it('does not grant child buttons when a page view is checked', () => {
+    const selections = resolvePermissionSelectionChange(tree, ['10'], '11', true, 'en-US');
+    expect(values(selections)).toEqual(['10', '11']);
+  });
+
+  it('keeps the page view when the last child button is unchecked', () => {
+    let selections = resolveEditablePermissionSelections(
+      tree,
+      ['10', '11', '12', '13', '14'],
+      'en-US',
+    );
+    for (const id of ['12', '13', '14']) {
+      selections = resolvePermissionSelectionChange(tree, selections, id, false, 'en-US');
+    }
+    expect(values(selections)).toEqual(['10', '11']);
+  });
+
+  it('removes all descendants when a page view is unchecked', () => {
+    const selections = resolvePermissionSelectionChange(
+      tree,
+      ['10', '11', '12', '13', '14', '20', '21'],
+      '11',
+      false,
+      'en-US',
+    );
+    expect(values(selections)).toEqual(['10', '20', '21']);
+  });
+
+  it('adds the ancestor access path when a button is checked', () => {
+    const selections = resolvePermissionSelectionChange(tree, [], '13', true, 'en-US');
+    expect(values(selections)).toEqual(['10', '11', '13']);
+  });
+
+  it('selects the whole subtree when a group is checked', () => {
+    const selections = resolvePermissionSelectionChange(tree, [], '10', true, 'en-US');
+    expect(values(selections)).toEqual(['10', '11', '12', '13', '14', '20', '21']);
+  });
+
+  it('unchecks a group after every descendant is removed', () => {
+    let selections = resolveEditablePermissionSelections(
+      tree,
+      ['10', '11', '12', '13', '14'],
+      'en-US',
+    );
+    selections = resolvePermissionSelectionChange(tree, selections, '11', false, 'en-US');
+    expect(values(selections)).toEqual([]);
   });
 });
 
 describe('collectSelectedPermissionCodes', () => {
-  it('keeps the ancestor menu codes when only part of the children are selected', () => {
-    // TreeSelect 半选时值里只有叶子，必须补齐祖先菜单/页面权限，
-    // 否则角色会失去页面访问权。
-    expect(collectSelectedPermissionCodes(tree, ['13', '14'])).toEqual([
+  it('keeps the selected page view and its access path without child buttons', () => {
+    expect(collectSelectedPermissionCodes(tree, ['10', '11'])).toEqual([
       'system.menu',
       'system.user.view',
-      'system.user.edit',
-      'system.user.delete',
     ]);
   });
 
@@ -87,16 +173,6 @@ describe('collectSelectedPermissionCodes', () => {
       'system.menu',
       'system.user.view',
       'system.user.edit',
-    ]);
-  });
-
-  it('expands a selected parent into its whole subtree plus its ancestors', () => {
-    expect(collectSelectedPermissionCodes(tree, ['11'])).toEqual([
-      'system.menu',
-      'system.user.view',
-      'system.user.create',
-      'system.user.edit',
-      'system.user.delete',
     ]);
   });
 
@@ -113,10 +189,8 @@ describe('collectSelectedPermissionCodes', () => {
   });
 
   it('never emits duplicate codes', () => {
-    const duplicated: Permission[] = [
-      permission('p', 'p.view', [permission('c', 'p.view')]),
-    ];
-    expect(collectSelectedPermissionCodes(duplicated, ['p', 'c'])).toEqual(['p.view']);
+    const duplicatedTree: Permission[] = [permission('p', 'p.view', [permission('c', 'p.view')])];
+    expect(collectSelectedPermissionCodes(duplicatedTree, ['p', 'c'])).toEqual(['p.view']);
   });
 
   it('outputs codes in stable pre-order traversal order', () => {
@@ -126,62 +200,6 @@ describe('collectSelectedPermissionCodes', () => {
       'system.user.edit',
       'system.role.view',
       'system.role.create',
-    ]);
-  });
-});
-
-describe('edit round trip: unchecking a button must stay unchecked', () => {
-  it('does not re-check the removed button after save + reopen', () => {
-    // 1. 打开编辑：全选状态（整棵用户管理子树都授权）
-    const opened = resolveEditablePermissionIds(tree, ['10', '11', '12', '13', '14']);
-    expect(opened).toEqual(['12', '13', '14']);
-    // 菜单 11 不在 v-model 中，但 rc-tree 会依据三个叶子全勾而显示为全选。
-
-    // 2. 用户取消「新增用户」(12) → TreeSelect 值变成 ['13','14']
-    const afterUncheck = ['13', '14'];
-
-    // 3. 保存：补齐祖先，得到后端应存的权限集合
-    const savedCodes = collectSelectedPermissionCodes(tree, afterUncheck);
-    expect(savedCodes).toEqual([
-      'system.menu',
-      'system.user.view',
-      'system.user.edit',
-      'system.user.delete',
-    ]);
-    expect(savedCodes).not.toContain('system.user.create');
-
-    // 4. 再次打开：用保存下来的 ID 还原 v-model
-    const savedIds = ['10', '11', '13', '14'];
-    const reopened = resolveEditablePermissionIds(tree, savedIds);
-
-    // 关键：12 不能出现在 v-model 中（否则 rc-tree 会把它勾上）
-    expect(reopened).not.toContain('12');
-    expect(reopened).toEqual(['13', '14']);
-  });
-
-  it('stays stable across repeated save and reopen cycles', () => {
-    let ids = ['10', '11', '13', '14'];
-    for (let i = 0; i < 3; i += 1) {
-      const editable = resolveEditablePermissionIds(tree, ids);
-      expect(editable).not.toContain('12');
-      const codes = collectSelectedPermissionCodes(tree, editable);
-      expect(codes).not.toContain('system.user.create');
-      // 用 code 反查 id，模拟后端返回后重新回填
-      ids = codes;
-    }
-  });
-
-  it('keeps every button when the whole subtree is still granted', () => {
-    const savedIds = ['10', '11', '12', '13', '14'];
-    const reopened = resolveEditablePermissionIds(tree, savedIds);
-    expect(reopened).toEqual(['12', '13', '14']);
-    const resaved = collectSelectedPermissionCodes(tree, reopened);
-    expect(resaved).toEqual([
-      'system.menu',
-      'system.user.view',
-      'system.user.create',
-      'system.user.edit',
-      'system.user.delete',
     ]);
   });
 });
