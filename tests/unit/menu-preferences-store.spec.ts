@@ -34,7 +34,7 @@ describe('menu preferences store', () => {
         tabs: [
           { path: '/dashboard', favorite: true },
           { path: '/system/users', favorite: false },
-          { path: '/examples/form', favorite: true },
+          { path: '/system/role', favorite: true },
         ],
       }),
     });
@@ -42,9 +42,9 @@ describe('menu preferences store', () => {
 
     const store = useMenuPreferencesStore();
 
-    expect(store.favoritePaths).toEqual(['/dashboard', '/examples/form']);
+    expect(store.favoritePaths).toEqual(['/dashboard', '/system/role']);
     expect(storage.getItem('app-menu-favorites')).toBe(
-      JSON.stringify(['/dashboard', '/examples/form']),
+      JSON.stringify(['/dashboard', '/system/role']),
     );
   });
 

@@ -500,24 +500,6 @@ export default {
     confirmDelete: '确认删除',
   },
 
-  table: {
-    title: '表格示例',
-    total: '共 {total} 条',
-    page: '第 {page} 页',
-    pageSize: '每页 {size} 条',
-    goTo: '跳至',
-  },
-
-  form: {
-    title: '表单示例',
-    basicInfo: '基本信息',
-    advancedInfo: '高级信息',
-    submit: '提交',
-    reset: '重置',
-    validateSuccess: '验证通过',
-    validateFailed: '验证失败',
-  },
-
   notificationCenter: {
     kicker: 'Notification Hub',
     title: '通知中心',

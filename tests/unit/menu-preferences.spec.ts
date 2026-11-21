@@ -15,6 +15,7 @@ describe('menu preferences', () => {
       '',
       42,
       '/system/users',
+      '/examples/form',
       'https://vuejs.org',
       '  ',
     ]);
@@ -33,20 +34,26 @@ describe('menu preferences', () => {
     expect(resolveStoredFavoritePaths('[]', legacyState)).toEqual([]);
   });
 
+  it('drops retired example routes from persisted favorites', () => {
+    expect(resolveStoredFavoritePaths('["/dashboard","/examples/form"]', null)).toEqual([
+      '/dashboard',
+    ]);
+  });
+
   it('migrates legacy favorite tabs when the current value is absent or invalid', () => {
     const legacyState = JSON.stringify({
       tabs: [
         { path: '/dashboard', favorite: true },
         { path: '/system/users', favorite: false },
-        { path: '/examples/form', favorite: true },
+        { path: '/system/role', favorite: true },
         { path: '/dashboard', favorite: true },
       ],
     });
 
-    expect(resolveStoredFavoritePaths(null, legacyState)).toEqual(['/dashboard', '/examples/form']);
+    expect(resolveStoredFavoritePaths(null, legacyState)).toEqual(['/dashboard', '/system/role']);
     expect(resolveStoredFavoritePaths('{invalid', legacyState)).toEqual([
       '/dashboard',
-      '/examples/form',
+      '/system/role',
     ]);
   });
 
@@ -99,6 +106,11 @@ describe('menu preferences', () => {
       normalizeMenuHistoryItems([
         null,
         validItem,
+        {
+          path: '/examples/form',
+          title: '表单示例',
+          timestamp: 1_720_000_000_002,
+        },
         { path: '/system/users', title: '用户管理', timestamp: 'invalid' },
         { path: '', title: '空路径', timestamp: 1_720_000_000_001 },
       ]),

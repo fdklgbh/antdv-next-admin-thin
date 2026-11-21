@@ -11,6 +11,13 @@ interface LegacyTabsState {
 
 const DEFAULT_MENU_SEARCH_VIEW: MenuSearchView = 'recent';
 const MENU_SEARCH_VIEWS: readonly MenuSearchView[] = ['recent', 'favorites'];
+const RETIRED_ROUTE_PREFIXES = ['/examples'] as const;
+
+function isRetiredRoutePath(path: string): boolean {
+  return RETIRED_ROUTE_PREFIXES.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
+  );
+}
 
 function parseJson(raw: string | null): unknown {
   if (raw === null) return undefined;
@@ -32,7 +39,7 @@ function normalizeFavoritePaths(value: unknown): string[] | undefined {
     if (typeof entry !== 'string') return;
 
     const path = entry.trim();
-    if (!path || seen.has(path)) return;
+    if (!path || seen.has(path) || isRetiredRoutePath(path)) return;
 
     seen.add(path);
     paths.push(path);
@@ -97,6 +104,7 @@ export function normalizeMenuHistoryItems(value: unknown): MenuHistoryItem[] {
     return (
       typeof item.path === 'string' &&
       item.path.trim().length > 0 &&
+      !isRetiredRoutePath(item.path.trim()) &&
       typeof item.title === 'string' &&
       typeof item.timestamp === 'number' &&
       Number.isFinite(item.timestamp) &&

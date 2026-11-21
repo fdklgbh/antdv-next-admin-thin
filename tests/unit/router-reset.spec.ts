@@ -32,12 +32,12 @@ describe('router reset helpers', () => {
   it('keeps the next generated route tree when replacing dynamic routes', () => {
     const nextGeneratedRoutes = [
       {
-        path: '/examples',
-        name: 'Examples',
+        path: '/organization',
+        name: 'Organization',
         children: [
           {
-            path: 'rbac-flow',
-            name: 'ExamplesRbacFlow',
+            path: 'user',
+            name: 'OrganizationUser',
           },
         ],
       },
@@ -48,8 +48,8 @@ describe('router reset helpers', () => {
       'NotFoundCatchAll',
       'Root',
       'Dashboard',
-      'Examples',
-      'ExamplesRbacFlow',
+      'Organization',
+      'OrganizationUser',
       'System',
       'SystemUser',
     ];

@@ -497,22 +497,6 @@ export default {
     dictDataTitle: '사전 데이터 - {name}',
     confirmDelete: '삭제 확인',
   },
-  table: {
-    title: '테이블 예',
-    total: '총 {total} 항목',
-    page: '페이지 {page}',
-    pageSize: '{size} 페이지당 항목',
-    goTo: '이동',
-  },
-  form: {
-    title: '양식 예',
-    basicInfo: '기본정보',
-    advancedInfo: '고급정보',
-    submit: '제출하다',
-    reset: '다시 놓기',
-    validateSuccess: '유효성 검사가 통과되었습니다.',
-    validateFailed: '검증 실패',
-  },
   notificationCenter: {
     kicker: '알림 허브',
     title: '알림 센터',

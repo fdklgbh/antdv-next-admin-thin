@@ -504,24 +504,6 @@ export default {
     confirmDelete: 'Confirm Delete',
   },
 
-  table: {
-    title: 'Table Example',
-    total: 'Total {total} items',
-    page: 'Page {page}',
-    pageSize: '{size} items per page',
-    goTo: 'Go to',
-  },
-
-  form: {
-    title: 'Form Example',
-    basicInfo: 'Basic Information',
-    advancedInfo: 'Advanced Information',
-    submit: 'Submit',
-    reset: 'Reset',
-    validateSuccess: 'Validation passed',
-    validateFailed: 'Validation failed',
-  },
-
   notificationCenter: {
     kicker: 'Notification Hub',
     title: 'Notification Center',

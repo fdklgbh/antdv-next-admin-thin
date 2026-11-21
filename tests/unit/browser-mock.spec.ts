@@ -131,7 +131,7 @@ describe('setupBrowserMock', () => {
     const client = axios.create({ baseURL: '/api' });
     setupBrowserMock(client);
 
-    const response = await client.get('/new-example/list?current=2&pageSize=15');
+    const response = await client.get('/unknown-module/list?current=2&pageSize=15');
 
     expect(response.data.code).toBe(0);
     expect(response.data.data).toEqual({

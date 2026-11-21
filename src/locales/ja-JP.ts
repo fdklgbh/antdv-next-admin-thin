@@ -497,22 +497,6 @@ export default {
     dictDataTitle: '辞書データ - {name}',
     confirmDelete: '削除の確認',
   },
-  table: {
-    title: 'テーブルの例',
-    total: '{total} アイテムの合計',
-    page: 'ページ {page}',
-    pageSize: '{size} 1 ページあたりの項目',
-    goTo: 'に行く',
-  },
-  form: {
-    title: 'フォーム例',
-    basicInfo: '基本情報',
-    advancedInfo: '高度な情報',
-    submit: '提出する',
-    reset: 'リセット',
-    validateSuccess: '検証に合格しました',
-    validateFailed: '検証に失敗しました',
-  },
   notificationCenter: {
     kicker: '通知ハブ',
     title: '通知センター',
