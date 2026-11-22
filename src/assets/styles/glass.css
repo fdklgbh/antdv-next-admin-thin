@@ -7,12 +7,14 @@ html:root[data-theme-style='glass'] {
 }
 
 /* Keep the page backdrop outside the animated/KeepAlive subtree. Nested backdrop
-   layers can retain stale tiles after a tab transition until pointer movement repaints them. */
+   layers can retain stale tiles after a tab transition until pointer movement repaints them.
+
+   Do not put backdrop-filter on .page-scroll: modals can be teleported into it. A backdrop
+   filter creates a containing block for fixed descendants, clipping the modal and mask to
+   the content area instead of the viewport. */
 html:root[data-theme-style='glass'] .page-scroll {
   --glass-panel-backdrop: none;
   --glass-control-backdrop: none;
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
 }
 
 /* A fixed scene gives the translucent panels light to pick up as content scrolls. */
