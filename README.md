@@ -1,6 +1,6 @@
 # Antdv Next Admin
 
-一个基于 Vue 3.5、TypeScript 6、Vite 8 和 antdv-next 的现代化中后台前端脚手架，内置 RBAC 权限、动态路由、主题系统、国际化、Mock 数据、Pro 组件和常见业务示例。
+一个基于 Vue 3.5、TypeScript 6、Vite 8 和 antdv-next 的现代化中后台前端脚手架，内置 RBAC 权限、动态路由、主题系统、国际化、Mock 数据和 Pro 组件。
 
 [![Vue](https://img.shields.io/badge/Vue-3.5-brightgreen.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6-blue.svg)](https://www.typescriptlang.org/)
@@ -103,11 +103,10 @@ src/router/               # 路由表、守卫、权限过滤工具
 src/stores/               # 按领域拆分的 Pinia stores
 src/types/                # API、路由、Pro 组件等共享类型
 src/utils/                # 请求、存储、i18n、图标等工具
-src/views/                # 页面与示例
+src/views/                # 页面
 mock/data/                # Mock 数据源
 mock/handlers/            # Mock 接口处理器
 tests/unit/               # Vitest 单元测试
-tests/e2e/                # Playwright starter，依赖未安装
 ```
 
 ## 功能矩阵
@@ -121,7 +120,6 @@ tests/e2e/                # Playwright starter，依赖未安装
 | 国际化 | 支持 `zh-CN`、`en-US`、`ja-JP`、`ko-KR`，非默认语言按需异步加载 |
 | Mock 数据 | 覆盖认证、用户、角色、权限、部门、字典、配置、文件、日志、Dashboard 等模块 |
 | 内容编辑 | TipTap 富文本、Milkdown Markdown、CodeMirror 代码编辑器 |
-| 示例体系 | ProTable、复杂表单、主从表、虚拟表格、JSON 输入、i18n 输入、高级筛选、导入导出、请求鉴权、RBAC、可观测性、测试示例等 |
 | 工程质量 | strict TypeScript、Vitest、oxlint、oxfmt、vue-tsc、生产构建检查 |
 
 ## Pro 组件
@@ -225,11 +223,12 @@ if (hasRole("admin")) {
 
 ## 环境变量与后端接入
 
-开发环境默认启用 Vite Mock 服务:
+开发环境默认连接真实后端，并通过 Vite 代理访问 `API_PROXY_TARGET`:
 
 ```bash
-VITE_USE_MOCK=true
+VITE_USE_MOCK=false
 VITE_API_BASE_URL=/api
+API_PROXY_TARGET=http://localhost:8080
 ```
 
 真实生产构建默认关闭 Mock。发布真实项目时，请将 `.env.production` 中的 API 地址替换为你的后端服务:
@@ -314,7 +313,7 @@ pnpm run test:unit:run   # one-shot
 
 当前单测覆盖路由权限过滤、ProTable 请求、搜索、表头过滤和关键词搜索等逻辑。
 
-`tests/e2e/*.spec.ts` 是 Playwright starter，当前项目未安装 Playwright 依赖；如需启用 E2E，需要先补齐依赖、脚本和运行环境。
+当前未配置可运行的 E2E 测试；如需启用 E2E，需要先补齐依赖、脚本和运行环境。
 
 ## 开发约定
 
@@ -337,7 +336,6 @@ pnpm run test:unit:run   # one-shot
 
 - 组织管理: 部门、用户、角色、权限
 - 系统管理: 配置、字典、文件、日志
-- 示例中心: 快速开始、表单输入、内容编辑、基础交互、业务脚手架、安全工程、集成导航、异常页
 
 ## 许可证
 
