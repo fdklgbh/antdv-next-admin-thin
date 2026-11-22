@@ -61,18 +61,18 @@ import {
 import { message, Modal } from 'antdv-next';
 import { computed, onMounted, ref } from 'vue';
 
-import { showApiError } from '@/utils/apiError';
 import { getRoleOptions } from '@/api/role';
 import { createUser, deleteUser, getUserList, updateUser } from '@/api/user';
 import ProFormModal from '@/components/Pro/ProFormModal/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useCrudFormSession } from '@/composables/useCrudFormSession';
-import { $t } from '@/locales';
 import { usePermission } from '@/composables/usePermission';
+import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
+import { showApiError } from '@/utils/apiError';
+import { exportToCSV, parseCSV } from '@/utils/export';
 
 import { filterAssignableRoles, getHighestRoleLevel } from '../roleLevel';
-import { exportToCSV, parseCSV } from '@/utils/export';
 
 type UserFormValues = {
   password: string;
@@ -498,9 +498,15 @@ const handleImport = async (file: File) => {
       return false;
     }
     const header = rows[0];
-    const usernameIdx = header.findIndex((h) => ['username', '用户名'].includes(h.trim().toLowerCase()));
-    const displayNameIdx = header.findIndex((h) => ['displayname', 'display name', '显示名称'].includes(h.trim().toLowerCase()));
-    const passwordIdx = header.findIndex((h) => ['password', '密码'].includes(h.trim().toLowerCase()));
+    const usernameIdx = header.findIndex((h) =>
+      ['username', '用户名'].includes(h.trim().toLowerCase()),
+    );
+    const displayNameIdx = header.findIndex((h) =>
+      ['displayname', 'display name', '显示名称'].includes(h.trim().toLowerCase()),
+    );
+    const passwordIdx = header.findIndex((h) =>
+      ['password', '密码'].includes(h.trim().toLowerCase()),
+    );
     const emailIdx = header.findIndex((h) => ['email', '邮箱'].includes(h.trim().toLowerCase()));
 
     if (usernameIdx === -1 || displayNameIdx === -1 || emailIdx === -1 || passwordIdx === -1) {

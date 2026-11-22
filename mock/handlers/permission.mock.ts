@@ -11,8 +11,8 @@ import {
   mockRoles,
   wildcardPermission,
 } from '../data/roles.data';
-import { mockUsers } from '../data/users.data';
 import { authorizeRoute, resolveTokenUserId } from '../data/routePermissions';
+import { mockUsers } from '../data/users.data';
 
 const ALL_PERMISSION = '*';
 
@@ -431,7 +431,10 @@ export default defineMock([
     url: '/api/permissions/:id',
     method: 'DELETE',
     response: (req, res) => {
-      const authorization = authorizeRoute('DELETE /api/permissions/:id', req.headers.authorization);
+      const authorization = authorizeRoute(
+        'DELETE /api/permissions/:id',
+        req.headers.authorization,
+      );
       if (!authorization.ok) {
         fail(res, authorization.status, authorization.code, authorization.message);
         return;

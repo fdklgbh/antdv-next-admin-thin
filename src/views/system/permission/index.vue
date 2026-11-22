@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import type { PermissionFormValues } from './permissionParent';
 import type { LocalizedText, Permission } from '@/types/auth';
 import type { ProFormItem, ProTableColumn } from '@/types/pro';
 
@@ -83,7 +84,6 @@ import { useSettingsStore } from '@/stores/settings';
 import { renderIcon } from '@/utils/icon';
 import { resolveLocalizedText } from '@/utils/localizedText';
 
-import type { PermissionFormValues } from './permissionParent';
 import { resolvePermissionParentId } from './permissionParent';
 
 const viewModules = import.meta.glob('/src/views/**/*.vue');

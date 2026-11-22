@@ -390,7 +390,8 @@ export default {
     importSuccess: '{count} 레코드를 성공적으로 가져왔습니다.',
     importFailed: '가져오기에 실패했습니다. 파일 형식을 확인하세요.',
     importEmpty: '파일이 비어 있거나 형식이 잘못되었습니다.',
-    importFormatError: 'CSV에는 username, displayName, email, password 열이 필요합니다. 비밀번호는 8~72바이트입니다',
+    importFormatError:
+      'CSV에는 username, displayName, email, password 열이 필요합니다. 비밀번호는 8~72바이트입니다',
     age: '나이',
     tags: '태그',
     address: '주소',
@@ -435,7 +436,8 @@ export default {
     createPermission: '메뉴 생성',
     editPermission: '메뉴 편집',
     deletePermission: '메뉴 삭제',
-    confirmDelete: '하위 항목이 있는 메뉴는 삭제할 수 없습니다. 먼저 모든 하위 항목을 삭제한 후 삭제해 주세요. 계속하시겠습니까?',
+    confirmDelete:
+      '하위 항목이 있는 메뉴는 삭제할 수 없습니다. 먼저 모든 하위 항목을 삭제한 후 삭제해 주세요. 계속하시겠습니까?',
     expandAll: '모두 확장',
     collapseAll: '모두 축소',
     parentMenu: '학부모 메뉴',

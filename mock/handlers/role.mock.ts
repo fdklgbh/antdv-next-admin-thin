@@ -6,8 +6,8 @@ import { defineMock } from 'vite-plugin-mock-dev-server';
 
 import { mockPermissions } from '../data/permissions.data';
 import { cloneFlatPermission, flattenPermissions, mockRoles } from '../data/roles.data';
-import { mockUsers } from '../data/users.data';
 import { authorizeRoute } from '../data/routePermissions';
+import { mockUsers } from '../data/users.data';
 
 const PROTECTED_ROLE_CODES = new Set(['super_admin', 'admin', 'manager', 'user', 'guest']);
 
@@ -174,7 +174,11 @@ export function validateRoleLevel(
     return { status: 403, code: 10007, message: 'Protected roles cannot be created' };
   }
   if (!canManageRole(actorLevel, code, Number(level))) {
-    return { status: 403, code: 10007, message: 'Protected roles cannot be created at this priority' };
+    return {
+      status: 403,
+      code: 10007,
+      message: 'Protected roles cannot be created at this priority',
+    };
   }
   return null;
 }

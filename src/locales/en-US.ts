@@ -302,7 +302,8 @@ export default {
     statusSynced: 'Synced',
     securityEyebrow: 'Secure sign-in / identity check',
     formTitle: 'Sign in to workspace',
-    realFormSubtitle: 'Enter your username and password, then complete the slider verification to sign in.',
+    realFormSubtitle:
+      'Enter your username and password, then complete the slider verification to sign in.',
     formSubtitle: 'Choose a demo account, complete slider verification, and enter the system.',
     submitLockedHint: 'Complete slider verification to unlock sign-in.',
     submitReadyHint: 'Verification complete. You can sign in securely.',
@@ -393,7 +394,8 @@ export default {
     importSuccess: 'Successfully imported {count} records',
     importFailed: 'Import failed, please check file format',
     importEmpty: 'File is empty or format is incorrect',
-    importFormatError: 'CSV must include username, displayName, email and password columns; passwords must be 8–72 bytes',
+    importFormatError:
+      'CSV must include username, displayName, email and password columns; passwords must be 8–72 bytes',
     age: 'Age',
     tags: 'Tags',
     address: 'Address',
@@ -440,7 +442,8 @@ export default {
     createPermission: 'Create Menu',
     editPermission: 'Edit Menu',
     deletePermission: 'Delete Menu',
-    confirmDelete: 'A menu with child items cannot be deleted. Please delete all of its children first. Continue?',
+    confirmDelete:
+      'A menu with child items cannot be deleted. Please delete all of its children first. Continue?',
     expandAll: 'Expand All',
     collapseAll: 'Collapse All',
     parentMenu: 'Parent Menu',

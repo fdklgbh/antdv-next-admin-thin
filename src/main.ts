@@ -8,8 +8,8 @@ import { registerDefaultComponentProps } from './components/Global/defaultCompon
 import { setupDirectives } from './directives';
 import i18n, { localeReady } from './locales';
 import router from './router';
-import { service } from './utils/request';
 import { clearTransientAuthSession } from './utils/authSession';
+import { service } from './utils/request';
 // Import global styles
 // Tailwind CSS with @layer configuration (must come after reset.css)
 import 'antdv-next/dist/reset.css';

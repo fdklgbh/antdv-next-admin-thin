@@ -81,10 +81,7 @@ export function resolveEffectivePermissionCodes(userId: string): string[] | null
  * 校验请求是否具备访问该路由的权限：未配置权限要求的路由直接放行，
  * 未认证返回 401 / 20001，无权限返回 403 / 20002。
  */
-export function authorizeRoute(
-  routeKey: string,
-  authorizationHeader?: string,
-): RouteAuthorization {
+export function authorizeRoute(routeKey: string, authorizationHeader?: string): RouteAuthorization {
   const requiredCode = ROUTE_PERMISSIONS[routeKey];
   if (!requiredCode) {
     return { ok: true };

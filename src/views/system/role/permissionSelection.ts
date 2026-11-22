@@ -19,7 +19,10 @@ type SelectionChangeOptions = {
 };
 
 /** 构建 TreeSelect 原生 treeData，节点标题必须使用 title 字段。 */
-export function buildPermissionOptions(permissionTree: Permission[], locale: string): PermissionOption[] {
+export function buildPermissionOptions(
+  permissionTree: Permission[],
+  locale: string,
+): PermissionOption[] {
   return permissionTree.map((node) => ({
     title: `${formatPermissionName(node.name, locale)} (${node.code})`,
     value: node.id,
@@ -93,10 +96,7 @@ function hasSelectedDescendant(node: Permission, selectedIds: Set<string>): bool
  * 顶层分组是否勾选完全由后代决定：只要下面还有选中项就勾选，
  * 下面全部取消后自动取消，不单独保留一个空分组值。
  */
-function normalizeGroupSelections(
-  nodes: Permission[],
-  selectedIds: Set<string>,
-): void {
+function normalizeGroupSelections(nodes: Permission[], selectedIds: Set<string>): void {
   for (const node of nodes) {
     normalizeGroupSelections(node.children ?? [], selectedIds);
     if (!isPermissionGroup(node)) {

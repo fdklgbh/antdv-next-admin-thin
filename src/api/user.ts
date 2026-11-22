@@ -20,14 +20,19 @@ export function getUserById(id: string): Promise<ApiResponse<User>> {
 /**
  * Create user
  */
-export function createUser(data: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
+export function createUser(
+  data: Partial<User> & { password?: string },
+): Promise<ApiResponse<User>> {
   return request.post('/users', data);
 }
 
 /**
  * Update user
  */
-export function updateUser(id: string, data: Partial<User> & { password?: string }): Promise<ApiResponse<User>> {
+export function updateUser(
+  id: string,
+  data: Partial<User> & { password?: string },
+): Promise<ApiResponse<User>> {
   return request.put(`/users/${id}`, data);
 }
 

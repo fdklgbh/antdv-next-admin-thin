@@ -206,7 +206,8 @@ export function setupRouterGuards(router: Router) {
     const shouldRestoreSession =
       requiresAuth ||
       (to.name === 'NotFoundCatchAll' && authStore.canAttemptRefresh) ||
-      (to.path === '/login' && authStore.canAttemptRefresh &&
+      (to.path === '/login' &&
+        authStore.canAttemptRefresh &&
         (readAuthSession()?.status === 'active' || Boolean(to.query.redirect)));
     if (shouldRestoreSession) {
       try {

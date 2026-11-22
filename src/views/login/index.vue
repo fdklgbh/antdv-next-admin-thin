@@ -199,7 +199,6 @@ import { message, Select } from 'antdv-next';
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { showApiError } from '@/utils/apiError';
 import logoImg from '@/assets/images/logo.png';
 import { SliderCaptcha } from '@/components/Captcha';
 import LanguageSwitch from '@/components/Layout/LanguageSwitch.vue';
@@ -207,8 +206,9 @@ import ThemeToggle from '@/components/Layout/ThemeToggle.vue';
 import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
 import { useSettingsStore } from '@/stores/settings';
-import { clearSessionState } from '@/utils/session';
+import { showApiError } from '@/utils/apiError';
 import { resolveLoginRedirectTarget } from '@/utils/authSession';
+import { clearSessionState } from '@/utils/session';
 
 const router = useRouter();
 const route = useRoute();

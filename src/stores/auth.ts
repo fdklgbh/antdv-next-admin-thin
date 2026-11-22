@@ -120,9 +120,12 @@ export const useAuthStore = defineStore('auth', () => {
     if (current?.sessionId && current.sessionId !== result.sessionId) {
       localStorage.removeItem('app-tabs-state');
       publish({
-        version: newSessionVersion(), status: 'active', token: result.token,
+        version: newSessionVersion(),
+        status: 'active',
+        token: result.token,
         expiresAt: Date.now() + result.expiresIn * 1000,
-        sessionId: result.sessionId, remember: result.remember,
+        sessionId: result.sessionId,
+        remember: result.remember,
       });
       setUserInfo(null);
       window.location.reload();

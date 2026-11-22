@@ -12,11 +12,7 @@
             :search="{ formItems: operationSearchFormItems }"
           >
             <template #toolbar-actions>
-              <a-button
-                v-permission="'system.log.clear'"
-                danger
-                @click="handleClearOperationLog"
-              >
+              <a-button v-permission="'system.log.clear'" danger @click="handleClearOperationLog">
                 <DeleteOutlined /> {{ t('log.clearLog') }}
               </a-button>
             </template>
@@ -81,10 +77,10 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { showApiError } from '@/utils/apiError';
 import { getOperationLogList, getLoginLogList, clearOperationLog, clearLoginLog } from '@/api/log';
 import ProStatus from '@/components/Pro/ProStatus/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
+import { showApiError } from '@/utils/apiError';
 
 const { t } = useI18n();
 

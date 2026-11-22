@@ -301,7 +301,8 @@ export default {
     statusSynced: '同期済み',
     securityEyebrow: '安全なログイン / 本人確認',
     formTitle: 'ワークスペースにログイン',
-    realFormSubtitle: 'ユーザー名とパスワードを入力し、スライダー認証を完了してログインしてください。',
+    realFormSubtitle:
+      'ユーザー名とパスワードを入力し、スライダー認証を完了してログインしてください。',
     formSubtitle: 'デモアカウントを選び、スライダー認証を完了してシステムに入ります。',
     submitLockedHint: 'スライダー認証を完了するとログインできます。',
     submitReadyHint: '認証が完了しました。安全にログインできます。',
@@ -390,7 +391,8 @@ export default {
     importSuccess: '{count} レコードが正常にインポートされました',
     importFailed: 'インポートに失敗しました。ファイル形式を確認してください',
     importEmpty: 'ファイルが空であるか、形式が正しくありません',
-    importFormatError: 'CSVには username、displayName、email、password 列が必要です。パスワードは8〜72バイトです',
+    importFormatError:
+      'CSVには username、displayName、email、password 列が必要です。パスワードは8〜72バイトです',
     age: '年',
     tags: 'タグ',
     address: '住所',
@@ -435,7 +437,8 @@ export default {
     createPermission: 'メニューの作成',
     editPermission: '編集メニュー',
     deletePermission: 'メニューの削除',
-    confirmDelete: '子項目を含むメニューは削除できません。先にすべての子項目を削除してから実行してください。続行しますか?',
+    confirmDelete:
+      '子項目を含むメニューは削除できません。先にすべての子項目を削除してから実行してください。続行しますか?',
     expandAll: 'すべて展開',
     collapseAll: 'すべて折りたたむ',
     parentMenu: '親メニュー',

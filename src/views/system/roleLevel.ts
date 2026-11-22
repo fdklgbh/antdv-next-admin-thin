@@ -20,10 +20,7 @@ export function getHighestRoleLevel(roles: Pick<Role, 'level'>[] | undefined | n
  *   1) super_admin 角色任何人都不能管理；
  *   2) 只能管理优先级严格低于自己的角色（同级与更高都不可管理）。
  */
-export function canManageRole(
-  record: Pick<Role, 'code' | 'level'>,
-  myLevel: number,
-): boolean {
+export function canManageRole(record: Pick<Role, 'code' | 'level'>, myLevel: number): boolean {
   if (record.code === SUPER_ADMIN_CODE) return false;
   return (record.level ?? 0) < myLevel;
 }

@@ -14,9 +14,7 @@ const MENU_SEARCH_VIEWS: readonly MenuSearchView[] = ['recent', 'favorites'];
 const RETIRED_ROUTE_PREFIXES = ['/examples'] as const;
 
 function isRetiredRoutePath(path: string): boolean {
-  return RETIRED_ROUTE_PREFIXES.some(
-    (prefix) => path === prefix || path.startsWith(`${prefix}/`),
-  );
+  return RETIRED_ROUTE_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 }
 
 function parseJson(raw: string | null): unknown {

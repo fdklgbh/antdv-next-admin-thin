@@ -135,10 +135,10 @@ import {
 import { message } from 'antdv-next';
 import { ref, reactive } from 'vue';
 
-import { resolveApiError } from '@/utils/apiError';
 import { changePassword, type ChangePasswordParams } from '@/api/user';
 import { $t } from '@/locales';
 import { useAuthStore } from '@/stores/auth';
+import { resolveApiError } from '@/utils/apiError';
 
 const authStore = useAuthStore();
 const formRef = ref<FormInstance>();

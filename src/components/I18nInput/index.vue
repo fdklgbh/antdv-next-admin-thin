@@ -92,8 +92,7 @@ const localeLabelMap = computed(() => {
 const innerValue = computed<Record<string, string>>({
   get: () => normalizeValue(props.value),
   set: (value) => {
-    const nextValue =
-      typeof props.value === 'string' ? JSON.stringify(value) : value;
+    const nextValue = typeof props.value === 'string' ? JSON.stringify(value) : value;
     emit('update:value', nextValue);
     emit('change', nextValue);
   },
@@ -147,5 +146,4 @@ function normalizeValue(
 
   return parsed;
 }
-
 </script>

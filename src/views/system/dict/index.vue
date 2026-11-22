@@ -5,7 +5,12 @@
         <!-- dict type list -->
         <div class="dict-types-header">
           <h3>{{ t('dict.dictType') }}</h3>
-          <a-button v-permission="'system.dict.create'" type="primary" size="small" @click="handleAddType">
+          <a-button
+            v-permission="'system.dict.create'"
+            type="primary"
+            size="small"
+            @click="handleAddType"
+          >
             <template #icon><PlusOutlined /></template>
             {{ t('common.add') }}
           </a-button>
@@ -179,11 +184,11 @@ import {
   updateDictData,
   deleteDictData,
 } from '@/api/dict';
-import { showApiError } from '@/utils/apiError';
 import ProSplitLayout from '@/components/Pro/ProSplitLayout/index.vue';
 import ProStatus from '@/components/Pro/ProStatus/index.vue';
 import ProTable from '@/components/Pro/ProTable/index.vue';
 import { useDictStore } from '@/stores/dict';
+import { showApiError } from '@/utils/apiError';
 
 const { t } = useI18n();
 const dictStore = useDictStore();

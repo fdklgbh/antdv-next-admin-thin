@@ -2,7 +2,11 @@
   <div class="page-container">
     <div v-if="!isMockMode" style="margin-bottom: 16px">
       <input ref="fileInput" type="file" hidden @change="handleUpload" />
-      <a-button v-permission="'system.file.upload'" :loading="uploading" @click="fileInput?.click()">
+      <a-button
+        v-permission="'system.file.upload'"
+        :loading="uploading"
+        @click="fileInput?.click()"
+      >
         {{ t('file.upload') }}
       </a-button>
     </div>
@@ -37,7 +41,9 @@
         </template>
         <template v-if="column.key === 'storage'">
           <a-tag :color="storageColor[record.storage]">{{
-            record.storage === 'database' ? t('file.database') : t(`file.storageType.${record.storage}`)
+            record.storage === 'database'
+              ? t('file.database')
+              : t(`file.storageType.${record.storage}`)
           }}</a-tag>
         </template>
         <template v-if="column.key === 'action'">
@@ -45,7 +51,13 @@
             <a-button v-if="!isMockMode" type="link" size="small" @click="handleDownload(record)">
               {{ t('file.download') }}
             </a-button>
-            <a-button v-permission="'system.file.delete'" type="link" size="small" danger @click="handleDelete(record)">
+            <a-button
+              v-permission="'system.file.delete'"
+              type="link"
+              size="small"
+              danger
+              @click="handleDelete(record)"
+            >
               <template #icon><DeleteOutlined /></template>
               {{ t('file.delete') }}
             </a-button>
@@ -75,13 +87,14 @@ import { message, Modal } from 'antdv-next';
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { showApiError, resolveApiError } from '@/utils/apiError';
 import { getFileList, deleteFile, uploadFile, downloadFile } from '@/api/file';
 import ProTable from '@/components/Pro/ProTable/index.vue';
+import { showApiError, resolveApiError } from '@/utils/apiError';
 
 const { t } = useI18n();
 const refreshKey = ref(0);
-const isMockMode = import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.VITE_DEMO_MODE === 'true';
+const isMockMode =
+  import.meta.env.VITE_USE_MOCK === 'true' || import.meta.env.VITE_DEMO_MODE === 'true';
 const fileInput = ref<HTMLInputElement | null>(null);
 const uploading = ref(false);
 
